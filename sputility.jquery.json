@@ -1,0 +1,27 @@
+{
+  "name": "sputility",
+  "title": "SPUtility.js",
+  "description": "A jquery plugin to modify SharePoint list forms.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/kitmenke/jquery.sputility",
+  "author": {
+    "name": "Kit Menke",
+    "email": "cwmenke@gmail.com",
+    "url": "kitmenke.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kitmenke/jquery.sputility.git"
+  },
+  "bugs": "https://github.com/kitmenke/jquery.sputility/issues",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/kitmenke/jquery.sputility/blob/master/LICENSE-MIT"
+    }
+  ],
+  "dependencies": {
+    "jquery": "1.9"
+  },
+  "keywords": []
+}
