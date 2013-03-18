@@ -12,6 +12,7 @@
   "eqnull": true,
   "browser": true,
   "predef": [
+    "SPUtility",
     "jQuery",
     "QUnit",
     "module",
