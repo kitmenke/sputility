@@ -11,6 +11,18 @@
    Changelog: http://sputility.codeplex.com/wikipage?title=Changelog
 */
 
+
+if (!Object.create) {
+   Object.create = function (o) {
+      if (arguments.length > 1) {
+         throw new Error('Object.create implementation only accepts the first parameter.');
+      }
+      function F() {}
+      F.prototype = o;
+      return new F();
+   };
+}
+
 //+ Jonas Raoni Soares Silva
 //@ http://jsfromhell.com/number/fmt-money [rev. #2]
 // Modified to pass JSLint
@@ -144,18 +156,18 @@ Number.prototype.formatMoney = function (c, d, t) {
       case 'SPFieldText':
          field = new SPTextField(spFieldParams);
          break;
+      case 'SPFieldNumber':
+         field = new SPNumberField(spFieldParams);
+         break;
+      case 'SPFieldCurrency':
+         field = new SPCurrencyField(spFieldParams);
+         break;
          /*
       case 'SPFieldNote':
          field = new SPNoteField(spFieldParams);
          break;
       case 'SPFieldBoolean':
          field = new SPBooleanField(spFieldParams);
-         break;
-      case 'SPFieldNumber':
-         field = new SPNumberField(spFieldParams);
-         break;
-      case 'SPFieldCurrency':
-         field = new SPCurrencyField(spFieldParams);
          break;
       case 'SPFieldFile':
          field = new SPFileField(spFieldParams);
@@ -337,13 +349,6 @@ Number.prototype.formatMoney = function (c, d, t) {
     *   sub-classes. Typically, this should not be intantiated directly.
     */
    function SPField(fieldParams) {
-      this._init(fieldParams);
-   }
-
-   /*
-    *   Private SPField Methods
-    */
-   SPField.prototype._init = function (fieldParams) {
       // Public Properties
       this.Label = fieldParams.label;
       this.LabelRow = fieldParams.labelRow;
@@ -352,8 +357,8 @@ Number.prototype.formatMoney = function (c, d, t) {
       this.Type = fieldParams.type;
       this.Controls = $(fieldParams.controlsCell).children()[0];
       this.ControlsRow = fieldParams.controlsRow;
-      this.ReadOnlyLabel = null;   
-   };
+      this.ReadOnlyLabel = null;
+   }
 
    /*
     *   Public SPField Methods
@@ -402,30 +407,30 @@ Number.prototype.formatMoney = function (c, d, t) {
 
    /*
     *   SPTextField class
-    *   Supports Single line of text and Currency fields (base class for number fields)
+    *   Supports Single line of text fields
     */
    function SPTextField(fieldParams) {
-      this._init(fieldParams);
+      SPField.call(this, fieldParams);
+      // public Textbox property
       this.Textbox = getInputControl(this);
    }
 
-   SPTextField.prototype = SPField.prototype;
+   // SPTextField inherits from the SPField base class
+   SPTextField.prototype = Object.create(SPField.prototype);
 
-   $.extend(SPTextField.prototype, {
-      /*
-       *   SPTextField Public Methods
-       *   Overrides SPField class methods.
-       */
-      GetValue: function () {
-         return $(this.Textbox).val();
-      },
+   /*
+    *   SPTextField Public Methods
+    *   Overrides SPField class methods.
+    */
+   SPTextField.prototype.GetValue = function () {
+      return $(this.Textbox).val();
+   };
       
-      SetValue: function (value) {
-         $(this.Textbox).val(value);
-         updateReadOnlyLabel(this);
-         return this;
-      }
-   });
+   SPTextField.prototype.SetValue = function (value) {
+      $(this.Textbox).val(value);
+      updateReadOnlyLabel(this);
+      return this;
+   };
 
 
    /*
@@ -433,19 +438,19 @@ Number.prototype.formatMoney = function (c, d, t) {
     *   Supports Number fields
     */
    function SPNumberField(fieldParams) {
-      this._init(fieldParams);
-      this.Textbox = getInputControl(this);
+      SPTextField.call(this, fieldParams);
    }
 
-   $.extend(SPNumberField, SPTextField, {
-      /*
-       *   SPNumberField Public Methods
-       *   Overrides SPTextField class methods.
-       */
-      GetValue: function () {
-         return convertStringToNumber(this.Textbox.getValue());
-      }
-   });
+   // SPNumberField inherits from the SPTextField base class
+   SPNumberField.prototype = Object.create(SPTextField.prototype);
+
+   /*
+    *   SPNumberField Public Methods
+    *   Overrides SPTextField class methods.
+    */
+   SPNumberField.prototype.GetValue = function () {
+      return convertStringToNumber($(this.Textbox).val());
+   };
 
    
    /*
@@ -453,8 +458,7 @@ Number.prototype.formatMoney = function (c, d, t) {
     *   Supports currency fields (SPCurrencyField)
     */
    function SPCurrencyField(fieldParams) {
-      this._init(fieldParams);
-      this.Textbox = getInputControl(this);
+      SPNumberField.call(this, fieldParams);
       this.FormatOptions = {
          eventHandler: null,
          autoCorrect: false,
@@ -462,39 +466,40 @@ Number.prototype.formatMoney = function (c, d, t) {
       };
    }
 
-   $.extend(SPCurrencyField, SPNumberField, {
-      /*
-       *   Overrides SPNumberField class methods.
-       */
-      Format: function () {
-         if (this.FormatOptions.autoCorrect) {
-            this.FormatOptions.eventHandler = function () {
-               this.SetValue(this.GetFormattedValue());
-            }.bindAsEventListener(this);
-            Event.observe(this.Textbox, 'change', this.FormatOptions.eventHandler);
-            this.FormatOptions.eventHandler(); // run once
-         } else {
-            if (this.FormatOptions.eventHandler) {
-               Event.stopObserving(this.Textbox, 'change', this.FormatOptions.eventHandler);
-               this.FormatOptions.eventHandler = null;
-            }
+   // SPCurrencyField inherits from the SPNumberField base class
+   SPCurrencyField.prototype = Object.create(SPNumberField.prototype);
+
+   /*
+    *   Overrides SPNumberField class methods.
+    */
+   SPCurrencyField.prototype.Format = function () {
+      if (this.FormatOptions.autoCorrect) {
+         this.FormatOptions.eventHandler = function () {
+            this.SetValue(this.GetFormattedValue());
+         }.bindAsEventListener(this);
+         Event.observe(this.Textbox, 'change', this.FormatOptions.eventHandler);
+         this.FormatOptions.eventHandler(); // run once
+      } else {
+         if (this.FormatOptions.eventHandler) {
+            Event.stopObserving(this.Textbox, 'change', this.FormatOptions.eventHandler);
+            this.FormatOptions.eventHandler = null;
          }
-      },
-      
-      GetFormattedValue: function () {
-         var text = this.GetValue();
-         if (typeof text === "number") {
-            text = '$' + text.formatMoney(this.FormatOptions.decimalPlaces);
-         }
-         return text;
-      },
-      
-      // Override the default MakeReadOnly function to allow displaying
-      // the value with currency symbols
-      MakeReadOnly: function (options) {
-         return makeReadOnly(this, this.GetFormattedValue());
       }
-   });
+   };
+   
+   SPCurrencyField.prototype.GetFormattedValue = function () {
+      var text = this.GetValue();
+      if (typeof text === "number") {
+         text = '$' + text.formatMoney(this.FormatOptions.decimalPlaces);
+      }
+      return text;
+   };
+   
+   // Override the default MakeReadOnly function to allow displaying
+   // the value with currency symbols
+   SPCurrencyField.prototype.MakeReadOnly = function (options) {
+      return makeReadOnly(this, this.GetFormattedValue());
+   };
    
    /*
     *   SPUtility Global object and Public Methods

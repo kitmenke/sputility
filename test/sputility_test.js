@@ -44,28 +44,54 @@
     }
   });
 
-  test('GetSPField returns an object', function() {
+  test('GetSPField()', function() {
+    expect( 3 );
     notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-  });
-
-  test('GetSPField returns an object with the correct type', function() {
     strictEqual(this.field.Type, "SPFieldText", "Wrong type: " + this.field.Type);
-  });
-
-  test("has a Textbox property set to field's textbox", function() {
     strictEqual(
-      SPUtility.GetSPField('Title').Textbox.id, 
+      this.field.Textbox.id, 
       this.textboxId, 
       "Textbox property is not set or is set to the wrong to the wrong DOM object.");
   });
 
-  test("calling SetValue changes the Textbox's value", function() {
-    var expected = 'foo bar';
-    SPUtility.GetSPField('Title').SetValue(expected);
+  test("SetValue() and GetValue()", function() {
+    expect( 1 );
 
-    strictEqual($('#' + this.textboxId).val(), 
+    var expected = 'foo bar';
+    this.field.SetValue(expected);
+
+    strictEqual(this.field.GetValue(), 
       expected, 
-      "Textbox value was not set.");
+      "SetValue() failed to set Textbox.");
+  });
+
+
+  module( "SPNumberField", {
+    setup: function() {
+      this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
+      this.field = SPUtility.GetSPField('Number');
+    }
+  });
+
+  test('GetSPField()', function() {
+    expect( 3 );
+    notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+    strictEqual(this.field.Type, "SPFieldNumber", "Wrong type: " + this.field.Type);
+    strictEqual(
+      this.field.Textbox.id, 
+      this.textboxId, 
+      "Textbox property is not set or is set to the wrong to the wrong DOM object.");
+  });
+
+  test("SetValue() and GetValue()", function() {
+    expect( 1 );
+
+    var expected = 42;
+    this.field.SetValue(expected);
+
+    strictEqual(this.field.GetValue(), 
+      expected, 
+      "SetValue() failed to set Textbox.");
   });
 
 }(jQuery));
