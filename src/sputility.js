@@ -113,6 +113,7 @@ Number.prototype.formatMoney = function (c, d, t) {
       throw 'Unable to retrieve the input control for ' + spField.Name;
    }
    
+   /*
    function getHashFromInputControls(spField, selector) {
       var oHash = null, inputTags = $(spField.Controls).find(selector), inputLabel, key;
       if (null !== inputTags && inputTags.length > 0) {
@@ -127,7 +128,7 @@ Number.prototype.formatMoney = function (c, d, t) {
          });
       }
       return oHash;
-   }
+   }*/
    
    function getSPFieldType(element) {
       var matches, comment, n;
@@ -162,6 +163,10 @@ Number.prototype.formatMoney = function (c, d, t) {
       case 'SPFieldCurrency':
          field = new SPCurrencyField(spFieldParams);
          break;
+      case 'SPFieldChoice':
+      case 'SPFieldMultiChoice':
+         field = new SPDropdownChoiceField(spFieldParams);
+         break;
          /*
       case 'SPFieldNote':
          field = new SPNoteField(spFieldParams);
@@ -174,10 +179,6 @@ Number.prototype.formatMoney = function (c, d, t) {
          break;
       case 'SPFieldDateTime':
          field = new SPDateTimeField(spFieldParams);
-         break;
-      case 'SPFieldChoice':
-      case 'SPFieldMultiChoice':
-         field = new SPChoiceField(spFieldParams);
          break;
       case 'SPFieldURL':
          field = new SPURLField(spFieldParams);
@@ -315,16 +316,18 @@ Number.prototype.formatMoney = function (c, d, t) {
       try {
          $(spField.Controls).hide();
          if (null === spField.ReadOnlyLabel) {
-            spField.ReadOnlyLabel = $('<div/>').addClass('sputility-readonly').after(spField.Controls);
+            spField.ReadOnlyLabel = $('<div/>').text(htmlToInsert).addClass('sputility-readonly');
+            $(spField.Controls).after(spField.ReadOnlyLabel);
          }
          spField.ReadOnlyLabel.html(htmlToInsert);
          spField.ReadOnlyLabel.show();
       } catch (ex) {
-         alert('Error making ' + spField.Name + ' read only. ' + ex.toString());
+         log('Error making ' + spField.Name + ' read only. ' + ex.toString());
       }
       return spField;
    }
    
+   /*
    function arrayToSemicolonList(arr) {
       var text = '';
       
@@ -337,7 +340,7 @@ Number.prototype.formatMoney = function (c, d, t) {
       }
       
       return text;
-   }
+   }*/
    
    /*
     *   SPUtility Classes
@@ -379,9 +382,9 @@ Number.prototype.formatMoney = function (c, d, t) {
      
    SPField.prototype.MakeEditable = function () {
       try {
-         this.Controls.hide();
+         $(this.Controls).hide();
          if (null !== this.ReadOnlyLabel) {
-            this.ReadOnlyLabel.hide();
+            $(this.ReadOnlyLabel).hide();
          }
       } catch (ex) {
          alert('Error making ' + this.Name + ' editable. ' + ex.toString());
@@ -474,14 +477,14 @@ Number.prototype.formatMoney = function (c, d, t) {
     */
    SPCurrencyField.prototype.Format = function () {
       if (this.FormatOptions.autoCorrect) {
-         this.FormatOptions.eventHandler = function () {
+         this.FormatOptions.eventHandler = $.proxy(function () {
             this.SetValue(this.GetFormattedValue());
-         }.bindAsEventListener(this);
-         Event.observe(this.Textbox, 'change', this.FormatOptions.eventHandler);
+         }, this);
+         $(this.Textbox).on('change', this.FormatOptions.eventHandler);
          this.FormatOptions.eventHandler(); // run once
       } else {
          if (this.FormatOptions.eventHandler) {
-            Event.stopObserving(this.Textbox, 'change', this.FormatOptions.eventHandler);
+            $(this.Textbox).off('change', this.FormatOptions.eventHandler);
             this.FormatOptions.eventHandler = null;
          }
       }
@@ -497,10 +500,82 @@ Number.prototype.formatMoney = function (c, d, t) {
    
    // Override the default MakeReadOnly function to allow displaying
    // the value with currency symbols
-   SPCurrencyField.prototype.MakeReadOnly = function (options) {
+   SPCurrencyField.prototype.MakeReadOnly = function () {
       return makeReadOnly(this, this.GetFormattedValue());
    };
-   
+
+   function SPChoiceField(fieldParams) {
+      SPField.call(this, fieldParams);
+
+      if (this.Controls === null) {
+         return;
+      }
+
+      this.FillInTextbox = $(this.Controls).find('input[type="text"]');
+      if (this.FillInTextbox.length === 1) {
+         this.FillInTextbox = this.FillInTextbox[0];
+         this.FillInAllowed = true;
+         this.FillInElement = $(this.Controls).find('input[value="FillInButton"]')[0];
+      } else {
+         this.FillInAllowed = false;
+         this.FillInTextbox = null;
+         this.FillInElement = null;
+      }
+   }
+
+   // Inherit from SPField
+   SPChoiceField.prototype = Object.create(SPField.prototype);
+
+   SPChoiceField.prototype._getFillInValue = function () {
+      return this.FillInTextbox.val();
+   };
+
+   SPChoiceField.prototype._setFillInValue = function (value) {
+      this.FillInTextbox.val(value);
+   };
+
+   /*
+    *   SPChoiceField class
+    *   Supports single select choice fields that show as either a dropdown or radio buttons
+    */
+   function SPDropdownChoiceField(fieldParams) {
+      SPChoiceField.call(this, fieldParams);
+
+      if (this.Controls === null) {
+         return;
+      }
+
+      this.Dropdown = $(this.Controls).find('select');
+      this.Dropdown = this.Dropdown.length === 1 ? this.Dropdown[0] : [];
+   }
+
+   // Inherit from SPChoiceField
+   SPDropdownChoiceField.prototype = Object.create(SPChoiceField.prototype);
+
+   SPDropdownChoiceField.prototype.GetValue = function () {
+      if (this.FillInAllowed && this.FillInElement.checked === true) {
+         return $(this.FillInTextbox).val();
+      }
+      return $(this.Dropdown).val();
+   };
+
+   SPDropdownChoiceField.prototype.SetValue = function (value) {
+      var found = $(this.Dropdown).find('option[value="' + value + '"]').length > 0;
+      if (!found && this.FillInAllowed) {
+         if (found) {
+            $(this.Dropdown).val(value);
+            this.FillInElement.checked = false;
+         } else {
+            this.FillInElement.checked = true;
+            $(this.FillInTextbox).val(value);
+         }
+      } else if (found) {
+         $(this.Dropdown).val(value);
+      }
+      updateReadOnlyLabel(this);
+      return this;
+   };
+
    /*
     *   SPUtility Global object and Public Methods
     */

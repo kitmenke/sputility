@@ -1,4 +1,4 @@
-/*! SPUtility.js - v0.1.0 - 2013-03-17
+/*! SPUtility.js - v0.1.0 - 2013-03-18
 * https://github.com/kitmenke/jquery.sputility
 * Copyright (c) 2013 Kit Menke; Licensed MIT */
 if (!Object.create) {
@@ -102,6 +102,7 @@ Number.prototype.formatMoney = function (c, d, t) {
       throw 'Unable to retrieve the input control for ' + spField.Name;
    }
    
+   /*
    function getHashFromInputControls(spField, selector) {
       var oHash = null, inputTags = $(spField.Controls).find(selector), inputLabel, key;
       if (null !== inputTags && inputTags.length > 0) {
@@ -116,7 +117,7 @@ Number.prototype.formatMoney = function (c, d, t) {
          });
       }
       return oHash;
-   }
+   }*/
    
    function getSPFieldType(element) {
       var matches, comment, n;
@@ -314,6 +315,7 @@ Number.prototype.formatMoney = function (c, d, t) {
       return spField;
    }
    
+   /*
    function arrayToSemicolonList(arr) {
       var text = '';
       
@@ -326,7 +328,7 @@ Number.prototype.formatMoney = function (c, d, t) {
       }
       
       return text;
-   }
+   }*/
    
    /*
     *   SPUtility Classes
@@ -463,14 +465,14 @@ Number.prototype.formatMoney = function (c, d, t) {
     */
    SPCurrencyField.prototype.Format = function () {
       if (this.FormatOptions.autoCorrect) {
-         this.FormatOptions.eventHandler = function () {
+         this.FormatOptions.eventHandler = $.proxy(function () {
             this.SetValue(this.GetFormattedValue());
-         }.bindAsEventListener(this);
-         Event.observe(this.Textbox, 'change', this.FormatOptions.eventHandler);
+         }, this);
+         $(this.Textbox).on('change', this.FormatOptions.eventHandler);
          this.FormatOptions.eventHandler(); // run once
       } else {
          if (this.FormatOptions.eventHandler) {
-            Event.stopObserving(this.Textbox, 'change', this.FormatOptions.eventHandler);
+            $(this.Textbox).off('change', this.FormatOptions.eventHandler);
             this.FormatOptions.eventHandler = null;
          }
       }
@@ -486,7 +488,7 @@ Number.prototype.formatMoney = function (c, d, t) {
    
    // Override the default MakeReadOnly function to allow displaying
    // the value with currency symbols
-   SPCurrencyField.prototype.MakeReadOnly = function (options) {
+   SPCurrencyField.prototype.MakeReadOnly = function () {
       return makeReadOnly(this, this.GetFormattedValue());
    };
    
