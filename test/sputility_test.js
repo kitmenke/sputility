@@ -20,32 +20,30 @@
       throws(block, [expected], [message])
   */
 
-  $.noop();
   module( "Main" );
 
-  test('a global SPUtility object is available', function() {
-    ok(SPUtility, "SPUtility global object was not found.");
+  test("The static spfield method is available", function() {
+    ok($.spfield);
   });
 
-  test('GetSPField throws an error when the field was not found', function() {
-    ok(SPUtility, "SPUtility global object was not found.");
+  test("spfield throws an error when the field was not found", function() {
     throws(
       function() {
-        SPUtility.GetSPField('foo bar');
+        $.spfield('foo bar');
       },
-      "GetSPField: Unable to find a SPField named foo bar"
+      "Unable to get a SPField named foo bar",
+      "Correct error was thrown"
     );
   });
 
-
-  module( "SPTextField", {
+  module("SPTextField", {
     setup: function() {
       this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl00_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
-      this.field = SPUtility.GetSPField('Title');
+      this.field = $.spfield('Title');
     }
   });
 
-  test('GetSPField()', function() {
+  test("Get the field", function() {
     expect( 3 );
     notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
     strictEqual(this.field.Type, "SPFieldText", "Wrong type: " + this.field.Type);
@@ -55,7 +53,7 @@
       "Textbox property is not set or is set to the wrong to the wrong DOM object.");
   });
 
-  test("SetValue() and GetValue()", function() {
+  test("Get and set the value", function() {
     expect( 1 );
 
     var expected = 'foo bar';
@@ -80,7 +78,7 @@
   module( "SPNumberField", {
     setup: function() {
       this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
-      this.field = SPUtility.GetSPField('Number');
+      this.field = $.spfield('Number');
     }
   });
 
@@ -108,7 +106,7 @@
   module( "SPCurrencyField", {
     setup: function() {
       this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl09_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
-      this.field = SPUtility.GetSPField('Currency');
+      this.field = $.spfield('Currency');
     }
   });
 
@@ -133,10 +131,10 @@
       "SetValue() failed to set Textbox.");
   });
 
-  module( "SPFieldChoice", {
+  module( "SPFieldChoice - Dropdown", {
     setup: function() {
       this.dropdownId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl04_ctl00_ctl00_ctl04_ctl00_DropDownChoice';
-      this.field = SPUtility.GetSPField('Dropdown Choice');
+      this.field = $.spfield('Dropdown Choice');
     }
   });
 
@@ -168,21 +166,24 @@
       "Passing SetValue() garbage changed the value.");
   });
 
-  module( "SPFieldChoice (with fill in)", {
+  module( "SPFieldChoice Dropdown (with fill in)", {
     setup: function() {
       this.dropdownId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_DropDownChoice';
-      this.field = SPUtility.GetSPField('Dropdown Choice with Fill-in');
+      this.field = $.spfield('Dropdown Choice with Fill-in');
     }
   });
 
   test('GetSPField()', function() {
-    expect( 3 );
-    notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+    expect( 5 );
+    notStrictEqual(this.field, null, "GetSPField should have returned an object.");
+    notStrictEqual(this.field.FillInElement, null, "Fill in element should have an element.");
+    strictEqual(this.field.FillInAllowed, true, "Fill in should be allowed.");
     strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
     strictEqual(
       this.field.Dropdown.id, 
       this.dropdownId, 
       "Textbox property is not set or is set to the wrong to the wrong DOM object.");
+
   });
 
   test("SetValue() and GetValue()", function() {
@@ -200,6 +201,79 @@
     strictEqual(this.field.GetValue(), 
       expected, 
       "SetValue() failed to set fill in value.");
+  });
+
+  module( "SPFieldChoice - Checkboxes", {
+    setup: function() {
+      this.field = $.spfield('Checkboxes');
+    }
+  });
+
+  test('GetSPField()', function() {
+    expect( 3 );
+    notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+    strictEqual(this.field.Type, "SPFieldMultiChoice", "Wrong type: " + this.field.Type);
+    strictEqual(
+      this.field.Checkboxes.length, 
+      5,
+      "There are not 5 checkboxes.");
+  });
+
+  test("SetValue() and GetValue()", function() {
+    expect( 2 );
+
+    var expected = [ "Alpha", "Charlie" ];
+    this.field.SetValue("Alpha", true);
+    this.field.SetValue("Charlie", true);
+
+    deepEqual(this.field.GetValue(), 
+      expected, 
+      "SetValue() failed to set the checkbox.");
+
+    // pass a garbage value
+    this.field.SetValue("foo bar");
+    deepEqual(this.field.GetValue(), 
+      expected, 
+      "Passing garbage to SetValue() changed the value.");
+  });
+
+
+
+  module( "SPFieldChoice - Checkboxes with Fill-in", {
+    setup: function() {
+      this.field = $.spfield('Checkboxes with Fill-in');
+    }
+  });
+
+  test('GetSPField()', function() {
+    expect( 5 );
+    notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+    notStrictEqual(this.field.FillInElement, null, "Fill in element should have an element.");
+    strictEqual(this.field.FillInAllowed, true, "Fill in should be allowed.");
+    strictEqual(this.field.Type, "SPFieldMultiChoice", "Wrong type: " + this.field.Type);
+    strictEqual(
+      this.field.Checkboxes.length, 
+      5,
+      "There are not 5 checkboxes.");
+  });
+
+  test("SetValue() and GetValue()", function() {
+    expect( 2 );
+
+    var expected = [ "Alpha", "Charlie" ];
+    this.field.SetValue("Alpha", true);
+    this.field.SetValue("Charlie", true);
+
+    deepEqual(this.field.GetValue(), 
+      expected, 
+      "SetValue() failed to set the checkbox.");
+
+    // pass a value to fill-in
+    this.field.SetValue("foo bar");
+    expected.push("foo bar");
+    deepEqual(this.field.GetValue(), 
+      expected, 
+      "Fill-in value should be set now.");
   });
 
 }(jQuery));

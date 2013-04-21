@@ -1,6 +1,8 @@
-# SPUtility.js
+# SPUtility.js (work in progress)
 
 A jquery plugin to modify SharePoint list forms.
+
+Original prototype.js version here [http://sputility.codeplex.com/][http://sputility.codeplex.com/]
 
 ## Getting Started
 Download the [production version][min] or the [development version][max].
@@ -14,9 +16,12 @@ In your web page:
 <script src="jquery.js"></script>
 <script src="dist/sputility.min.js"></script>
 <script>
-jQuery(function($) {
-  $.awesome(); // "awesome"
-});
+// Get the Title field using it's display name
+var field = $.spfield('Title');
+
+// The the value of the Title field
+$.spfield('Title').GetValue();
+
 </script>
 ```
 
