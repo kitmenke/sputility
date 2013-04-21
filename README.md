@@ -2,7 +2,7 @@
 
 A jquery plugin to modify SharePoint list forms.
 
-Original prototype.js version here [http://sputility.codeplex.com/][http://sputility.codeplex.com/]
+This version is a port of the original prototype.js version: http://sputility.codeplex.com/
 
 ## Getting Started
 Download the [production version][min] or the [development version][max].
