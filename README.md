@@ -16,17 +16,26 @@ In your web page:
 <script src="jquery.js"></script>
 <script src="dist/sputility.min.js"></script>
 <script>
-// Get the Title field using it's display name
-var field = $.spfield('Title');
+// Set the value of the Title field to Hello world!
+SPUtility.GetSPField('Title').SetValue('Hello world!');
 
-// The the value of the Title field
-$.spfield('Title').GetValue();
+// Get the value of the Title field
+SPUtility.GetSPField('Title').GetValue(); // returns "Hello world!"
 
+// Make it so the user can't edit the Title field
+SPUtility.GetSPField('Title').MakeReadOnly();
+
+// Hide the entire row from view
+SPUtility.GetSPField('Title').Hide();
+
+// You can also set a variable to the returned field
+var fTitle = SPUtility.GetSPField('Title');
+fTitle.SetValue('Using my variable!');
 </script>
 ```
 
 ## Documentation
-_(Coming soon)_
+The cor
 
 ## Examples
 _(Coming soon)_

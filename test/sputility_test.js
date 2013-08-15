@@ -22,14 +22,15 @@
 
   module( "Main" );
 
-  test("The static spfield method is available", function() {
-    ok($.spfield);
+  test("The static function to get SPFields is available.", function() {
+    ok(SPUtility.GetSPField);
+    ok($);
   });
 
   test("spfield throws an error when the field was not found", function() {
     throws(
       function() {
-        $.spfield('foo bar');
+        SPUtility.GetSPField('foo bar');
       },
       "Unable to get a SPField named foo bar",
       "Correct error was thrown"
@@ -39,7 +40,7 @@
   module("SPTextField", {
     setup: function() {
       this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl00_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
-      this.field = $.spfield('Title');
+      this.field = SPUtility.GetSPField('Title');
     }
   });
 
@@ -78,7 +79,7 @@
   module( "SPNumberField", {
     setup: function() {
       this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
-      this.field = $.spfield('Number');
+      this.field = SPUtility.GetSPField('Number');
     }
   });
 
@@ -106,7 +107,7 @@
   module( "SPCurrencyField", {
     setup: function() {
       this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl09_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
-      this.field = $.spfield('Currency');
+      this.field = SPUtility.GetSPField('Currency');
     }
   });
 
@@ -134,7 +135,7 @@
   module( "SPFieldChoice - Dropdown", {
     setup: function() {
       this.dropdownId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl04_ctl00_ctl00_ctl04_ctl00_DropDownChoice';
-      this.field = $.spfield('Dropdown Choice');
+      this.field = SPUtility.GetSPField('Dropdown Choice');
     }
   });
 
@@ -169,7 +170,7 @@
   module( "SPFieldChoice Dropdown (with fill in)", {
     setup: function() {
       this.dropdownId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_DropDownChoice';
-      this.field = $.spfield('Dropdown Choice with Fill-in');
+      this.field = SPUtility.GetSPField('Dropdown Choice with Fill-in');
     }
   });
 
@@ -205,7 +206,7 @@
 
   module( "SPFieldChoice - Checkboxes", {
     setup: function() {
-      this.field = $.spfield('Checkboxes');
+      this.field = SPUtility.GetSPField('Checkboxes');
     }
   });
 
@@ -241,7 +242,7 @@
 
   module( "SPFieldChoice - Checkboxes with Fill-in", {
     setup: function() {
-      this.field = $.spfield('Checkboxes with Fill-in');
+      this.field = SPUtility.GetSPField('Checkboxes with Fill-in');
     }
   });
 
@@ -274,6 +275,32 @@
     deepEqual(this.field.GetValue(), 
       expected, 
       "Fill-in value should be set now.");
+  });
+
+
+
+  module( "SPFieldDateTime (date only)", {
+    setup: function() {
+      this.field = SPUtility.GetSPField('Date Only');
+    }
+  });
+
+  test('GetSPField()', function() {
+    expect( 2 );
+    notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+    strictEqual(this.field.Type, "SPFieldDateTime", "Wrong type: " + this.field.Type);
+  });
+
+  test("SetValue() takes one string parameter", function() {
+    expect( 1 );
+
+    var expected = "08/15/2013";
+    this.field.SetValue(expected);
+    
+    var actual = this.field.GetValue();
+    equal(actual.GetShortDateString(), 
+      expected, 
+      "SetValue() didn't set the date textbox.");
   });
 
 }(jQuery));

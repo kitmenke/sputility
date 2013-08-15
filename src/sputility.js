@@ -43,6 +43,10 @@ if (!Object.create) {
    function isUndefined(obj) {
       return typeof obj === 'undefined';
    }
+   
+   function isString(obj) {
+      return typeof obj === 'string';
+   }
 
    function log(message, exception) {
       var property;
@@ -167,6 +171,9 @@ if (!Object.create) {
       case 'SPFieldMultiChoice':
          field = new SPCheckboxChoiceField(spFieldParams);
          break;
+      case 'SPFieldDateTime':
+         field = new SPDateTimeField(spFieldParams);
+         break;
          /*
       case 'SPFieldNote':
          field = new SPNoteField(spFieldParams);
@@ -176,9 +183,6 @@ if (!Object.create) {
          break;
       case 'SPFieldFile':
          field = new SPFileField(spFieldParams);
-         break;
-      case 'SPFieldDateTime':
-         field = new SPDateTimeField(spFieldParams);
          break;
       case 'SPFieldURL':
          field = new SPURLField(spFieldParams);
@@ -346,7 +350,7 @@ if (!Object.create) {
    /*
     *   SPUtility Classes
    **/
-   
+  
    /*
     *   SPField class
     *   Contains all of the common properties and functions used by the specialized
@@ -371,16 +375,16 @@ if (!Object.create) {
       toggleSPFieldRows(this.LabelRow, this.ControlsRow, true);
       return this;
    };
-   
+
    SPField.prototype.Hide = function () {
       toggleSPFieldRows(this.LabelRow, this.ControlsRow, false);
       return this;
    };
-   
+
    SPField.prototype.MakeReadOnly = function () {
       return makeReadOnly(this, this.GetValue().toString());
    };
-     
+
    SPField.prototype.MakeEditable = function () {
       try {
          $(this.Controls).hide();
@@ -392,11 +396,11 @@ if (!Object.create) {
       }
       return this;
    };
-   
+
    SPField.prototype.toString = function () {
-      return this.Name;      
+      return this.Name;
    };
-   
+
    /*
     *   Public SPField Override Methods
     *   All of the below methods need to be implemented in each sub-class
@@ -404,7 +408,7 @@ if (!Object.create) {
    SPField.prototype.GetValue = function () {
       throw 'GetValue not yet implemented for ' + this.Type + ' in ' + this.Name;
    },
-   
+
    SPField.prototype.SetValue = function () {
       throw 'SetValue not yet implemented for ' + this.Type + ' in ' + this.Name;
    };
@@ -638,6 +642,138 @@ if (!Object.create) {
       updateReadOnlyLabel(this);
       return this;
    };
+   
+   /*
+	 *	SPDateTimeFieldValue class
+	 *	Used to set/get values for SPDateTimeField fields
+	 */
+   function SPDateTimeFieldValue(year, month, day, strHour, strMinute) {
+      this.Year = year;
+      this.Month = month;
+      this.Day = day;
+      this.Hour = strHour;
+      this.Minute = strMinute;
+      this.IsTimeIncluded = !isUndefined(this.Hour) && !isUndefined(this.Minute);
+
+      if (this.IsTimeIncluded) {
+         if (!this.IsValidHour(this.Hour)) {
+            throw 'Hour parameter is not in the correct format. Needs to be formatted like "1 PM" or "12 AM".';
+         }
+         if (!this.IsValidMinute(this.Minute)) {
+            throw 'Minute parameter is not in the correct format. Needs to be formatted like "00", "05" or "35".';
+         }
+      }
+   }
+		
+   /*
+    *	SPDateTimeFieldValue Public Methods
+    */
+
+   SPDateTimeFieldValue.prototype.IsValidDate = function () {
+      return !isUndefined(this.Year) && !isUndefined(this.Month) && !isUndefined(this.Day);
+   };
+
+   SPDateTimeFieldValue.prototype.IsValidHour = function (h) {
+      return !isUndefined(h) && (/^([1-9]|10|11|12) (AM|PM)$/).test(h);
+   };
+
+   SPDateTimeFieldValue.prototype.IsValidMinute = function (m) {
+      return !isUndefined(m) && (/^([0-5](0|5))$/).test(m);
+   };
+
+   // returns the part of a date as a string and pads with a 0 if necessary
+   SPDateTimeFieldValue.prototype.PadWithZero = function (d) {
+      if (isUndefined(d) || null === d) {
+         return '';
+      }
+      if (isString(d)) {
+         d = parseInt(d, 10);
+         if (isNaN(d)) {
+            return '';
+         }
+      }
+      if (typeof d === 'number' && d < 10) {
+         return '0' + d.toString();
+      }
+      return d.toString();
+   };
+
+   // transforms a date object into a string
+   SPDateTimeFieldValue.prototype.GetShortDateString = function () {
+      if (!this.IsValidDate()) {
+         return '';
+      }
+      var strDate = this.PadWithZero(this.Month) + "/" +
+         this.PadWithZero(this.Day) + "/" +
+         this.PadWithZero(this.Year);
+      return strDate;
+   };
+
+   SPDateTimeFieldValue.prototype.toString = function () {
+      var str = this.GetShortDateString(), arrHour;
+      if (this.IsValidHour(this.Hour) && this.IsValidMinute(this.Minute)) {
+         arrHour = this.Hour.split(' ');
+         str += ' ' + arrHour[0] + ':' + this.Minute + arrHour[1];
+      }
+      return str;
+   };
+   
+   function SPDateTimeField(fieldParams) {
+      SPField.call(this, fieldParams);
+      this.DateTextbox = $(getInputControl(this));
+			
+      this.HourDropdown = null;
+      this.MinuteDropdown = null;
+
+      if (this.Controls === null) {
+         return;
+      }
+
+      var timeControls = $(this.Controls).find('select');
+      if (null !== timeControls && 2 === timeControls.length) {
+         this.HourDropdown = $(timeControls[0]);
+         this.MinuteDropdown = $(timeControls[1]);
+      }
+   }
+   
+   // Inherit from SPField
+   SPDateTimeField.prototype = Object.create(SPField.prototype);
+
+   SPDateTimeField.prototype.GetValue = function () {
+      var strHour, strMinute, arrShortDate,
+         strShortDate = this.DateTextbox.val();
+
+      if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
+         strHour = this.HourDropdown.val();
+         strMinute = this.MinuteDropdown.val();
+      }
+
+      arrShortDate = strShortDate.split('/');
+
+      if (arrShortDate.length === 3) {
+         return new SPDateTimeFieldValue(arrShortDate[2], arrShortDate[0], arrShortDate[1], strHour, strMinute);
+      }
+
+      // empty or invalid date
+      return '';
+   };
+		
+   SPDateTimeField.prototype.SetValue = function (year, month, day, strHour, strMinute) {
+      if (isString(year) && isUndefined(month)) {
+         // one string param passed to SetValue
+         // assume they know what they are doing
+         this.DateTextbox.val(year);
+      } else {
+         var value = new SPDateTimeFieldValue(year, month, day, strHour, strMinute);
+         this.DateTextbox.val(value.GetShortDateString());
+         if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
+            this.HourDropdown.val(value.Hour);
+            this.MinuteDropdown.val(value.Minute);
+         }
+      }
+      updateReadOnlyLabel(this);
+      return this;
+   };
 
    /**
     *   SPUtility Global object and Public Methods
@@ -685,7 +821,19 @@ if (!Object.create) {
    /**
     * Static methods
    **/
-   $.sputility = Debug;
-   $.spfield = GetSPField;
+   //$.sputility = Debug;
+   //$.spfield = GetSPField;
+   
+   var SPUtility = function (settings) {
+      this._defaults = {
+         debug: false
+      };
+      this.settings = $.extend({}, settings, this._defaults);
+   };
+   SPUtility.GetSPField = GetSPField;
+   SPUtility.Debug = Debug;
+   
+   
+   window.SPUtility = SPUtility;
 
 }(window, jQuery));
