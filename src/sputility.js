@@ -174,12 +174,12 @@ if (!Object.create) {
       case 'SPFieldDateTime':
          field = new SPDateTimeField(spFieldParams);
          break;
+      case 'SPFieldBoolean':
+         field = new SPBooleanField(spFieldParams);
+         break;
          /*
       case 'SPFieldNote':
          field = new SPNoteField(spFieldParams);
-         break;
-      case 'SPFieldBoolean':
-         field = new SPBooleanField(spFieldParams);
          break;
       case 'SPFieldFile':
          field = new SPFileField(spFieldParams);
@@ -767,6 +767,33 @@ if (!Object.create) {
          this.HourDropdown.val(value.Hour);
          this.MinuteDropdown.val(value.Minute);
       }
+      updateReadOnlyLabel(this);
+      return this;
+   };
+   
+   /*
+	 *	SPBooleanField class
+	 *	Supports yes/no fields (SPFieldBoolean)
+	 */
+   function SPBooleanField(fieldParams) {
+      SPField.call(this, fieldParams);
+      this.Checkbox = $(getInputControl(this));
+   }
+   
+   // Inherit from SPField
+   SPBooleanField.prototype = Object.create(SPField.prototype);
+
+   /*
+    *	SPBooleanField Public Methods
+    *	Overrides SPField class methods.
+    */
+   SPBooleanField.prototype.GetValue = function () {
+      // double negative to return a boolean value
+      return !!this.Checkbox.val();
+   };
+
+   SPBooleanField.prototype.SetValue = function (value) {
+      this.Checkbox.val(value);
       updateReadOnlyLabel(this);
       return this;
    };

@@ -339,5 +339,30 @@
             expected,
             "SetValue() didn't set the date textbox.");
    });
+   
+   
+   module("SPBooleanField (yes/no)", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Yes/No');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(2);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldBoolean", "Wrong type: " + this.field.Type);
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(1);
+
+      var expected = true;
+      this.field.SetValue(true);
+
+      var actual = this.field.GetValue();
+      equal(actual,
+              expected,
+              "SetValue() didn't set the checkbox.");
+   });
 
 }(jQuery));
