@@ -1,8 +1,11 @@
-# SPUtility.js (work in progress)
+# SPUtility.js (jQuery version)
 
-A jquery plugin to modify SharePoint list forms.
+A JavaScript library used to make modifications to SharePoint's list forms 
+(NewForm.aspx and EditForm.aspx in a survey, custom list or library). 
+SPUtility.js works with SharePoint 2007, 2010, and 2013.
 
-This version is a port of the original prototype.js version: http://sputility.codeplex.com/
+This library depends on jQuery (tested with v1.9.0). The previous version on
+Codeplex depended on prototype.js: http://sputility.codeplex.com/
 
 ## Getting Started
 Download the [production version][min] or the [development version][max].
@@ -10,19 +13,37 @@ Download the [production version][min] or the [development version][max].
 [min]: https://raw.github.com/kitmenke/jquery.sputility/master/dist/sputility.min.js
 [max]: https://raw.github.com/kitmenke/jquery.sputility/master/dist/sputility.js
 
-In your web page:
+Upload jQuery and SPUtility into a Document Library in your SharePoint site.
+
+Edit the SharePoint form you wish to modify and add a Content Editor Web Part 
+with the following script inside of it:
 
 ```html
-<script src="jquery.js"></script>
-<script src="dist/sputility.min.js"></script>
+<script src="/site/Files/jquery.js"></script>
+<script src="/site/Files/sputility.min.js"></script>
 <script>
+$(window).load(function () {
+   // TODO: Your scripts go here!
+
+   // EXAMPLE: Set the value of the Title field to Hello world!
+   SPUtility.GetSPField('Title').SetValue('Hello world!');
+});
+</script>
+```
+
+## Documentation
+For now, please use the old documentation here:
+https://sputility.codeplex.com/documentation
+
+## Examples
+```javascript
 // Set the value of the Title field to Hello world!
 SPUtility.GetSPField('Title').SetValue('Hello world!');
 
 // Get the value of the Title field
 SPUtility.GetSPField('Title').GetValue(); // returns "Hello world!"
 
-// Make it so the user can't edit the Title field
+// Make the Title field read only
 SPUtility.GetSPField('Title').MakeReadOnly();
 
 // Hide the entire row from view
@@ -31,14 +52,8 @@ SPUtility.GetSPField('Title').Hide();
 // You can also set a variable to the returned field
 var fTitle = SPUtility.GetSPField('Title');
 fTitle.SetValue('Using my variable!');
-</script>
 ```
 
-## Documentation
-The cor
-
-## Examples
-_(Coming soon)_
-
 ## Release History
-_(Nothing yet)_
+_No release yet. If you are feeling brave, you can grab the latest development
+version from the dist folder._
