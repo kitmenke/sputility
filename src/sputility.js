@@ -724,6 +724,7 @@ if (!Object.create) {
 			
       this.HourDropdown = null;
       this.MinuteDropdown = null;
+      this.IsDateOnly = true;
 
       if (this.Controls === null) {
          return;
@@ -733,6 +734,7 @@ if (!Object.create) {
       if (null !== timeControls && 2 === timeControls.length) {
          this.HourDropdown = $(timeControls[0]);
          this.MinuteDropdown = $(timeControls[1]);
+         this.IsDateOnly = false;
       }
    }
    
@@ -759,17 +761,11 @@ if (!Object.create) {
    };
 		
    SPDateTimeField.prototype.SetValue = function (year, month, day, strHour, strMinute) {
-      if (isString(year) && isUndefined(month)) {
-         // one string param passed to SetValue
-         // assume they know what they are doing
-         this.DateTextbox.val(year);
-      } else {
-         var value = new SPDateTimeFieldValue(year, month, day, strHour, strMinute);
-         this.DateTextbox.val(value.GetShortDateString());
-         if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
-            this.HourDropdown.val(value.Hour);
-            this.MinuteDropdown.val(value.Minute);
-         }
+      var value = new SPDateTimeFieldValue(year, month, day, strHour, strMinute);
+      this.DateTextbox.val(value.GetShortDateString());
+      if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
+         this.HourDropdown.val(value.Hour);
+         this.MinuteDropdown.val(value.Minute);
       }
       updateReadOnlyLabel(this);
       return this;
