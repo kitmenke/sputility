@@ -47,32 +47,6 @@ if (!Object.create) {
    function isString(obj) {
       return typeof obj === 'string';
    }
-
-   function log(message, exception) {
-      var property;
-      if (!_debugMode) {
-         return;
-      }
-      if (exception) {
-         message += '\r\n';
-         for (property in exception) {
-            if (exception.hasOwnProperty(property)) {
-               message += property + ': ' + exception[property] + '\r\n';
-            }
-         }
-      }
-      if (isUndefined(console)) {
-         _numErrors += 1;
-         if (_numErrors === 3) {
-            message = "More than 3 errors (additional errors will not be shown):\r\n" + message;
-         }
-         if (_numErrors <= 3) {
-            alert(message);
-         }
-      } else {
-         console.error(message);
-      }
-   }
    
    function convertStringToNumber(val) {
       if (typeof val === "string") {
@@ -147,7 +121,7 @@ if (!Object.create) {
             }
          }         
       } catch (ex) {
-         log('getSPFieldType: Error getting field type', ex);
+         throw 'getSPFieldType error: ' + ex.toString();
       }
       return null;
    }
@@ -177,7 +151,10 @@ if (!Object.create) {
       case 'SPFieldBoolean':
          field = new SPBooleanField(spFieldParams);
          break;
-         /*
+      case 'SPFieldUser':
+      case 'SPFieldUserMulti':
+         field = new SPUserField(spFieldParams);
+         break;/*
       case 'SPFieldNote':
          field = new SPNoteField(spFieldParams);
          break;
@@ -187,10 +164,7 @@ if (!Object.create) {
       case 'SPFieldURL':
          field = new SPURLField(spFieldParams);
          break;
-      case 'SPFieldUser':
-      case 'SPFieldUserMulti':
-         field = new SPUserField(spFieldParams);
-         break;
+      
       case 'SPFieldLookup':
          field = new SPLookupField(spFieldParams);
          break;
@@ -221,7 +195,7 @@ if (!Object.create) {
          
          field = getSPFieldFromType(spFieldParams);
       } catch (e) {
-         log('createSPField: Error creating field for ' + spFieldParams.name, e);
+         throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
       }
       return field;
    }
@@ -258,7 +232,7 @@ if (!Object.create) {
             'spField': null
          };
       } catch (e) {
-         log('getFieldParams: Error getting field parameters ' + fieldName, e);
+         throw 'getFieldParams error getting parameters for '+ fieldName + ': ' + e.toString();
       }
       return fieldParams;
    }
@@ -304,8 +278,7 @@ if (!Object.create) {
       var fieldParams = _fieldsHashtable.get(strFieldName);
       
       if (isUndefined(fieldParams)) { 
-         log('toggleSPField: Unable to find a SPField named ' + strFieldName + ' - ' + bShowField);
-         return;
+         throw 'toggleSPField: Unable to find a SPField named ' + strFieldName + ' - ' + bShowField;
       }
       
       toggleSPFieldRows(fieldParams.labelRow, fieldParams.controlsRow, bShowField);
@@ -327,17 +300,16 @@ if (!Object.create) {
          spField.ReadOnlyLabel.html(htmlToInsert);
          spField.ReadOnlyLabel.show();
       } catch (ex) {
-         log('Error making ' + spField.Name + ' read only. ' + ex.toString());
+         throw 'Error making ' + spField.Name + ' read only. ' + ex.toString();
       }
       return spField;
    }
    
-   /*
    function arrayToSemicolonList(arr) {
       var text = '';
       
-      arr.each(function (value) {
-         text += value + '; ';
+      arr.each(function (index) {
+         text += $(this).text() + '; ';
       });
       
       if (text.length > 2) {
@@ -345,7 +317,7 @@ if (!Object.create) {
       }
       
       return text;
-   }*/
+   }
    
    /*
     *   SPUtility Classes
@@ -797,6 +769,77 @@ if (!Object.create) {
       updateReadOnlyLabel(this);
       return this;
    };
+   
+   /*
+	 *	SPUserField class
+	 *	Supports people fields (SPFieldUser)
+	 */
+   function SPUserField(fieldParams) {
+      SPField.call(this, fieldParams);
+      
+      if (this.Controls === null) {
+         return;
+      }
+
+      this.spanUserField = null;
+      this.upLevelDiv = null;
+      this.textareaDownLevelTextBox = null;
+      this.linkCheckNames = null;
+      this.txtHiddenSpanData = null;
+
+      var controls = $(this.Controls).find('span.ms-usereditor');
+      if (null !== controls && 1 === controls.length) {
+         this.spanUserField = controls[0];
+         this.upLevelDiv = $(this.spanUserField.id + '_upLevelDiv');
+         this.textareaDownLevelTextBox = $(this.spanUserField.id + '_downlevelTextBox');
+         this.linkCheckNames = $(this.spanUserField.id + '_checkNames');
+         this.txtHiddenSpanData = $(this.spanUserField.id + '_hiddenSpanData');
+         this.GetValue = function () {
+            //this.textareaDownLevelTextBox.getValue()
+            return this.upLevelDiv.text();
+         };
+
+         this.SetValue = function (value) {
+            if ($.browser.msie) {
+               this.upLevelDiv.innerHTML = value;
+               this.txtHiddenSpanData.val(value);
+               this.linkCheckNames.click();
+            } else { // FireFox (maybe others?)
+               this.textareaDownLevelTextBox.val(value);
+               this.linkCheckNames.onclick();
+            }
+            updateReadOnlyLabel(this);
+            return this;
+         };
+      } else {
+         // sharepoint 2013 uses a special autofill named SPClientPeoplePicker
+         // _layouts/15/clientpeoplepicker.debug.js
+         var pickerDiv = $(this.Controls).children()[0];
+         this.ClientPeoplePicker = SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
+         this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
+         this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
+         this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
+         this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
+         //$('.sp-peoplepicker-userSpan')
+         this.GetValue = function () {
+            // look for any entries that have been resolved
+            var peopleSpans = $(this.ResolvedList).find('span.ms-entity-resolved');
+            if (peopleSpans.length > 0) {
+               return arrayToSemicolonList(peopleSpans);
+            }
+            return '';
+         };
+         this.SetValue = function (value) {
+            this.ClientPeoplePicker.AddUserKeys(value, false);
+            updateReadOnlyLabel(this);
+            return this;
+         };
+      }
+   }
+   
+   // Inherit from SPField
+   SPUserField.prototype = Object.create(SPField.prototype);
+
 
    /**
     *   SPUtility Global object and Public Methods
