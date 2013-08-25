@@ -7,6 +7,7 @@
       fields read only, or hide a field from view.
    Author: Kit Menke
    http://SPUtility.codeplex.com/
+   http://SPUtility.codeplex.com/
    License: Microsoft Public License (see http://sputility.codeplex.com/license)
    Changelog: http://sputility.codeplex.com/wikipage?title=Changelog
 */
@@ -228,7 +229,7 @@ if (!Object.create) {
             }
          }
          
-         fieldName = $(elemLabel).text().trim();
+         fieldName = $.trim($(elemLabel).text());
          isRequired = fieldName.lastIndexOf(' *') === (fieldName.length - 2);
          
          if (true === isRequired) {
