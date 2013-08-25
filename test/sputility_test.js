@@ -364,5 +364,24 @@
               expected,
               "SetValue() didn't set the checkbox.");
    });
+   
+   
+   module("SPUserField", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Person or Group');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(2);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldUser", "Wrong type: " + this.field.Type);
+   });
+
+   test("Correct properties are set", function() {
+      expect(2);
+      ok(this.field.ClientPeoplePicker, 'ClientPeoplePicker property not set');
+      ok(this.field.EditorInput, 'EditorInput property not set');
+   });
 
 }(jQuery));
