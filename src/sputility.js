@@ -47,6 +47,14 @@ if (!Object.create) {
       return typeof obj === 'string';
    }
    
+   function isNumber(obj) {
+      return typeof obj === 'number';
+   }
+   
+   function getInteger(str) {
+      return parseInt(str, 10);
+   }
+   
    function convertStringToNumber(val) {
       if (typeof val === "string") {
          var match = val.match(/[0-9,.]+/g);
@@ -126,7 +134,7 @@ if (!Object.create) {
    }
    
    function getSPFieldFromType(spFieldParams) {
-      var field = null;
+      var field = null, controls;
       
       switch (spFieldParams.type) {
       case 'SPFieldText':
@@ -157,6 +165,16 @@ if (!Object.create) {
       case 'SPFieldURL':
          field = new SPURLField(spFieldParams);
          break;
+      case 'SPFieldLookup':
+         // is this a normal dropdown field?
+         controls = $(spFieldParams.controlsCell).find('select');
+         if (controls.length > 0) {
+            field = new SPDropdownLookupField(spFieldParams, controls);
+         } else {
+            controls = $(spFieldParams.controlsCell).find('input');
+            field = new SPAutocompleteLookupField(spFieldParams, controls);
+         }         
+         break;
       /*
       case 'SPFieldNote':
          field = new SPNoteField(spFieldParams);
@@ -165,9 +183,6 @@ if (!Object.create) {
          field = new SPFileField(spFieldParams);
          break;
       
-      case 'SPFieldLookup':
-         field = new SPLookupField(spFieldParams);
-         break;
       case 'SPFieldLookupMulti':
          field = new SPLookupMultiField(spFieldParams);
          break;*/
@@ -548,6 +563,8 @@ if (!Object.create) {
          }
       } else if (found) {
          $(this.Dropdown).val(value);
+      } else {
+         throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
       }
       updateReadOnlyLabel(this);
       return this;
@@ -659,7 +676,7 @@ if (!Object.create) {
          return '';
       }
       if (isString(d)) {
-         d = parseInt(d, 10);
+         d = getInteger(d);
          if (isNaN(d)) {
             return '';
          }
@@ -820,6 +837,115 @@ if (!Object.create) {
       }
 
       return makeReadOnly(this, text);
+   };
+   
+   /*
+	 *	SPDropdownLookupField class
+	 *	Supports single select lookup fields
+	 */
+   function SPDropdownLookupField(fieldParams, elemSelect) {
+      SPField.call(this, fieldParams);
+      if (this.Controls === null) {
+         return;
+      }
+      
+      if (1 === elemSelect.length) {
+         // regular dropdown lookup
+         this.Dropdown = elemSelect[0];
+      } else {
+         throw "Unable to get dropdown element for " + this.Name;
+      }
+   }
+   
+   // Inherit from SPField
+   SPDropdownLookupField.prototype = Object.create(SPField.prototype);
+   
+   SPDropdownLookupField.prototype.GetValue = function () {
+      return this.Dropdown.options[this.Dropdown.selectedIndex].text;
+   };
+
+   SPDropdownLookupField.prototype.SetValue = function (value) {
+      if (isNumber(value)) {
+         $(this.Dropdown).val(value);
+      } else {
+         var i, options, option;
+         // need to set the dropdown based on text
+         options = this.Dropdown.options;
+         for (i = 0; i < options.length; i += 1) {
+            option = options[i];
+            if (option.text === value) {
+               this.Dropdown.selectedIndex = i;
+               break;
+            }
+         }
+      }
+      updateReadOnlyLabel(this);
+      return this;
+   };
+   
+   /*
+	 *	SPDropdownLookupField class
+	 *	Supports single select lookup fields
+	 */
+   function SPAutocompleteLookupField(fieldParams, elemInputs) {
+      SPField.call(this, fieldParams);
+      if (this.Controls === null) {
+         return;
+      }
+      
+      if (1 === elemInputs.length) {
+         // autocomplete lookup
+         this.Textbox = $(elemInputs[0]);
+         this.HiddenTextbox = $('input[id="' + this.Textbox.attr('optHid') + '"]');
+      } else {
+         throw "Unable to get input elements for " + this.Name;
+      }
+   }
+   
+   // Inherit from SPField
+   SPAutocompleteLookupField.prototype = Object.create(SPField.prototype);
+   
+   SPAutocompleteLookupField.prototype.GetValue = function () {
+      return this.Textbox.val();
+   };
+
+   SPAutocompleteLookupField.prototype.SetValue = function (value) {
+      var choices, lookupID, lookupText, i, c = [], pipeIndex;
+
+      // a list item ID was passed to the function so attempt to lookup the text value
+      choices = this.Textbox.attr('choices');
+      
+      // options are stored in a choices attribute in the following format:
+      // (None)|0|Alpha|1|Bravo|2|Charlie|3
+      // split the string on every pipe character followed by a digit
+      choices = choices.split(/\|(?=\d+)/);
+      c.push(choices[0]);
+      for (i = 1; i < choices.length - 1; i++) {
+         pipeIndex = choices[i].indexOf('|'); // split on the first pipe only
+         c.push(choices[i].substring(0, pipeIndex));
+         c.push(choices[i].substring(pipeIndex + 1));
+      }
+      c.push(choices[choices.length - 1]);
+      
+      // options are stored in a choices attribute in the following format:
+      // text|value|text 2|value2
+      for (i = 0; i < c.length; i += 2) {
+         lookupID = getInteger(c[i + 1]);
+         lookupText = c[i];
+         // if value is an integer, assume they are passing the list item ID
+         // otherwise, a string will match the text value
+         if (value === lookupID || value === lookupText) {
+            this.Textbox.val(lookupText);
+            break;
+         }
+      }
+
+      if (null !== lookupID) {
+         this.HiddenTextbox.val(lookupID);
+      }
+
+      updateReadOnlyLabel(this);
+      return this;
    };
    
    /*

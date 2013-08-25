@@ -150,7 +150,7 @@
    });
 
    test("SetValue() and GetValue()", function() {
-      expect(2);
+      expect(1);
 
       var expected = "Charlie";
       this.field.SetValue(expected);
@@ -158,13 +158,15 @@
       strictEqual(this.field.GetValue(),
               expected,
               "SetValue() failed to set Textbox.");
-
-      // try setting the dropdown to garbage (it should just be ignored)
-      this.field.SetValue("foo bar");
-
-      strictEqual(this.field.GetValue(),
-              expected,
-              "Passing SetValue() garbage changed the value.");
+   });
+   
+   test("Try setting the field to garbage (throws an exception)", function() {
+      expect(1);
+      
+      throws(function(){
+         // try setting the dropdown to garbage
+         this.field.SetValue("foo bar");
+      });
    });
 
    module("SPFieldChoice Dropdown (with fill in)", {
@@ -393,6 +395,56 @@
               "GetValue() should return an array of two strings containing URL and Description.");
    });
    
+   module("SPLookupField (single-select, small lookup)", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Small Lookup');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(2);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldLookup", "Wrong type: " + this.field.Type);
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(2);
+
+      var expected = 'Charlie';
+      this.field.SetValue(expected);
+      
+      // make sure the select was set correctly
+      equal($('#Small_x0020_Lookup_fc0ce102-b10d-48f1-bdce-760fd008eead_LookupField').val(), '3');
+      
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
+   });
+   
+   module("SPLookupField (single-select, big lookup with autocomplete)", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Large Lookup Field');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(2);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldLookup", "Wrong type: " + this.field.Type);
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(2);
+
+      var expected = 'Charlie';
+      this.field.SetValue(expected);
+      
+      // make sure the select was set correctly
+      equal($('#ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl12_ctl00_ctl00_ctl04_ctl00_ctl01').val(), expected);
+      
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
+   });
+   
    
    module("SPUserField", {
       setup: function() {
@@ -412,5 +464,75 @@
       ok(this.field.ClientPeoplePicker, 'ClientPeoplePicker property not set');
       ok(this.field.EditorInput, 'EditorInput property not set');
    });*/
-
+   
+   module("Miscellaneous tests");
+   
+   test('Splitting autocomplete choices', function() {
+      expect(1);
+      
+      // a list item ID was passed to the function so attempt to lookup the text value
+      var choices = '(None)|0|A pipe || in the middle|31|AAA BBB CCC|30|Alpha|1|Bravo|2|Charlie|3|Delta|4|Echo|5|Foxtrot|6|Golf|7|Hotel|8|India|9|Juliet|10|Kilo|11|Lima|12|Mike|13|November|14|Oscar|15|Papa|16|Quebec|17|Romeo|18|Sierra|19|Tango|29';
+      var expected = [
+         "(None)",
+         "0",
+         "A pipe || in the middle",
+         "31",
+         "AAA BBB CCC",
+         "30",
+         "Alpha",
+         "1",
+         "Bravo",
+         "2",
+         "Charlie",
+         "3",
+         "Delta",
+         "4",
+         "Echo",
+         "5",
+         "Foxtrot",
+         "6",
+         "Golf",
+         "7",
+         "Hotel",
+         "8",
+         "India",
+         "9",
+         "Juliet",
+         "10",
+         "Kilo",
+         "11",
+         "Lima",
+         "12",
+         "Mike",
+         "13",
+         "November",
+         "14",
+         "Oscar",
+         "15",
+         "Papa",
+         "16",
+         "Quebec",
+         "17",
+         "Romeo",
+         "18",
+         "Sierra",
+         "19",
+         "Tango",
+         "29"
+      ];
+      
+      // split the string on every pipe character followed by a digit
+      choices = choices.split(/\|(?=\d+)/);
+      var c = [], pipeIndex;
+      c.push(choices[0]);
+      for (var i = 1; i < choices.length - 1; i++) {
+         pipeIndex = choices[i].indexOf('|'); // split on the first pipe only
+         c.push(choices[i].substring(0, pipeIndex));
+         c.push(choices[i].substring(pipeIndex+1));
+      }
+      c.push(choices[choices.length-1]);
+      
+      deepEqual(c, expected);
+   });
+   
 }(jQuery));
