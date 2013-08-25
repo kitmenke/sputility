@@ -218,7 +218,7 @@ if (!Object.create) {
             }
          }
          
-         fieldName = $(elemLabel).text().trim();
+         fieldName = $.trim($(elemLabel).text());
          isRequired = fieldName.lastIndexOf(' *') === (fieldName.length - 2);
          
          if (true === isRequired) {
