@@ -365,6 +365,34 @@
               "SetValue() didn't set the checkbox.");
    });
    
+   module("SPURLField (hyperlink)", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Hyperlink');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(2);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldURL", "Wrong type: " + this.field.Type);
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(3);
+
+      var expected = ['http://sputility.codeplex.com', 'SPUtility.js'];
+      this.field.SetValue(expected[0], expected[1]);
+      
+      // make sure both textboxes were set correctly
+      equal($('#Hyperlink_2ef372e5-47ae-4d20-89dd-5a43e5428ae6_UrlFieldUrl').val(), expected[0]);
+      equal($('#Hyperlink_2ef372e5-47ae-4d20-89dd-5a43e5428ae6_UrlFieldDescription').val(), expected[1]);
+      
+      // Gets the value of the hyperlink field as an array
+      var actual = this.field.GetValue();
+      deepEqual(actual, expected,
+              "GetValue() should return an array of two strings containing URL and Description.");
+   });
+   
    
    module("SPUserField", {
       setup: function() {

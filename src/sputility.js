@@ -153,15 +153,16 @@ if (!Object.create) {
       case 'SPFieldUser':
       case 'SPFieldUserMulti':
          field = new SPUserField(spFieldParams);
-         break;/*
+         break;
+      case 'SPFieldURL':
+         field = new SPURLField(spFieldParams);
+         break;
+      /*
       case 'SPFieldNote':
          field = new SPNoteField(spFieldParams);
          break;
       case 'SPFieldFile':
          field = new SPFileField(spFieldParams);
-         break;
-      case 'SPFieldURL':
-         field = new SPURLField(spFieldParams);
          break;
       
       case 'SPFieldLookup':
@@ -767,6 +768,58 @@ if (!Object.create) {
       this.Checkbox.val(value);
       updateReadOnlyLabel(this);
       return this;
+   };
+   
+   /*
+	 *	SPURLField class
+	 *	Supports hyperlink fields (SPFieldURL)
+	 */
+   function SPURLField(fieldParams) {
+      SPField.call(this, fieldParams);
+      if (this.Controls === null) {
+         return;
+      }
+
+      this.TextboxURL = null;
+      this.TextboxDescription = null;
+
+      var controls = $(this.Controls).find('input');
+      if (null !== controls && 2 === controls.length) {
+         this.TextboxURL = $(controls[0]);
+         this.TextboxDescription = $(controls[1]);
+      }
+   }
+   
+   // Inherit from SPField
+   SPURLField.prototype = Object.create(SPField.prototype);
+		
+   /*
+    *	SPURLField Public Methods
+    *	Overrides SPField class methods.
+    */
+   SPURLField.prototype.GetValue = function () {
+      return [this.TextboxURL.val(), this.TextboxDescription.val()];
+   };
+
+   SPURLField.prototype.SetValue = function (url, description) {
+      this.TextboxURL.val(url);
+      this.TextboxDescription.val(description);
+      updateReadOnlyLabel(this);
+      return this;
+   };
+
+   // overriding the default MakeReadOnly function because we have multiple values returned
+   // and we want to have the hyperlink field show up as a URL
+   SPURLField.prototype.MakeReadOnly = function (options) {
+      var text, values = this.GetValue();
+
+      if (options && true === options.TextOnly) {
+         text = values[0] + ', ' + values[1];
+      } else {				
+         text = '<a href="' + values[0] + '">' + values[1] + '</a>';
+      }
+
+      return makeReadOnly(this, text);
    };
    
    /*
