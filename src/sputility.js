@@ -33,8 +33,7 @@ if (!Object.create) {
    **/
    var _fieldsHashtable = null,
       _debugMode = false,
-      _isSurveyForm = false,
-      _numErrors = 0; 
+      _isSurveyForm = false; 
    
    /*
     *   SPUtility Private Methods
@@ -232,7 +231,7 @@ if (!Object.create) {
             'spField': null
          };
       } catch (e) {
-         throw 'getFieldParams error getting parameters for '+ fieldName + ': ' + e.toString();
+         throw 'getFieldParams error getting parameters for ' + fieldName + ': ' + e.toString();
       }
       return fieldParams;
    }
@@ -308,7 +307,7 @@ if (!Object.create) {
    function arrayToSemicolonList(arr) {
       var text = '';
       
-      arr.each(function (index) {
+      arr.each(function () {
          text += $(this).text() + '; ';
       });
       
@@ -811,11 +810,11 @@ if (!Object.create) {
             updateReadOnlyLabel(this);
             return this;
          };
-      } else {
+      } else if (!isUndefined(window.SPClientPeoplePicker)) {
          // sharepoint 2013 uses a special autofill named SPClientPeoplePicker
          // _layouts/15/clientpeoplepicker.debug.js
          var pickerDiv = $(this.Controls).children()[0];
-         this.ClientPeoplePicker = SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
+         this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
          this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
          this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
          this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];

@@ -12,5 +12,5 @@
   "eqnull": true,
   "browser": true,
   "indent": 3,
-  "predef": ["jQuery", "RTE_GetIFrameContents", "alert", "console"]
+  "predef": ["jQuery", "RTE_GetIFrameContents", "alert", "console", "SPClientPeoplePicker"]
 }
