@@ -162,14 +162,33 @@ if (!Object.create) {
             field = new SPAutocompleteLookupField(spFieldParams, controls);
          }         
          break;
-      /*
       case 'SPFieldNote':
-         field = new SPNoteField(spFieldParams);
+         controls = $(spFieldParams.controlsCell).find('textarea');
+         if (controls.length > 0) {
+            // either plain text or rich text
+            controls = controls[0];
+            if (window.RTE_GetEditorIFrame && window.RTE_GetEditorIFrame(controls.id) !== null) {
+               // rich text field detected
+               field = new SPRichNoteField(spFieldParams, controls);
+            } else {
+               // plain text field otherwise
+               field = new SPPlainNoteField(spFieldParams, controls);
+            }
+         } else {
+            controls = $(spFieldParams.controlsCell).find('input[type="hidden"]');
+            // is this an "enhanced rich text field" in sp 2010/2013?
+            if (controls.length >= 1) {
+               field = new SPEnhancedNoteField(spFieldParams, controls);
+            }
+         }
+         if (null === field) {
+            throw "Unknown type of SPFieldNote.";
+         }
          break;
+      /*
       case 'SPFieldFile':
          field = new SPFileField(spFieldParams);
          break;
-      
       case 'SPFieldLookupMulti':
          field = new SPLookupMultiField(spFieldParams);
          break;*/
@@ -934,6 +953,79 @@ if (!Object.create) {
       updateReadOnlyLabel(this);
       return this;
    };
+   
+   /*
+	 *	SPPlainNoteField class
+	 *	Supports multi-line plain text fields (SPFieldNote)
+	 */
+   function SPPlainNoteField(fieldParams, textarea) {
+      SPField.call(this, fieldParams);
+      this.Textbox = textarea;
+      this.TextType = "Plain";
+   }
+   
+   // Inherit from SPField
+   SPPlainNoteField.prototype = Object.create(SPField.prototype);
+   
+   SPPlainNoteField.prototype.GetValue = function () {
+      return $(this.Textbox).val();
+   };
+
+   SPPlainNoteField.prototype.SetValue = function (value) {
+      $(this.Textbox).val(value);
+      updateReadOnlyLabel(this);
+      return this;
+   };
+   
+   /*
+	 *	SPRichNoteField class
+	 *	Supports multi-line rich text fields (SPFieldNote)
+	 */
+   function SPRichNoteField(fieldParams, textarea) {
+      SPPlainNoteField.call(this, fieldParams, textarea);
+      this.TextType = "Rich";
+   }
+   
+   // Inherit from SPField
+   SPRichNoteField.prototype = Object.create(SPPlainNoteField.prototype);
+   
+   // RTE functions are defined in layouts/1033/form.js
+   SPRichNoteField.prototype.GetValue = function () {
+      return window.RTE_GetIFrameContents(this.Textbox.id);
+   };
+
+   SPRichNoteField.prototype.SetValue = function (value) {
+      $(this.Textbox).val(value);
+      window.RTE_TransferTextAreaContentsToIFrame(this.Textbox.id);
+      updateReadOnlyLabel(this);
+      return this;
+   };
+   
+   /*
+	 *	SPEnhancedNoteField class
+	 *	Supports multi-line, enhanced rich text fields in SharePoint 2010/2013 (SPFieldNote)
+	 */
+   function SPEnhancedNoteField(fieldParams, hiddenInputs) {
+      SPField.call(this, fieldParams);
+      this.Textbox = hiddenInputs[0];
+      this.ContentDiv = $(this.Controls).find('div[contenteditable="true"]')[0];
+      this.TextType = "Enhanced";
+   }
+   
+   // Inherit from SPField
+   SPEnhancedNoteField.prototype = Object.create(SPField.prototype);
+   
+   SPEnhancedNoteField.prototype.GetValue = function () {
+      return $(this.ContentDiv).html();
+   };
+
+   SPEnhancedNoteField.prototype.SetValue = function (value) {
+      $(this.ContentDiv).html(value);
+      $(this.Textbox).val(value);
+      updateReadOnlyLabel(this);
+      return this;
+   };
+
    
    /*
 	 *	SPUserField class

@@ -445,6 +445,31 @@
       strictEqual(actual, expected);
    });
    
+   module("SPFieldNote (multi-line, plain text)", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Multi-line Plain Text');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(2);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldNote");
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(2);
+
+      var expected = 'Hello world!';
+      this.field.SetValue(expected);
+      
+      // make sure the select was set correctly
+      equal($('#ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl01_ctl00_ctl00_ctl04_ctl00_ctl00_TextField').val(), expected);
+      
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
+   });
+   
    
    module("SPUserField", {
       setup: function() {
