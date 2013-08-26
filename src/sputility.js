@@ -1,17 +1,3 @@
-/*
-   Name: SPUtility.js
-   Version: 0.8.2
-   Description: 
-      A JavaScript library that is used to alter SharePoint's user interface
-      (mostly NewForm and EditForm). It can be used to populate fields, make
-      fields read only, or hide a field from view.
-   Author: Kit Menke
-   http://SPUtility.codeplex.com/
-   http://SPUtility.codeplex.com/
-   License: Microsoft Public License (see http://sputility.codeplex.com/license)
-   Changelog: http://sputility.codeplex.com/wikipage?title=Changelog
-*/
-
 if (!Object.create) {
    Object.create = function (o) {
       if (arguments.length > 1) {
