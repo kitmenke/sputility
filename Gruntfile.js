@@ -6,11 +6,15 @@ module.exports = function(grunt) {
   grunt.initConfig({
     // Metadata.
     pkg: grunt.file.readJSON('sputility.jquery.json'),
-    banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-      '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-      '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-      '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-      ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
+    banner: '/*\n' +
+      '   Name: <%= pkg.title || pkg.name %>\n' +
+      '   Version: <%= pkg.version %>\n' + 
+      '   Built: <%= grunt.template.today("yyyy-mm-dd") %>\n' +
+      '   Author: <%= pkg.author.name %>\n' +
+      '   <%= pkg.homepage %>\n' +
+      '   Copyright (c) <%= grunt.template.today("yyyy") %>\n' +
+      '   License: <%= _.pluck(pkg.licenses, "type").join(", ") %>\n' +
+      '*/\n',
     // Task configuration.
     clean: {
       files: ['dist']
@@ -18,7 +22,7 @@ module.exports = function(grunt) {
     concat: {
       options: {
         banner: '<%= banner %>',
-        stripBanners: true
+        stripBanners: false
       },
       dist: {
         src: ['src/<%= pkg.name %>.js'],

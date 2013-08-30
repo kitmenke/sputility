@@ -1,6 +1,12 @@
-/*! SPUtility.js - v0.1.0 - 2013-08-25
-* https://github.com/kitmenke/sputility
-* Copyright (c) 2013 Kit Menke; Licensed MIT */
+/*
+   Name: SPUtility.js
+   Version: 0.8.3 RC2
+   Built: 2013-08-29
+   Author: Kit Menke
+   https://sputility.codeplex.com/
+   Copyright (c) 2013
+   License: Microsoft Public License (MS-PL)
+*/
 if (!Object.create) {
    Object.create = function (o) {
       if (arguments.length > 1) {
