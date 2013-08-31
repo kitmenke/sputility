@@ -202,10 +202,9 @@ if (!Object.create) {
             throw "Unknown type of SPFieldNote.";
          }
          break;
-      /*
       case 'SPFieldFile':
          field = new SPFileField(spFieldParams);
-         break;
+         break;/*
       case 'SPFieldLookupMulti':
          field = new SPLookupMultiField(spFieldParams);
          break;*/
@@ -1096,7 +1095,26 @@ if (!Object.create) {
       updateReadOnlyLabel(this);
       return this;
    };
+   
+   /*
+	 *	SPFileField class
+	 *	Supports the name field of a Document Library
+	 */
+   function SPFileField(fieldParams) {
+      SPTextField.call(this, fieldParams);
+      this.FileExtension = $(this.Textbox).parent().text();
+   }
+   
+   // Inherit from SPField
+   SPFileField.prototype = Object.create(SPTextField.prototype);
 
+   /*
+    *	SPFileField Public Methods
+    *	Overrides SPTextField class methods.
+    */
+   SPFileField.prototype.GetValue = function () {
+      return $(this.Textbox).val() + this.FileExtension;
+   };
    
    /*
 	 *	SPUserField class
