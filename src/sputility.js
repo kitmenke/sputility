@@ -622,7 +622,7 @@ if (!Object.create) {
       });
 
       if (this.FillInAllowed && value === null && this.FillInElement.checked === true) {
-         value = this.FillInTextbox.val();
+         value = $(this.FillInTextbox).val();
       }
 
       return value;
@@ -637,7 +637,7 @@ if (!Object.create) {
       if (null === radioButton) {
          if (this.FillInAllowed) {
             radioButton = this.FillInElement;
-            this.FillInTextbox.setValue(value);
+            $(this.FillInTextbox).val(value);
             radioButton.checked = true;
          } else {
             throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
