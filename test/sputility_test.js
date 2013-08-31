@@ -164,7 +164,41 @@
       expect(1);
       
       throws(function(){
-         // try setting the dropdown to garbage
+         this.field.SetValue("foo bar");
+      });
+   });
+   
+   module("SPFieldChoice - Radio buttons", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Radio Buttons');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(3);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
+      strictEqual(
+              this.field.RadioButtons.length,
+              5,
+              "RadioButtons property is not set or is set to the wrong to the wrong DOM object.");
+   });
+
+   test("SetValue() and GetValue()", function() {
+      expect(1);
+
+      var expected = "Charlie";
+      this.field.SetValue(expected);
+
+      strictEqual(this.field.GetValue(),
+              expected,
+              "SetValue() failed to set Radio button.");
+   });
+   
+   test("Try setting the field to garbage (throws an exception)", function() {
+      expect(1);
+      
+      throws(function(){
          this.field.SetValue("foo bar");
       });
    });
@@ -223,7 +257,7 @@
    });
 
    test("SetValue() and GetValue()", function() {
-      expect(2);
+      expect(1);
 
       var expected = ["Alpha", "Charlie"];
       this.field.SetValue("Alpha", true);
@@ -232,15 +266,15 @@
       deepEqual(this.field.GetValue(),
               expected,
               "SetValue() failed to set the checkbox.");
-
-      // pass a garbage value
-      this.field.SetValue("foo bar");
-      deepEqual(this.field.GetValue(),
-              expected,
-              "Passing garbage to SetValue() changed the value.");
    });
-
-
+   
+   test("Try setting the field to garbage (throws an exception)", function() {
+      expect(1);
+      
+      throws(function(){
+         this.field.SetValue("foo bar");
+      });
+   });
 
    module("SPFieldChoice - Checkboxes with Fill-in", {
       setup: function() {

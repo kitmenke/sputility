@@ -1,12 +1,13 @@
 /*
    Name: SPUtility.js
    Version: 0.8.3 RC2
-   Built: 2013-08-29
+   Built: 2013-08-31
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2013
    License: Microsoft Public License (MS-PL)
 */
+// Object.create shim for class inheritance
 if (!Object.create) {
    Object.create = function (o) {
       if (arguments.length > 1) {
@@ -18,9 +19,8 @@ if (!Object.create) {
    };
 }
 
-/*
- *   SPUtility namespace
- */
+// modularize SPUtility so only one global object is exported to window
+// dollar sign needs to be jQuery
 (function (window, $) {
    "use strict";
    
@@ -109,6 +109,17 @@ if (!Object.create) {
       return oHash;
    }
    
+   function getHashValue(hash, key) {
+      var val = null;
+      $(hash).each(function (index, pair) {
+         if (pair.key === key) {
+            val = pair.value;
+            return false;
+         }
+      });
+      return val;
+   }
+   
    function getSPFieldType(element) {
       var matches, comment, n;
       try {
@@ -143,7 +154,13 @@ if (!Object.create) {
          field = new SPCurrencyField(spFieldParams);
          break;
       case 'SPFieldChoice':
-         field = new SPDropdownChoiceField(spFieldParams);
+         // is this a normal dropdown field?
+         controls = $(spFieldParams.controlsCell).find('select');
+         if (controls.length > 0) {
+            field = new SPDropdownChoiceField(spFieldParams, controls);
+         } else {
+            field = new SPRadioChoiceField(spFieldParams);
+         }
          break;
       case 'SPFieldMultiChoice':
          field = new SPCheckboxChoiceField(spFieldParams);
@@ -543,16 +560,16 @@ if (!Object.create) {
 
    /*
     *   SPChoiceField class
-    *   Supports single select choice fields that show as either a dropdown or radio buttons
+    *   Supports single select choice fields that show as a dropdown
     */
-   function SPDropdownChoiceField(fieldParams) {
+   function SPDropdownChoiceField(fieldParams, dropdown) {
       SPChoiceField.call(this, fieldParams);
 
       if (this.Controls === null) {
          return;
       }
 
-      this.Dropdown = $(this.Controls).find('select');
+      this.Dropdown = dropdown;
       this.Dropdown = this.Dropdown.length === 1 ? this.Dropdown[0] : [];
    }
 
@@ -584,6 +601,62 @@ if (!Object.create) {
       updateReadOnlyLabel(this);
       return this;
    };
+   
+   /*
+    *   SPChoiceField class
+    *   Supports single select choice fields that show as radio buttons
+    */
+   function SPRadioChoiceField(fieldParams) {
+      SPChoiceField.call(this, fieldParams);
+
+      if (this.Controls === null) {
+         return;
+      }
+
+      this.RadioButtons = getHashFromInputControls(this, 'input[type="radio"]');
+   }
+
+   // Inherit from SPChoiceField
+   SPRadioChoiceField.prototype = Object.create(SPChoiceField.prototype);
+
+   SPRadioChoiceField.prototype.GetValue = function () {
+      var value = null;
+      // find the radio button we need to get in our hashtable
+      $(this.RadioButtons).each(function (index, pair) {
+         var radioButton = pair.value;
+         if (radioButton.checked) {
+            value = pair.key;
+            return false;
+         }
+      });
+
+      if (this.FillInAllowed && value === null && this.FillInElement.checked === true) {
+         value = this.FillInTextbox.val();
+      }
+
+      return value;
+   };
+
+   SPRadioChoiceField.prototype.SetValue = function (value) {
+      // find the radio button we need to set in our hashtable
+      var radioButton = getHashValue(this.RadioButtons, value);
+
+      // if couldn't find the element in the hashtable and fill-in
+      // is allowed, assume they want to set the fill-in value
+      if (null === radioButton) {
+         if (this.FillInAllowed) {
+            radioButton = this.FillInElement;
+            this.FillInTextbox.setValue(value);
+            radioButton.checked = true;
+         } else {
+            throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
+         }
+      } else {
+         radioButton.checked = true;
+      }
+      updateReadOnlyLabel(this);
+      return this;
+   };
 
    function SPCheckboxChoiceField(fieldParams) {
       SPChoiceField.call(this, fieldParams);
@@ -599,7 +672,6 @@ if (!Object.create) {
       if (this.FillInAllowed) {
          this.FillInElement = this.Checkboxes.pop().value;
       }
-      
    }
 
    // Inherit from SPChoiceField
@@ -609,7 +681,7 @@ if (!Object.create) {
       var values = [];
       $(this.Checkboxes).each(function (index, pair) {
          var checkbox = pair.value;
-         if (checkbox.checked === true) {
+         if (checkbox.checked) {
             values.push(pair.key);
          }
       });
@@ -622,26 +694,21 @@ if (!Object.create) {
    };
 
    SPCheckboxChoiceField.prototype.SetValue = function (value, isChecked) {
-      // find the radio button we need to set in our hashtable
-      var checkbox = null;
+      var checkbox = getHashValue(this.Checkboxes, value);
       isChecked = isUndefined(isChecked) ? true : isChecked;
-
-      $(this.Checkboxes).each(function (index, pair) {
-         if (pair.key === value) {
-            checkbox = pair.value;
-            return false;
-         }
-      });
       
       // if couldn't find the element in the hashtable
       // and fill-in is allowed, assume they meant the fill-in value
-      if (null === checkbox && this.FillInAllowed) {
-         checkbox = this.FillInElement;
-         $(this.FillInTextbox).val(value);
-      }
-      
-      if (null !== checkbox) {                  
-         checkbox.checked = isChecked;
+      if (null === checkbox) {
+         if (this.FillInAllowed) {
+            checkbox = this.FillInElement;
+            $(this.FillInTextbox).val(value);
+            checkbox.checked = true;
+         } else {
+            throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
+         }
+      } else {
+         checkbox.checked = true;
       }
       updateReadOnlyLabel(this);
       return this;
