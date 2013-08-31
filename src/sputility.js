@@ -1000,6 +1000,10 @@ if (!Object.create) {
       }
       c.push(choices[choices.length - 1]);
       
+      // since the pipe character is used as a delimiter above, any values
+      // which have a pipe in them were doubled up
+      value = value.replace("|", "||");
+      
       // options are stored in a choices attribute in the following format:
       // text|value|text 2|value2
       for (i = 0; i < c.length; i += 2) {
