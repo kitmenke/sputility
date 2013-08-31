@@ -211,10 +211,9 @@ if (!Object.create) {
             throw "Unknown type of SPFieldNote.";
          }
          break;
-      /*
       case 'SPFieldFile':
          field = new SPFileField(spFieldParams);
-         break;
+         break;/*
       case 'SPFieldLookupMulti':
          field = new SPLookupMultiField(spFieldParams);
          break;*/
@@ -631,7 +630,7 @@ if (!Object.create) {
       });
 
       if (this.FillInAllowed && value === null && this.FillInElement.checked === true) {
-         value = this.FillInTextbox.val();
+         value = $(this.FillInTextbox).val();
       }
 
       return value;
@@ -646,7 +645,7 @@ if (!Object.create) {
       if (null === radioButton) {
          if (this.FillInAllowed) {
             radioButton = this.FillInElement;
-            this.FillInTextbox.setValue(value);
+            $(this.FillInTextbox).val(value);
             radioButton.checked = true;
          } else {
             throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
@@ -1009,6 +1008,10 @@ if (!Object.create) {
       }
       c.push(choices[choices.length - 1]);
       
+      // since the pipe character is used as a delimiter above, any values
+      // which have a pipe in them were doubled up
+      value = value.replace("|", "||");
+      
       // options are stored in a choices attribute in the following format:
       // text|value|text 2|value2
       for (i = 0; i < c.length; i += 2) {
@@ -1101,7 +1104,26 @@ if (!Object.create) {
       updateReadOnlyLabel(this);
       return this;
    };
+   
+   /*
+	 *	SPFileField class
+	 *	Supports the name field of a Document Library
+	 */
+   function SPFileField(fieldParams) {
+      SPTextField.call(this, fieldParams);
+      this.FileExtension = $(this.Textbox).parent().text();
+   }
+   
+   // Inherit from SPField
+   SPFileField.prototype = Object.create(SPTextField.prototype);
 
+   /*
+    *	SPFileField Public Methods
+    *	Overrides SPTextField class methods.
+    */
+   SPFileField.prototype.GetValue = function () {
+      return $(this.Textbox).val() + this.FileExtension;
+   };
    
    /*
 	 *	SPUserField class
