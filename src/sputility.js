@@ -524,12 +524,14 @@ if (!Object.create) {
       if (this.Controls === null) {
          return;
       }
-
-      this.FillInTextbox = $(this.Controls).find('input[type="text"]');
-      if (this.FillInTextbox.length === 1) {
-         this.FillInTextbox = this.FillInTextbox[0];
+      
+      var controls = $(this.Controls).find('input'), numControls = controls.length;
+      if (numControls > 1 && controls[numControls - 1].type === "text") {
+         // fill-in textbox is always the last input control
+         this.FillInTextbox = controls[numControls - 1];
+         // fill-in element (radio or checkbox) is always second to last
+         this.FillInElement = controls[numControls - 2];
          this.FillInAllowed = true;
-         this.FillInElement = $(this.Controls).find('input[value="FillInButton"]')[0];
       } else {
          this.FillInAllowed = false;
          this.FillInTextbox = null;
@@ -541,11 +543,12 @@ if (!Object.create) {
    SPChoiceField.prototype = Object.create(SPField.prototype);
 
    SPChoiceField.prototype._getFillInValue = function () {
-      return this.FillInTextbox.val();
+      return $(this.FillInTextbox).val();
    };
 
    SPChoiceField.prototype._setFillInValue = function (value) {
-      this.FillInTextbox.val(value);
+      this.FillInElement.checked = true;
+      $(this.FillInTextbox).val(value);
    };
 
    /*
@@ -568,7 +571,7 @@ if (!Object.create) {
 
    SPDropdownChoiceField.prototype.GetValue = function () {
       if (this.FillInAllowed && this.FillInElement.checked === true) {
-         return $(this.FillInTextbox).val();
+         return this._getFillInValue();
       }
       return $(this.Dropdown).val();
    };
@@ -580,8 +583,7 @@ if (!Object.create) {
             $(this.Dropdown).val(value);
             this.FillInElement.checked = false;
          } else {
-            this.FillInElement.checked = true;
-            $(this.FillInTextbox).val(value);
+            this._setFillInValue(value);
          }
       } else if (found) {
          $(this.Dropdown).val(value);
@@ -604,6 +606,10 @@ if (!Object.create) {
       }
 
       this.RadioButtons = getHashFromInputControls(this, 'input[type="radio"]');
+      if (this.FillInAllowed) {
+         // remove the last radio button, which is to select fill-in value
+         this.RadioButtons.pop();
+      }
    }
 
    // Inherit from SPChoiceField
@@ -635,9 +641,7 @@ if (!Object.create) {
       // is allowed, assume they want to set the fill-in value
       if (null === radioButton) {
          if (this.FillInAllowed) {
-            radioButton = this.FillInElement;
-            $(this.FillInTextbox).val(value);
-            radioButton.checked = true;
+            this._setFillInValue(value);
          } else {
             throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
          }

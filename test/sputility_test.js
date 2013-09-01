@@ -168,41 +168,6 @@
       });
    });
    
-   module("SPFieldChoice - Radio buttons", {
-      setup: function() {
-         this.field = SPUtility.GetSPField('Radio Buttons');
-      }
-   });
-
-   test('GetSPField()', function() {
-      expect(3);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
-      strictEqual(
-              this.field.RadioButtons.length,
-              5,
-              "RadioButtons property is not set or is set to the wrong to the wrong DOM object.");
-   });
-
-   test("SetValue() and GetValue()", function() {
-      expect(1);
-
-      var expected = "Charlie";
-      this.field.SetValue(expected);
-
-      strictEqual(this.field.GetValue(),
-              expected,
-              "SetValue() failed to set Radio button.");
-   });
-   
-   test("Try setting the field to garbage (throws an exception)", function() {
-      expect(1);
-      
-      throws(function(){
-         this.field.SetValue("foo bar");
-      });
-   });
-
    module("SPFieldChoice Dropdown (with fill in)", {
       setup: function() {
          this.dropdownId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_DropDownChoice';
@@ -238,6 +203,81 @@
       strictEqual(this.field.GetValue(),
               expected,
               "SetValue() failed to set fill in value.");
+   });
+   
+   module("SPFieldChoice - Radio buttons", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Radio Buttons');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(3);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
+      strictEqual(
+              this.field.RadioButtons.length,
+              5,
+              "RadioButtons property is not set or is set to the wrong to the wrong DOM object.");
+   });
+
+   test("SetValue() and GetValue()", function() {
+      expect(1);
+
+      var expected = "Charlie";
+      this.field.SetValue(expected);
+
+      strictEqual(this.field.GetValue(),
+              expected,
+              "SetValue() failed to set Radio button.");
+   });
+   
+   test("Try setting the field to garbage (throws an exception)", function() {
+      expect(1);
+      
+      throws(function(){
+         this.field.SetValue("foo bar");
+      });
+   });
+   
+   module("SPFieldChoice - Radio buttons with fill-in", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Radio Buttons with Fill-in');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(3);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
+      strictEqual(
+              this.field.RadioButtons.length,
+              3,
+              "RadioButtons property is not set or is set to the wrong to the wrong DOM object.");
+   });
+
+   test("SetValue() and GetValue()", function() {
+      expect(1);
+
+      var expected = "Charlie";
+      this.field.SetValue(expected);
+
+      strictEqual(this.field.GetValue(),
+              expected,
+              "SetValue() failed to set Radio button.");
+   });
+   
+   test("Set the fill-in value", function() {
+      expect(2);
+      
+      var expected = "foo bar";
+      this.field.SetValue(expected);
+      strictEqual(this.field.GetValue(),
+              expected,
+              "SetValue() failed to set Radio fill-in choice.");
+      strictEqual($('#ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl04').val(),
+         expected,
+         "Expect the fill-in textbox to be set correctly.");
    });
 
    module("SPFieldChoice - Checkboxes", {
