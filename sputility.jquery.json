@@ -1,7 +1,7 @@
 {
   "name": "sputility",
   "title": "SPUtility.js",
-  "description": "A jquery plugin to modify SharePoint list forms.",
+  "description": "A JavaScript library that is used to alter SharePoint's user interface (mostly NewForm and EditForm).",
   "version": "0.8.3 RC2",
   "homepage": "https://sputility.codeplex.com/",
   "author": {
