@@ -213,10 +213,10 @@ if (!Object.create) {
          break;
       case 'SPFieldFile':
          field = new SPFileField(spFieldParams);
-         break;/*
+         break;
       case 'SPFieldLookupMulti':
          field = new SPLookupMultiField(spFieldParams);
-         break;*/
+         break;
       default:
          field = new SPField(spFieldParams);
          break;
@@ -1114,7 +1114,7 @@ if (!Object.create) {
       this.FileExtension = $(this.Textbox).parent().text();
    }
    
-   // Inherit from SPField
+   // Inherit from SPTextField
    SPFileField.prototype = Object.create(SPTextField.prototype);
 
    /*
@@ -1123,6 +1123,89 @@ if (!Object.create) {
     */
    SPFileField.prototype.GetValue = function () {
       return $(this.Textbox).val() + this.FileExtension;
+   };
+   
+   /*
+	 *	SPLookupMultiField class
+	 *	Supports multi select lookup fields
+	 */
+   function SPLookupMultiField(fieldParams) {
+      SPField.call(this, fieldParams);
+      if (this.Controls === null) {
+         return;
+      }
+
+      var controls = $(this.Controls).find('select');
+      if (2 === controls.length) {
+         // multi-select lookup
+         this.ListChoices = controls[0];
+         this.ListSelections = controls[1];
+         controls = $(this.Controls).find('button');
+         this.ButtonAdd = controls[0];
+         this.ButtonRemove = controls[1];
+      } else {
+         throw "Error initializing SPLookupMultiField named " + this.Name + ", unable to get select controls.";
+      }
+   }
+   
+   // Inherit from SPField
+   SPLookupMultiField.prototype = Object.create(SPField.prototype);
+   
+   SPLookupMultiField.prototype.GetValue = function () {
+      var values = [], i, numOptions;
+
+      numOptions = this.ListSelections.options.length;
+      for (i = 0; i < numOptions; i += 1) {
+         values.push(this.ListSelections.options[i].text);
+      }
+
+      return values;
+   };
+
+   // display as semicolon delimited list
+   SPLookupMultiField.prototype.MakeReadOnly = function () {
+      return makeReadOnly(this, arrayToSemicolonList(this.GetValue()));
+   };
+
+   SPLookupMultiField.prototype.SetValue = function (value, addValue) {
+      if (isUndefined(addValue)) {
+         addValue = true;
+      }
+
+      var i, option, options, numOptions, funcAction, prop;
+
+      if (addValue) {
+         options = this.ListChoices.options;
+         funcAction = this.ButtonAdd.onclick;
+      } else {
+         options = this.ListSelections.options;
+         funcAction = this.ButtonRemove.onclick;
+      }
+
+      numOptions = options.length;
+
+      // select the value
+      if (isNumber(value)) {
+         value = value.toString();
+         prop = "value";
+      } else {
+         prop = "text";
+      }
+      
+      for (i = 0; i < numOptions; i += 1) {
+         option = options[i];
+
+         if (option[prop] === value) {
+            option.selected = true;
+         } else {
+            option.selected = false;
+         }
+      }
+
+      funcAction(); // add or remove the value
+
+      updateReadOnlyLabel(this);
+      return this;
    };
    
    /*

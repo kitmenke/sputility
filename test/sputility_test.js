@@ -504,6 +504,22 @@
       strictEqual(actual, expected);
    });
    
+   module("SPLookupMultiField", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Multi-Priority Lookup Field');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(6);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldLookupMulti", "Expected type is SPFieldLookupMulti");
+      ok(this.field.ListChoices, "Expected to have a property named ListChoices");
+      ok(this.field.ListSelections, "Expected to have a property named ListSelections");
+      ok(this.field.ButtonAdd, "Expected to have a property named ButtonAdd");
+      ok(this.field.ButtonRemove, "Expected to have a property named ButtonRemove");
+   });
+   
    
    module("SPUserField", {
       setup: function() {
