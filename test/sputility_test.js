@@ -392,11 +392,23 @@
       strictEqual(this.field.Type, "SPFieldDateTime", "Wrong type: " + this.field.Type);
    });
 
-   test("SetValue() takes one string parameter", function() {
+   test("SetValue() takes year, month, day, hour (str), and minute (str) parameters", function() {
       expect(1);
 
       var expected = "08/15/2013 8:30AM";
       this.field.SetValue(2013, 8, 15, '8 AM', '30');
+
+      var actual = this.field.GetValue();
+      equal(actual.toString(),
+              expected,
+              "SetValue() didn't set the date textbox.");
+   });
+   
+   test("SetValue() takes year, month, day, hour (integer), and minute (str) parameters", function() {
+      expect(1);
+
+      var expected = "08/15/2013 8:30AM";
+      this.field.SetValue(2013, 8, 15, 8, '30');
 
       var actual = this.field.GetValue();
       equal(actual.toString(),

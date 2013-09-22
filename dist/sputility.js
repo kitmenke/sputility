@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
-   Version: 0.8.3 RC2
-   Built: 2013-08-31
+   Version: 0.8.4
+   Built: 2013-09-22
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2013
@@ -721,21 +721,34 @@ if (!Object.create) {
 	 *	SPDateTimeFieldValue class
 	 *	Used to set/get values for SPDateTimeField fields
 	 */
-   function SPDateTimeFieldValue(year, month, day, strHour, strMinute) {
+   function SPDateTimeFieldValue(year, month, day, hour, strMinute) {
       this.Year = year;
       this.Month = month;
       this.Day = day;
-      this.Hour = strHour;
-      this.Minute = strMinute;
-      this.IsTimeIncluded = !isUndefined(this.Hour) && !isUndefined(this.Minute);
+      this.IsTimeIncluded = !isUndefined(hour) && !isUndefined(strMinute);
+      
+      this.Hour = null;
+      this.Minute = null;
 
       if (this.IsTimeIncluded) {
-         if (!this.IsValidHour(this.Hour)) {
-            throw 'Hour parameter is not in the correct format. Needs to be formatted like "1 PM" or "12 AM".';
+         if (isNumber(hour)) {
+            if (hour < 0 || hour > 23) {
+               throw 'Hour number parameter must be between 0 and 23.';
+            }
+            this.Hour = this.ConvertHourToString(hour);
+            this.HourInt = hour;
+         } else if (isString(hour)) {
+            if (!this.IsValidHour(hour)) {
+               throw 'Hour string parameter must be formatted like "1 PM" or "12 AM".';
+            }
+            this.Hour = hour;
+            this.HourInt = this.ConvertHourToNumber(hour);
          }
-         if (!this.IsValidMinute(this.Minute)) {
+         
+         if (!this.IsValidMinute(strMinute)) {
             throw 'Minute parameter is not in the correct format. Needs to be formatted like "00", "05" or "35".';
          }
+         this.Minute = strMinute;
       }
    }
 		
@@ -753,6 +766,32 @@ if (!Object.create) {
 
    SPDateTimeFieldValue.prototype.IsValidMinute = function (m) {
       return !isUndefined(m) && (/^([0-5](0|5))$/).test(m);
+   };
+   
+   SPDateTimeFieldValue.prototype.ConvertHourToString = function (num) {
+      var hour;
+      if (num === 0) {
+         hour = '12 AM';
+      } else if (num > 12) {
+         hour = (num - 12).toString() + ' PM';
+      } else {
+         hour = num.toString() + ' AM';
+      }
+      return hour;
+   };
+   
+   SPDateTimeFieldValue.prototype.ConvertHourToNumber = function (str) {
+      var hour;
+      str = str.split(' ');
+      hour = getInteger(str[0]);
+      if (str[1] === 'AM') {
+         if (hour === 12) {
+            hour = 0;
+         }
+      } else if (str[1] === 'PM') {
+         hour += 12;
+      }
+      return hour;
    };
 
    // returns the part of a date as a string and pads with a 0 if necessary
@@ -799,6 +838,7 @@ if (!Object.create) {
       this.HourDropdown = null;
       this.MinuteDropdown = null;
       this.IsDateOnly = true;
+      this.HourValueFormat = null;
 
       if (this.Controls === null) {
          return;
@@ -807,6 +847,11 @@ if (!Object.create) {
       var timeControls = $(this.Controls).find('select');
       if (null !== timeControls && 2 === timeControls.length) {
          this.HourDropdown = $(timeControls[0]);
+         if (this.HourDropdown.val().indexOf(' ') > -1) {
+            this.HourValueFormat = 'string';
+         } else {
+            this.HourValueFormat = 'number';
+         }
          this.MinuteDropdown = $(timeControls[1]);
          this.IsDateOnly = false;
       }
@@ -816,29 +861,39 @@ if (!Object.create) {
    SPDateTimeField.prototype = Object.create(SPField.prototype);
 
    SPDateTimeField.prototype.GetValue = function () {
-      var strHour, strMinute, arrShortDate,
+      var hour, strMinute, arrShortDate,
          strShortDate = this.DateTextbox.val();
 
       if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
-         strHour = this.HourDropdown.val();
+         hour = this.HourDropdown.val();
+         if (this.HourValueFormat === 'number') {
+            hour = getInteger(hour);
+         }
          strMinute = this.MinuteDropdown.val();
       }
 
       arrShortDate = strShortDate.split('/');
 
       if (arrShortDate.length === 3) {
-         return new SPDateTimeFieldValue(arrShortDate[2], arrShortDate[0], arrShortDate[1], strHour, strMinute);
+         return new SPDateTimeFieldValue(arrShortDate[2], arrShortDate[0], arrShortDate[1], hour, strMinute);
       }
 
       // empty or invalid date
       return '';
    };
 		
-   SPDateTimeField.prototype.SetValue = function (year, month, day, strHour, strMinute) {
-      var value = new SPDateTimeFieldValue(year, month, day, strHour, strMinute);
+   SPDateTimeField.prototype.SetValue = function (year, month, day, hour, strMinute) {
+      var value = new SPDateTimeFieldValue(year, month, day, hour, strMinute);
       this.DateTextbox.val(value.GetShortDateString());
       if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
-         this.HourDropdown.val(value.Hour);
+         // is the hour dropdown values in string or number format
+         // ex: 12 AM versus 0, 1 AM versus 1, etc.
+         if (this.HourValueFormat === 'string') {
+            this.HourDropdown.val(value.Hour);
+         } else {
+            this.HourDropdown.val(value.HourInt);
+         }
+         
          this.MinuteDropdown.val(value.Minute);
       }
       updateReadOnlyLabel(this);

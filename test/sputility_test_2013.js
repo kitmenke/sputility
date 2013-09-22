@@ -1,23 +1,6 @@
 (function($) {
    /*
-    ======== A Handy Little QUnit Reference ========
-    http://api.qunitjs.com/
-    
-    Test methods:
-    module(name, {[setup][ ,teardown]})
-    test(name, callback)
-    expect(numberOfAssertions)
-    stop(increment)
-    start(decrement)
-    Test assertions:
-    ok(value, [message])
-    equal(actual, expected, [message])
-    notEqual(actual, expected, [message])
-    deepEqual(actual, expected, [message])
-    notDeepEqual(actual, expected, [message])
-    strictEqual(actual, expected, [message])
-    notStrictEqual(actual, expected, [message])
-    throws(block, [expected], [message])
+    * For testing integration with SharePoint 2013
     */
 
    module("Main");
@@ -39,7 +22,7 @@
 
    module("SPTextField", {
       setup: function() {
-         this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl00_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
+         this.textboxId = 'Title_fa564e0f-0c70-4ab9-b863-0177e6ddd247_$TextField';
          this.field = SPUtility.GetSPField('Title');
       }
    });
@@ -78,7 +61,7 @@
 
    module("SPNumberField", {
       setup: function() {
-         this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
+         this.textboxId = 'Number_4010b3fc-1225-4f57-a2f5-64f4aa176617_$NumberField';
          this.field = SPUtility.GetSPField('Number');
       }
    });
@@ -106,7 +89,7 @@
 
    module("SPCurrencyField", {
       setup: function() {
-         this.textboxId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl09_ctl00_ctl00_ctl04_ctl00_ctl00_TextField';
+         this.textboxId = 'Currency_e09d0410-2dee-4218-9829-ae4a97f5cbaa_$CurrencyField';
          this.field = SPUtility.GetSPField('Currency');
       }
    });
@@ -134,7 +117,7 @@
 
    module("SPFieldChoice - Dropdown", {
       setup: function() {
-         this.dropdownId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl04_ctl00_ctl00_ctl04_ctl00_DropDownChoice';
+         this.dropdownId = 'Dropdown_x0020_Choice_23d12dec-bc26-4ae1-91aa-df5059fb2bbf_$DropDownChoice';
          this.field = SPUtility.GetSPField('Dropdown Choice');
       }
    });
@@ -170,7 +153,7 @@
    
    module("SPFieldChoice Dropdown (with fill in)", {
       setup: function() {
-         this.dropdownId = 'ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_DropDownChoice';
+         this.dropdownId = 'Dropdown_x0020_Choice_x0020_with_3463524b-46aa-4421-949b-e1559a0d9884_$DropDownChoice';
          this.field = SPUtility.GetSPField('Dropdown Choice with Fill-in');
       }
    });
@@ -275,7 +258,7 @@
       strictEqual(this.field.GetValue(),
               expected,
               "SetValue() failed to set Radio fill-in choice.");
-      strictEqual($('#ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl04').val(),
+      strictEqual($(this.field.FillInTextbox).val(),
          expected,
          "Expect the fill-in textbox to be set correctly.");
    });
@@ -367,7 +350,7 @@
       strictEqual(this.field.Type, "SPFieldDateTime", "Wrong type: " + this.field.Type);
    });
 
-   test("SetValue() takes one string parameter", function() {
+   test("SetValue() takes individual date parameters", function() {
       expect(1);
 
       var expected = "08/15/2013";
@@ -392,11 +375,23 @@
       strictEqual(this.field.Type, "SPFieldDateTime", "Wrong type: " + this.field.Type);
    });
 
-   test("SetValue() takes one string parameter", function() {
+   test("SetValue() takes year, month, day, hour (str), and minute (str) parameters", function() {
       expect(1);
 
       var expected = "08/15/2013 8:30AM";
       this.field.SetValue(2013, 8, 15, '8 AM', '30');
+
+      var actual = this.field.GetValue();
+      equal(actual.toString(),
+              expected,
+              "SetValue() didn't set the date textbox.");
+   });
+   
+   test("SetValue() takes year, month, day, hour (integer), and minute (str) parameters", function() {
+      expect(1);
+
+      var expected = "08/15/2013 8:30AM";
+      this.field.SetValue(2013, 8, 15, 8, '30');
 
       var actual = this.field.GetValue();
       equal(actual.toString(),
@@ -413,7 +408,7 @@
       var actual = this.field.GetValue();
       equal(actual,
             expected,
-            "SetValue() didn't set the date textbox.");
+            "Validate SetValue() can clear out the date.");
    });
    
    
@@ -460,8 +455,8 @@
       this.field.SetValue(expected[0], expected[1]);
       
       // make sure both textboxes were set correctly
-      equal($('#Hyperlink_2ef372e5-47ae-4d20-89dd-5a43e5428ae6_UrlFieldUrl').val(), expected[0]);
-      equal($('#Hyperlink_2ef372e5-47ae-4d20-89dd-5a43e5428ae6_UrlFieldDescription').val(), expected[1]);
+      equal(this.field.TextboxURL.val(), expected[0], 'Test the url textbox is set correctly.');
+      equal(this.field.TextboxDescription.val(), expected[1], 'Test the description textbox is set correctly.');
       
       // Gets the value of the hyperlink field as an array
       var actual = this.field.GetValue();
