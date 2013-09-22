@@ -2,7 +2,7 @@
   "name": "sputility",
   "title": "SPUtility.js",
   "description": "A JavaScript library that is used to alter SharePoint's user interface (mostly NewForm and EditForm).",
-  "version": "0.8.3 RC2",
+  "version": "0.8.4",
   "homepage": "https://sputility.codeplex.com/",
   "author": {
     "name": "Kit Menke",
