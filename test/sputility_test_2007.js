@@ -213,13 +213,16 @@
    });
 
    test('GetSPField()', function() {
-      expect(3);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
+      expect(5);
+      ok(this.field, "Object is returned");
+      strictEqual(this.field.Type, "SPFieldChoice", "Type is SPFieldChoice");
+      
+      ok(this.field.RadioButtons, "RadioButtons property is set");
+      strictEqual(this.field.FillInAllowed, true, "FillInAllowed property is true.");
       strictEqual(
               this.field.RadioButtons.length,
               5,
-              "RadioButtons property is not set or is set to the wrong to the wrong DOM object.");
+              "RadioButtons property has 5 elements.");
    });
 
    test("SetValue() and GetValue()", function() {
@@ -253,13 +256,16 @@
    });
 
    test('GetSPField()', function() {
-      expect(3);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldMultiChoice", "Wrong type: " + this.field.Type);
+      expect(5);
+      ok(this.field, "Object is returned");
+      strictEqual(this.field.Type, "SPFieldMultiChoice", "Type is SPFieldMultiChoice");
+      
+      ok(this.field.Checkboxes, "Checkboxes property is set");
+      strictEqual(this.field.FillInAllowed, false, "FillInAllowed property is false.");
       strictEqual(
               this.field.Checkboxes.length,
               5,
-              "There are not 5 checkboxes.");
+              "Checkboxes property has 5 elements.");
    });
 
    test("SetValue() and GetValue()", function() {
@@ -290,14 +296,15 @@
 
    test('GetSPField()', function() {
       expect(5);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      notStrictEqual(this.field.FillInElement, null, "Fill in element should have an element.");
-      strictEqual(this.field.FillInAllowed, true, "Fill in should be allowed.");
-      strictEqual(this.field.Type, "SPFieldMultiChoice", "Wrong type: " + this.field.Type);
+      ok(this.field, "Object is returned");
+      strictEqual(this.field.Type, "SPFieldMultiChoice", "Type is SPFieldMultiChoice");
+      
+      ok(this.field.Checkboxes, "Checkboxes property is set");
+      strictEqual(this.field.FillInAllowed, true, "FillInAllowed property is true.");
       strictEqual(
               this.field.Checkboxes.length,
               5,
-              "There are not 5 checkboxes.");
+              "Checkboxes property has 5 elements.");
    });
 
    test("SetValue() and GetValue()", function() {
@@ -319,8 +326,6 @@
               "Fill-in value should be set now.");
    });
 
-
-
    module("SPFieldDateTime (date only)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Date Only');
@@ -328,21 +333,23 @@
    });
 
    test('GetSPField()', function() {
-      expect(2);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldDateTime", "Wrong type: " + this.field.Type);
+      expect(4);
+      ok(this.field, "Object is returned");
+      strictEqual(this.field.Type, "SPFieldDateTime", "Type is SPFieldDateTime");
+      ok(this.field.DateTextbox, "Field has a date textbox");
+      strictEqual(this.field.IsDateOnly, true, "IsDateOnly is true");
    });
 
    test("SetValue() takes individual date parameters", function() {
       expect(1);
 
-      var expected = "08/15/2013";
+      var expected = "08/15/2013 12:00AM";
       this.field.SetValue(2013, 8, 15);
 
       var actual = this.field.GetValue();
       equal(actual.toString(),
               expected,
-              "SetValue() didn't set the date textbox.");
+              "SetValue sets the value to " + expected);
    });
 
 
@@ -353,9 +360,13 @@
    });
 
    test('GetSPField()', function() {
-      expect(2);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldDateTime", "Wrong type: " + this.field.Type);
+      expect(6);
+      ok(this.field, "Object is returned");
+      strictEqual(this.field.Type, "SPFieldDateTime", "Type is SPFieldDateTime");
+      ok(this.field.DateTextbox, "Field has a date textbox");
+      ok(this.field.HourDropdown, "Field has a hour dropdown");
+      ok(this.field.MinuteDropdown, "Field has a minute dropdown");
+      strictEqual(this.field.IsDateOnly, false, "IsDateOnly is false");
    });
 
    test("SetValue() takes year, month, day, hour (str), and minute (str) parameters", function() {
@@ -367,7 +378,7 @@
       var actual = this.field.GetValue();
       equal(actual.toString(),
               expected,
-              "SetValue() didn't set the date textbox.");
+              "SetValue sets the value to " + expected);
    });
    
    test("SetValue() takes year, month, day, hour (integer), and minute (str) parameters", function() {
@@ -379,19 +390,33 @@
       var actual = this.field.GetValue();
       equal(actual.toString(),
               expected,
-              "SetValue() didn't set the date textbox.");
+              "SetValue sets the value to " + expected);
    });
    
    test("SetValue() takes null or empty string to clear the field", function() {
-      expect(1);
+      expect(8);
 
-      var expected = "";
-      this.field.SetValue(null);
-
+      var expected = "08/15/2013 1:45PM";
+      this.field.SetValue(2013, 8, 15, '1 PM', '45');      
       var actual = this.field.GetValue();
-      equal(actual,
+      strictEqual(actual.toString(),
             expected,
-            "Validate SetValue() can clear out the date.");
+            "SetValue() sets the value to 08/15/2013 1:45PM.");
+      
+      strictEqual(this.field.DateTextbox.value, '08/15/2013', "DateTextbox.value is 08/15/2013");
+      strictEqual(this.field.HourDropdown.selectedIndex, 13, "HourDropdown.selectedIndex is 13");
+      strictEqual(this.field.MinuteDropdown.selectedIndex, 9, "MinuteDropdown.selectedIndex is 9");
+      
+      expected = "";
+      this.field.SetValue(null);
+      actual = this.field.GetValue();
+      strictEqual(actual.toString(),
+            expected,
+            "SetValue() clears out the date.");
+      
+      strictEqual(this.field.DateTextbox.value, '', "DateTextbox.value is empty string");
+      strictEqual(this.field.HourDropdown.selectedIndex, 0, "HourDropdown.selectedIndex is 0");
+      strictEqual(this.field.MinuteDropdown.selectedIndex, 0, "MinuteDropdown.selectedIndex is 0");
    });
    
    
@@ -402,9 +427,10 @@
    });
 
    test('GetSPField()', function() {
-      expect(2);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldBoolean", "Wrong type: " + this.field.Type);
+      expect(3);
+      ok(this.field, "Object is returned");
+      strictEqual(this.field.Type, "SPFieldBoolean", "Type is SPFieldBoolean");
+      ok(this.field.Checkbox, "Checkbox property is set");
    });
 
    test("GetValue() and SetValue()", function() {
@@ -426,9 +452,11 @@
    });
 
    test('GetSPField()', function() {
-      expect(2);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldURL", "Wrong type: " + this.field.Type);
+      expect(4);
+      ok(this.field, "Object is returned");
+      strictEqual(this.field.Type, "SPFieldURL", "Type is SPFieldURL");
+      ok(this.field.TextboxURL, "TextboxURL property is set");
+      ok(this.field.TextboxDescription, "TextboxDescription property is set");
    });
 
    test("GetValue() and SetValue()", function() {
@@ -489,7 +517,10 @@
       expect(3);
       ok(this.field, "Object is returned");
       strictEqual(this.field.Type, "SPFieldLookup", "Type is SPFieldLookup");
-      ok(this.field.Textbox, "Textbox property is set");
+      // in SharePoint 2007, it depends on what browser you are using
+      // for chrome, the field will display in a dropdown
+      // for IE, the autocomplete functionality is used with a textbox
+      ok(this.field.Textbox || this.field.Dropdown, "Textbox or Dropdown property is set");
    });
    
    test("SetValue(string) takes a single string parameter to set by Text", function() {
@@ -529,20 +560,17 @@
    });
 
    test('GetSPField()', function() {
-      expect(2);
+      expect(3);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldNote");
+      ok(this.field.Textbox, "Textbox property is set");
    });
 
-   test("GetValue() and SetValue()", function() {
-      expect(2);
+   test("SetValue(string) takes a single string parameter", function() {
+      expect(1);
 
       var expected = 'Hello world!';
       this.field.SetValue(expected);
-      
-      // make sure the select was set correctly
-      equal($('#ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl01_ctl00_ctl00_ctl04_ctl00_ctl00_TextField').val(), expected);
-      
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
