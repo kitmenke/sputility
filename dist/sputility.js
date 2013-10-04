@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
    Version: 0.8.4
-   Built: 2013-09-22
+   Built: 2013-10-04
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2013
@@ -727,8 +727,9 @@ if (!Object.create) {
       this.Day = day;
       this.IsTimeIncluded = !isUndefined(hour) && !isUndefined(strMinute);
       
-      this.Hour = null;
-      this.Minute = null;
+      this.Hour = '12 AM';
+      this.HourInt = 0;
+      this.Minute = '00';
 
       if (this.IsTimeIncluded) {
          if (isNumber(hour)) {
@@ -833,7 +834,7 @@ if (!Object.create) {
    
    function SPDateTimeField(fieldParams) {
       SPField.call(this, fieldParams);
-      this.DateTextbox = $(getInputControl(this));
+      this.DateTextbox = getInputControl(this);
 			
       this.HourDropdown = null;
       this.MinuteDropdown = null;
@@ -846,13 +847,13 @@ if (!Object.create) {
 
       var timeControls = $(this.Controls).find('select');
       if (null !== timeControls && 2 === timeControls.length) {
-         this.HourDropdown = $(timeControls[0]);
-         if (this.HourDropdown.val().indexOf(' ') > -1) {
+         this.HourDropdown = timeControls[0];
+         if ($(this.HourDropdown).val().indexOf(' ') > -1) {
             this.HourValueFormat = 'string';
          } else {
             this.HourValueFormat = 'number';
          }
-         this.MinuteDropdown = $(timeControls[1]);
+         this.MinuteDropdown = timeControls[1];
          this.IsDateOnly = false;
       }
    }
@@ -861,19 +862,16 @@ if (!Object.create) {
    SPDateTimeField.prototype = Object.create(SPField.prototype);
 
    SPDateTimeField.prototype.GetValue = function () {
-      var hour, strMinute, arrShortDate,
-         strShortDate = this.DateTextbox.val();
+      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split('/');
 
-      if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
-         hour = this.HourDropdown.val();
+      if (!this.IsDateOnly) {
+         hour = $(this.HourDropdown).val();
          if (this.HourValueFormat === 'number') {
             hour = getInteger(hour);
          }
-         strMinute = this.MinuteDropdown.val();
+         strMinute = $(this.MinuteDropdown).val();
       }
-
-      arrShortDate = strShortDate.split('/');
-
+      
       if (arrShortDate.length === 3) {
          return new SPDateTimeFieldValue(arrShortDate[2], arrShortDate[0], arrShortDate[1], hour, strMinute);
       }
@@ -884,17 +882,17 @@ if (!Object.create) {
 		
    SPDateTimeField.prototype.SetValue = function (year, month, day, hour, strMinute) {
       var value = new SPDateTimeFieldValue(year, month, day, hour, strMinute);
-      this.DateTextbox.val(value.GetShortDateString());
+      $(this.DateTextbox).val(value.GetShortDateString());
       if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
          // is the hour dropdown values in string or number format
          // ex: 12 AM versus 0, 1 AM versus 1, etc.
          if (this.HourValueFormat === 'string') {
-            this.HourDropdown.val(value.Hour);
+            $(this.HourDropdown).val(value.Hour);
          } else {
-            this.HourDropdown.val(value.HourInt);
+            $(this.HourDropdown).val(value.HourInt);
          }
          
-         this.MinuteDropdown.val(value.Minute);
+         $(this.MinuteDropdown).val(value.Minute);
       }
       updateReadOnlyLabel(this);
       return this;
@@ -1067,9 +1065,11 @@ if (!Object.create) {
       }
       c.push(choices[choices.length - 1]);
       
-      // since the pipe character is used as a delimiter above, any values
-      // which have a pipe in them were doubled up
-      value = value.replace("|", "||");
+      if (isString(value)) {
+         // since the pipe character is used as a delimiter above, any values
+         // which have a pipe in them were doubled up
+         value = value.replace("|", "||");
+      }
       
       // options are stored in a choices attribute in the following format:
       // text|value|text 2|value2
@@ -1079,7 +1079,7 @@ if (!Object.create) {
          // if value is an integer, assume they are passing the list item ID
          // otherwise, a string will match the text value
          if (value === lookupID || value === lookupText) {
-            this.Textbox.val(lookupText);
+            this.Textbox.val(lookupText.replace("||", "|"));
             break;
          }
       }
