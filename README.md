@@ -13,8 +13,8 @@ http://sputility.codeplex.com/
 ## Getting Started
 Download the [production version][min] or the [development version][max].
 
-[min]: https://raw.github.com/kitmenke/jquery.sputility/master/dist/sputility.min.js
-[max]: https://raw.github.com/kitmenke/jquery.sputility/master/dist/sputility.js
+[min]: https://raw.github.com/kitmenke/sputility/master/dist/sputility.min.js
+[max]: https://raw.github.com/kitmenke/sputility/master/dist/sputility.js
 
 Upload jQuery and SPUtility into a Document Library in your SharePoint site.
 
