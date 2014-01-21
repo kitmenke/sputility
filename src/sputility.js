@@ -816,7 +816,7 @@ if (!Object.create) {
 
    SPDateTimeFieldValue.prototype.toString = function () {
       var str = this.GetShortDateString(), arrHour;
-      if (this.IsValidHour(this.Hour) && this.IsValidMinute(this.Minute)) {
+      if (this.IsTimeIncluded && this.IsValidHour(this.Hour) && this.IsValidMinute(this.Minute)) {
          arrHour = this.Hour.split(' ');
          str += ' ' + arrHour[0] + ':' + this.Minute + arrHour[1];
       }
