@@ -483,7 +483,7 @@
       this.field.SetValue(expected);
       
       // make sure the select was set correctly
-      equal($('#Small_x0020_Lookup_fc0ce102-b10d-48f1-bdce-760fd008eead_$LookupField').val(), '3');
+      equal($('#Small_x0020_Lookup_fc0ce102-b10d-48f1-bdce-760fd008eead_\\$LookupField').val(), '3');
       
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
