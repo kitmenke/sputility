@@ -1191,6 +1191,9 @@ if (!Object.create) {
          this.ListChoices = controls[0];
          this.ListSelections = controls[1];
          controls = $(this.Controls).find('button');
+         if (controls.length === 0) {
+            controls = $(this.Controls).find('input[type="button"]');
+         }
          this.ButtonAdd = controls[0];
          this.ButtonRemove = controls[1];
       } else {
