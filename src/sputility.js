@@ -396,7 +396,7 @@ if (!Object.create) {
 
    SPField.prototype.MakeEditable = function () {
       try {
-         $(this.Controls).hide();
+         $(this.Controls).show();
          if (null !== this.ReadOnlyLabel) {
             $(this.ReadOnlyLabel).hide();
          }
@@ -1225,14 +1225,14 @@ if (!Object.create) {
          addValue = true;
       }
 
-      var i, option, options, numOptions, funcAction, prop;
+      var i, option, options, numOptions, button, prop;
 
       if (addValue) {
          options = this.ListChoices.options;
-         funcAction = this.ButtonAdd.onclick;
+         button = this.ButtonAdd;
       } else {
          options = this.ListSelections.options;
-         funcAction = this.ButtonRemove.onclick;
+         button = this.ButtonRemove;
       }
 
       numOptions = options.length;
@@ -1255,7 +1255,8 @@ if (!Object.create) {
          }
       }
 
-      funcAction(); // add or remove the value
+      // add or remove the value
+      $(button).click();
 
       updateReadOnlyLabel(this);
       return this;

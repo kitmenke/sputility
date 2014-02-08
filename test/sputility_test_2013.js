@@ -10,7 +10,7 @@
       ok($);
    });
 
-   test("spfield throws an error when the field was not found", function() {
+   test("SPField throws an error when the field was not found.", function() {
       throws(
               function() {
                  SPUtility.GetSPField('foo bar');
@@ -48,16 +48,16 @@
               "SetValue() failed to set Textbox.");
    });
 
-   test("MakeReadOnly()", function() {
-      expect(1);
+   test("Make field read only then make it editable again", function() {
+      expect(2);
 
       var expected = 'foo bar';
       this.field.SetValue(expected);
       this.field.MakeReadOnly();
-
-      ok('make read only ok');
+      strictEqual($(this.field.Controls).css('display'), "none");
+      this.field.MakeEditable();
+      strictEqual($(this.field.Controls).css('display'), "inline");
    });
-
 
    module("SPNumberField", {
       setup: function() {
@@ -488,6 +488,16 @@
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
+
+   test("SetValue() accepts the ID (integer) as a parameter", function() {
+      expect(1);
+
+      var expected = 'Kilo';
+      this.field.SetValue(11);
+      
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
+   });
    
    module("SPLookupField (single-select, big lookup with autocomplete)", {
       setup: function() {
@@ -508,10 +518,75 @@
       this.field.SetValue(expected);
       
       // make sure the select was set correctly
-      equal($('#ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl12_ctl00_ctl00_ctl04_ctl00_ctl01').val(), expected);
+      equal($('#Big_x0020_Lookup_724c2082-3c15-4fb6-b515-c1fd25afedd4_\\$LookupField').val(), '3');
       
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
+   });
+
+   test("SetValue() accepts the ID (integer) as a parameter", function() {
+      expect(1);
+
+      var expected = 'Kilo';
+      this.field.SetValue(11);
+      
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
+   });
+
+   module("SPLookupMultiField", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Multi-value Lookup');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(6);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldLookupMulti", "Expected type is SPFieldLookupMulti");
+      ok(this.field.ListChoices, "Expected to have a property named ListChoices");
+      ok(this.field.ListSelections, "Expected to have a property named ListSelections");
+      ok(this.field.ButtonAdd, "Expected to have a property named ButtonAdd");
+      ok(this.field.ButtonRemove, "Expected to have a property named ButtonRemove");
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(1);  
+
+      var expected = ['Charlie', 'Echo', 'Golf', 'Zebra'];
+      this.field.SetValue('Charlie');
+      this.field.SetValue('Echo');
+      this.field.SetValue('Golf');
+      this.field.SetValue('Zebra');
+      
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
+   });
+
+   test("SetValue() accepts the ID (integer) as a parameter", function() {
+      expect(1);
+
+      var expected = 'Kilo';
+      this.field.SetValue(11);
+      
+      var actual = this.field.GetValue();
+      ok($.inArray(actual, expected));
+   });
+
+   test("SetValue() allows a second boolean parameter which allows removing a value (when false)", function() {
+      expect(2);
+
+      var expected = 'Foxtrot';
+      this.field.SetValue(expected);
+
+      // test to make sure the value was added
+      var actual = this.field.GetValue();
+      ok($.inArray(actual, expected));
+
+      // test to make sure the value was removed
+      this.field.SetValue(6, false);
+      actual = this.field.GetValue();
+      ok(!$.inArray(actual, expected));
    });
    
    module("SPFieldNote (multi-line, plain text)", {
@@ -527,34 +602,17 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(2);
+      expect(2);  
 
       var expected = 'Hello world!';
       this.field.SetValue(expected);
       
       // make sure the select was set correctly
-      equal($('#ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl01_ctl00_ctl00_ctl04_ctl00_ctl00_TextField').val(), expected);
+      equal($('#Plain_x0020_text_eaed9c50-1cb4-4d40-9ff8-14a927419093_\\$TextField').val(), expected);
       
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
-   
-   module("SPLookupMultiField", {
-      setup: function() {
-         this.field = SPUtility.GetSPField('Multi-Priority Lookup Field');
-      }
-   });
-
-   test('GetSPField()', function() {
-      expect(6);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldLookupMulti", "Expected type is SPFieldLookupMulti");
-      ok(this.field.ListChoices, "Expected to have a property named ListChoices");
-      ok(this.field.ListSelections, "Expected to have a property named ListSelections");
-      ok(this.field.ButtonAdd, "Expected to have a property named ButtonAdd");
-      ok(this.field.ButtonRemove, "Expected to have a property named ButtonRemove");
-   });
-   
    
    module("SPUserField", {
       setup: function() {
@@ -568,12 +626,11 @@
       strictEqual(this.field.Type, "SPFieldUser", "Wrong type: " + this.field.Type);
    });
 
-   /* Unable to test People fields locally
-    * test("Correct properties are set", function() {
+   test("Correct properties are set", function() {
       expect(2);
-      ok(this.field.ClientPeoplePicker, 'ClientPeoplePicker property not set');
-      ok(this.field.EditorInput, 'EditorInput property not set');
-   });*/
+      ok(this.field.ClientPeoplePicker, 'Expected to have a property named ClientPeoplePicker');
+      ok(this.field.EditorInput, 'Expected to have a property named EditorInput');
+   });
    
    module("Miscellaneous tests");
    

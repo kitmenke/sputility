@@ -370,7 +370,7 @@
    test("SetValue() takes one string parameter", function() {
       expect(1);
 
-      var expected = "08/15/2013 12:00AM";
+      var expected = "08/15/2013";
       this.field.SetValue(2013, 8, 15);
 
       var actual = this.field.GetValue();

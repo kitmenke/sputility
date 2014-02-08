@@ -1,10 +1,10 @@
 /*
    Name: SPUtility.js
    Version: 0.8.4
-   Built: 2013-10-04
+   Built: 2014-02-08
    Author: Kit Menke
    https://sputility.codeplex.com/
-   Copyright (c) 2013
+   Copyright (c) 2014
    License: Microsoft Public License (MS-PL)
 */
 // Object.create shim for class inheritance
@@ -405,7 +405,7 @@ if (!Object.create) {
 
    SPField.prototype.MakeEditable = function () {
       try {
-         $(this.Controls).hide();
+         $(this.Controls).show();
          if (null !== this.ReadOnlyLabel) {
             $(this.ReadOnlyLabel).hide();
          }
@@ -825,7 +825,7 @@ if (!Object.create) {
 
    SPDateTimeFieldValue.prototype.toString = function () {
       var str = this.GetShortDateString(), arrHour;
-      if (this.IsValidHour(this.Hour) && this.IsValidMinute(this.Minute)) {
+      if (this.IsTimeIncluded && this.IsValidHour(this.Hour) && this.IsValidMinute(this.Minute)) {
          arrHour = this.Hour.split(' ');
          str += ' ' + arrHour[0] + ':' + this.Minute + arrHour[1];
       }
@@ -1200,6 +1200,9 @@ if (!Object.create) {
          this.ListChoices = controls[0];
          this.ListSelections = controls[1];
          controls = $(this.Controls).find('button');
+         if (controls.length === 0) {
+            controls = $(this.Controls).find('input[type="button"]');
+         }
          this.ButtonAdd = controls[0];
          this.ButtonRemove = controls[1];
       } else {
@@ -1231,14 +1234,14 @@ if (!Object.create) {
          addValue = true;
       }
 
-      var i, option, options, numOptions, funcAction, prop;
+      var i, option, options, numOptions, button, prop;
 
       if (addValue) {
          options = this.ListChoices.options;
-         funcAction = this.ButtonAdd.onclick;
+         button = this.ButtonAdd;
       } else {
          options = this.ListSelections.options;
-         funcAction = this.ButtonRemove.onclick;
+         button = this.ButtonRemove;
       }
 
       numOptions = options.length;
@@ -1261,7 +1264,8 @@ if (!Object.create) {
          }
       }
 
-      funcAction(); // add or remove the value
+      // add or remove the value
+      $(button).click();
 
       updateReadOnlyLabel(this);
       return this;
