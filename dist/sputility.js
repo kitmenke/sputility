@@ -1264,6 +1264,10 @@ if (!Object.create) {
          }
       }
 
+      // the button may be disabled if this is the second time
+      // we are performing a certain operation
+      button.disabled = "";
+
       // add or remove the value
       $(button).click();
 

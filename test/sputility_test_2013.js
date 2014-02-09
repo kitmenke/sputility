@@ -560,7 +560,7 @@
       this.field.SetValue('Zebra');
       
       var actual = this.field.GetValue();
-      strictEqual(actual, expected);
+      deepEqual(actual, expected);
    });
 
    test("SetValue() accepts the ID (integer) as a parameter", function() {
@@ -581,12 +581,14 @@
 
       // test to make sure the value was added
       var actual = this.field.GetValue();
-      ok($.inArray(actual, expected));
+      var isInArray = $.inArray(expected, actual);
+      ok(isInArray >= 0);
 
       // test to make sure the value was removed
       this.field.SetValue(6, false);
       actual = this.field.GetValue();
-      ok(!$.inArray(actual, expected));
+      isInArray = $.inArray(expected, actual);
+      ok(isInArray === -1);
    });
    
    module("SPFieldNote (multi-line, plain text)", {
@@ -596,19 +598,81 @@
    });
 
    test('GetSPField()', function() {
-      expect(2);
+      expect(4);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldNote");
+      strictEqual(this.field.TextType, "Plain");
+      ok(this.field.Textbox, "Expected to have a Textbox property.");
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(2);  
+      expect(1);  
 
       var expected = 'Hello world!';
       this.field.SetValue(expected);
       
-      // make sure the select was set correctly
-      equal($('#Plain_x0020_text_eaed9c50-1cb4-4d40-9ff8-14a927419093_\\$TextField').val(), expected);
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
+   });
+
+   module("SPFieldNote (multi-line, rich text) [Internet Explorer only]", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Rich Text');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(4);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldNote");
+      // TODO: maybe need some browser sniffing?
+      ok(this.field.TextType === "Rich" || this.field.TextType === "Plain", "Internet Explorer will have the Rich type, other browsers get Plain");
+      ok(this.field.Textbox, "Expected to have a Textbox property.");
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(1);  
+
+      var expected = '<strong>Hello world!</strong>';
+      this.field.SetValue(expected);
+      
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
+   });
+
+   module("SPFieldNote (multi-line, ENHANCED rich text) [2010 and 2013 only]", {
+      setup: function() {
+         this.field = SPUtility.GetSPField('Enhanced Rich Text');
+      }
+   });
+
+   test('GetSPField()', function() {
+      expect(4);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "SPFieldNote");
+      strictEqual(this.field.TextType, "Enhanced");
+      ok(this.field.Textbox, "Expected to have a Textbox property.");
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(1);  
+
+      // fancy header, lists, and a table
+      var expected = '<h1>​Hello world!</h1>';
+      expected += '<ul>';
+      expected += '   <li>one</li>';
+      expected += '   <li>two</li>';
+      expected += '   <li>three</li>';
+      expected += '</ul>';
+      expected += '<table width="100%" class="ms-rteTable-default" cellspacing="0">';
+      expected += '   <tbody>';
+      expected += '      <tr>';
+      expected += '         <td class="ms-rteTable-default" style="width: 50%;">​cell one</td>';
+      expected += '         <td class="ms-rteTable-default" style="width: 50%;">​cell two</td>';
+      expected += '      </tr>';
+      expected += '   </tbody>';
+      expected += '</table>';
+      this.field.SetValue(expected);
       
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
@@ -621,15 +685,21 @@
    });
 
    test('GetSPField()', function() {
-      expect(2);
+      expect(4);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldUser", "Wrong type: " + this.field.Type);
-   });
-
-   test("Correct properties are set", function() {
-      expect(2);
       ok(this.field.ClientPeoplePicker, 'Expected to have a property named ClientPeoplePicker');
       ok(this.field.EditorInput, 'Expected to have a property named EditorInput');
+   });
+
+   test("GetValue() and SetValue()", function() {
+      expect(2);  
+
+      var expected = 'Test User';
+      this.field.SetValue(expected);
+      
+      var actual = this.field.GetValue();
+      strictEqual(actual, expected);
    });
    
    module("Miscellaneous tests");
