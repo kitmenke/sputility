@@ -22,7 +22,6 @@
 
    module("SPTextField", {
       setup: function() {
-         this.textboxId = 'Title_fa564e0f-0c70-4ab9-b863-0177e6ddd247_$TextField';
          this.field = SPUtility.GetSPField('Title');
       }
    });
@@ -31,10 +30,7 @@
       expect(3);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldText", "Wrong type: " + this.field.Type);
-      strictEqual(
-              this.field.Textbox.id,
-              this.textboxId,
-              "Textbox property is not set or is set to the wrong to the wrong DOM object.");
+      ok(this.field.Textbox, "Expected to have a Textbox property.");
    });
 
    test("Get and set the value", function() {
@@ -61,7 +57,6 @@
 
    module("SPNumberField", {
       setup: function() {
-         this.textboxId = 'Number_4010b3fc-1225-4f57-a2f5-64f4aa176617_$NumberField';
          this.field = SPUtility.GetSPField('Number');
       }
    });
@@ -70,10 +65,7 @@
       expect(3);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldNumber", "Wrong type: " + this.field.Type);
-      strictEqual(
-              this.field.Textbox.id,
-              this.textboxId,
-              "Textbox property is not set or is set to the wrong to the wrong DOM object.");
+      ok(this.field.Textbox, "Expected to have a Textbox property.");
    });
 
    test("SetValue() and GetValue()", function() {
@@ -89,7 +81,6 @@
 
    module("SPCurrencyField", {
       setup: function() {
-         this.textboxId = 'Currency_e09d0410-2dee-4218-9829-ae4a97f5cbaa_$CurrencyField';
          this.field = SPUtility.GetSPField('Currency');
       }
    });
@@ -98,10 +89,7 @@
       expect(3);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldCurrency", "Wrong type: " + this.field.Type);
-      strictEqual(
-              this.field.Textbox.id,
-              this.textboxId,
-              "Textbox property is not set or is set to the wrong to the wrong DOM object.");
+      ok(this.field.Textbox, "Expected to have a Textbox property.");
    });
 
    test("SetValue() and GetValue()", function() {
@@ -117,7 +105,6 @@
 
    module("SPFieldChoice - Dropdown", {
       setup: function() {
-         this.dropdownId = 'Dropdown_x0020_Choice_23d12dec-bc26-4ae1-91aa-df5059fb2bbf_$DropDownChoice';
          this.field = SPUtility.GetSPField('Dropdown Choice');
       }
    });
@@ -126,10 +113,7 @@
       expect(3);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
-      strictEqual(
-              this.field.Dropdown.id,
-              this.dropdownId,
-              "Textbox property is not set or is set to the wrong to the wrong DOM object.");
+      ok(this.field.Dropdown, "Expected to have a Dropdown property.");
    });
 
    test("SetValue() and GetValue()", function() {
@@ -153,7 +137,6 @@
    
    module("SPFieldChoice Dropdown (with fill in)", {
       setup: function() {
-         this.dropdownId = 'Dropdown_x0020_Choice_x0020_with_3463524b-46aa-4421-949b-e1559a0d9884_$DropDownChoice';
          this.field = SPUtility.GetSPField('Dropdown Choice with Fill-in');
       }
    });
@@ -164,11 +147,7 @@
       notStrictEqual(this.field.FillInElement, null, "Fill in element should have an element.");
       strictEqual(this.field.FillInAllowed, true, "Fill in should be allowed.");
       strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
-      strictEqual(
-              this.field.Dropdown.id,
-              this.dropdownId,
-              "Textbox property is not set or is set to the wrong to the wrong DOM object.");
-
+      ok(this.field.Dropdown, "Expected to have a Dropdown property.");
    });
 
    test("SetValue() and GetValue()", function() {
@@ -477,14 +456,11 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(2);
+      expect(1);
 
       var expected = 'Charlie';
       this.field.SetValue(expected);
-      
-      // make sure the select was set correctly
-      equal($('#Small_x0020_Lookup_fc0ce102-b10d-48f1-bdce-760fd008eead_\\$LookupField').val(), '3');
-      
+
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
@@ -512,13 +488,10 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(2);
+      expect(1);
 
       var expected = 'Charlie';
       this.field.SetValue(expected);
-      
-      // make sure the select was set correctly
-      equal($('#Big_x0020_Lookup_724c2082-3c15-4fb6-b515-c1fd25afedd4_\\$LookupField').val(), '3');
       
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
@@ -570,7 +543,8 @@
       this.field.SetValue(11);
       
       var actual = this.field.GetValue();
-      ok($.inArray(actual, expected));
+      var isInArray = $.inArray(expected, actual);
+      ok(isInArray >= 0);
    });
 
    test("SetValue() allows a second boolean parameter which allows removing a value (when false)", function() {
@@ -687,7 +661,7 @@
    test('GetSPField()', function() {
       expect(4);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldUser", "Wrong type: " + this.field.Type);
+      strictEqual(this.field.Type, "SPFieldUser", "Field Type should be SPFieldUser");
       ok(this.field.ClientPeoplePicker, 'Expected to have a property named ClientPeoplePicker');
       ok(this.field.EditorInput, 'Expected to have a property named EditorInput');
    });
