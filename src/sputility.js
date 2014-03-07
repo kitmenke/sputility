@@ -187,9 +187,6 @@ if (!Object.create) {
             if (window.RTE_GetEditorIFrame && window.RTE_GetEditorIFrame(controls.id) !== null) {
                // rich text field detected
                field = new SPRichNoteField(spFieldParams, controls);
-            } else {
-               // plain text field otherwise
-               field = new SPPlainNoteField(spFieldParams, controls);
             }
          } else {
             controls = $(spFieldParams.controlsCell).find('input[type="hidden"]');
@@ -199,7 +196,8 @@ if (!Object.create) {
             }
          }
          if (null === field) {
-            throw "Unknown type of SPFieldNote.";
+            // default to plain text note field (on DispForm there is no way to tell)
+            field = new SPPlainNoteField(spFieldParams, controls);
          }
          break;
       case 'SPFieldFile':
@@ -372,7 +370,11 @@ if (!Object.create) {
       this.Name = fieldParams.name;
       this.IsRequired = fieldParams.isRequired;
       this.Type = fieldParams.type;
-      this.Controls = $(fieldParams.controlsCell).children()[0];
+      if ($(fieldParams.controlsCell).children().length > 0) {
+         this.Controls = $(fieldParams.controlsCell).children()[0];
+      } else {
+         this.Controls = null;
+      }
       this.ControlsRow = fieldParams.controlsRow;
       this.ReadOnlyLabel = null;
    }

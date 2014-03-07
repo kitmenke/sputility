@@ -1,0 +1,10 @@
+<script src="/kitsite/Files/jquery-1.11.0.min.js"></script>
+<script src="/kitsite/Files/sputility.js"></script>
+<script>
+// wait for the window to load
+$(window).load(function () {
+   // EXAMPLE: Hide the title field on DispForm.aspx
+   SPUtility.GetSPField('Title').Hide();
+   SPUtility.GetSPField('Rich Text').Hide();
+});
+</script>
