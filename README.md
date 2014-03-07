@@ -1,20 +1,13 @@
-# SPUtility.js (jQuery version)
+# SPUtility.js
 
 A JavaScript library used to make modifications to SharePoint's list forms 
 (NewForm.aspx and EditForm.aspx in a survey, custom list or library). 
 SPUtility.js works with SharePoint 2007, 2010, and 2013.
 
-This library depends on jQuery (tested with v1.9.0). I recommend using
+This library depends on jQuery (tested with v1.9.0+). I recommend using
 version 1.x of jQuery in order to support older versions of IE. 
 
-The Prototype.js version of SPUtility is located on Codeplex:
-http://sputility.codeplex.com/
-
 ## Getting Started
-Download the [production version][min] or the [development version][max].
-
-[min]: https://raw.github.com/kitmenke/sputility/master/dist/sputility.min.js
-[max]: https://raw.github.com/kitmenke/sputility/master/dist/sputility.js
 
 Upload jQuery and SPUtility into a Document Library in your SharePoint site.
 
@@ -34,8 +27,10 @@ $(window).load(function () {
 </script>
 ```
 
+Step by step install instructions are located here: https://sputility.codeplex.com/wikipage?title=Installation
+
 ## Documentation
-For now, please use the old documentation here:
+
 https://sputility.codeplex.com/documentation
 
 ## Examples
@@ -58,5 +53,4 @@ fTitle.SetValue('Using my variable!');
 ```
 
 ## Release History
-_No release yet. If you are feeling brave, you can grab the latest development
-version from the dist folder._
+https://sputility.codeplex.com/wikipage?title=Changelog&referringTitle=Home
