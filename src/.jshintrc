@@ -12,5 +12,6 @@
   "eqnull": true,
   "browser": true,
   "indent": 3,
-  "predef": ["jQuery", "RTE_GetIFrameContents", "alert", "console", "SPClientPeoplePicker"]
+  "globals": { "jQuery": false, "window": false },
+  "exported": [ "SPUtility" ]
 }

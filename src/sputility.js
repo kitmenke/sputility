@@ -10,8 +10,7 @@ if (!Object.create) {
    };
 }
 
-// modularize SPUtility so only one global object is exported to window
-// dollar sign needs to be jQuery
+// Export SPUtility global variable
 var SPUtility = (function ($) {
    "use strict";
    
@@ -370,14 +369,14 @@ var SPUtility = (function ($) {
    };
    
    // should be called in SetValue to update the read-only label
-   SPField.prototype._updateReadOnlyLabel = function(htmlToInsert) {
+   SPField.prototype._updateReadOnlyLabel = function (htmlToInsert) {
       if (this.ReadOnlyLabel) {
          this.ReadOnlyLabel.html(htmlToInsert);
       }
-   }
+   };
    
    // should be called in MakeReadOnly to change a field into read-only mode
-   SPField.prototype._makeReadOnly = function(htmlToInsert) {
+   SPField.prototype._makeReadOnly = function (htmlToInsert) {
       try {
          $(this.Controls).hide();
          if (null === this.ReadOnlyLabel) {
@@ -390,7 +389,7 @@ var SPUtility = (function ($) {
          throw 'Error making ' + this.Name + ' read only. ' + ex.toString();
       }
       return this;
-   }
+   };
 
    SPField.prototype.MakeReadOnly = function () {
       return this._makeReadOnly(this.GetValue().toString());
@@ -403,7 +402,7 @@ var SPUtility = (function ($) {
             $(this.ReadOnlyLabel).hide();
          }
       } catch (ex) {
-         alert('Error making ' + this.Name + ' editable. ' + ex.toString());
+         throw 'Error making ' + this.Name + ' editable. ' + ex.toString();
       }
       return this;
    };
@@ -418,7 +417,7 @@ var SPUtility = (function ($) {
     */
    SPField.prototype.GetValue = function () {
       throw 'GetValue not yet implemented for ' + this.Type + ' in ' + this.Name;
-   },
+   };
 
    SPField.prototype.SetValue = function () {
       throw 'SetValue not yet implemented for ' + this.Type + ' in ' + this.Name;
@@ -1370,7 +1369,7 @@ var SPUtility = (function ($) {
     *   SPUtility Global object and Public Methods
    **/
    var SPUtility = {};
-   SPUtility.Debug = function (isDebug) {
+   SPUtility.Debug = function () {
       // Debug method has been deprecated in favor of
       // exceptions being thrown from the library
       // Catch the exception, then use console.log or alert
@@ -1399,15 +1398,15 @@ var SPUtility = (function ($) {
    SPUtility.GetSPFields = function () {
       lazyLoadSPFields();
       return _fieldsHashtable;
-   }
+   };
    
    SPUtility.HideSPField = function (strFieldName) {
       toggleSPField(strFieldName, false);
-   }
+   };
    
    SPUtility.ShowSPField = function (strFieldName) {
       toggleSPField(strFieldName, true);
-   }
+   };
 
    return SPUtility;
 }(jQuery));
