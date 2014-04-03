@@ -321,7 +321,7 @@ if (!Object.create) {
    
    function updateReadOnlyLabel(spField) {
       if (spField.ReadOnlyLabel) {
-         spField.ReadOnlyLabel.html(spField.GetValue());
+         spField.ReadOnlyLabel.html(spField.GetValue().toString());
       }
    }
    

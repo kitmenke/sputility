@@ -40,16 +40,21 @@
       this.field.SetValue(expected);
 
       strictEqual(this.field.GetValue(),
-              expected,
-              "SetValue() failed to set Textbox.");
+         expected,
+        "SetValue() failed to set Textbox.");
    });
 
    test("Make field read only then make it editable again", function() {
-      expect(2);
+      expect(3);
 
       var expected = 'foo bar';
       this.field.SetValue(expected);
       this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.text();
+
+      equal(actual,
+          expected,
+          "Validate SetValue() updates the read-only label.");
       strictEqual($(this.field.Controls).css('display'), "none");
       this.field.MakeEditable();
       strictEqual($(this.field.Controls).css('display'), "inline");
@@ -388,6 +393,19 @@
       equal(actual,
             expected,
             "Validate SetValue() can clear out the date.");
+   });
+   
+   test("SetValue() updates the label if the field is read only (issue #5)", function() {
+      expect(1);
+
+      var expected = "03/14/2014 1:00AM";
+      this.field.MakeReadOnly();
+      this.field.SetValue(2014,3,14,'1 AM','00');
+      
+      var actual = this.field.ReadOnlyLabel.text();
+      equal(actual,
+            expected,
+            "Validate SetValue() updates the read-only label.");
    });
    
    
