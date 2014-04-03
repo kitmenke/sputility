@@ -12,14 +12,13 @@ if (!Object.create) {
 
 // modularize SPUtility so only one global object is exported to window
 // dollar sign needs to be jQuery
-(function (window, $) {
+var SPUtility = (function ($) {
    "use strict";
    
    /*
     *   SPUtility Private Variables
    **/
    var _fieldsHashtable = null,
-      _debugMode = false,
       _isSurveyForm = false; 
    
    /*
@@ -294,57 +293,35 @@ if (!Object.create) {
    function toggleSPFieldRows(labelRow, controlsRow, bShowField) {
       // controlsRow is populated on survey forms (null otherwise)
       if (bShowField) {
-         labelRow.show();
+         $(labelRow).show();
          if (null !== controlsRow) {
-            controlsRow.show();
+            $(controlsRow).show();
          }
       } else {
-         labelRow.hide();
+         $(labelRow).hide();
          if (null !== controlsRow) {
-            controlsRow.hide();
+            $(controlsRow).hide();
          }
       }
    }
    
-   /*
    function toggleSPField(strFieldName, bShowField) {
       lazyLoadSPFields();
          
-      var fieldParams = _fieldsHashtable.get(strFieldName);
+      var fieldParams = _fieldsHashtable[strFieldName];
       
       if (isUndefined(fieldParams)) { 
          throw 'toggleSPField: Unable to find a SPField named ' + strFieldName + ' - ' + bShowField;
       }
       
       toggleSPFieldRows(fieldParams.labelRow, fieldParams.controlsRow, bShowField);
-   }*/
-   
-   function updateReadOnlyLabel(spField) {
-      if (spField.ReadOnlyLabel) {
-         spField.ReadOnlyLabel.html(spField.GetValue().toString());
-      }
-   }
-   
-   function makeReadOnly(spField, htmlToInsert) {
-      try {
-         $(spField.Controls).hide();
-         if (null === spField.ReadOnlyLabel) {
-            spField.ReadOnlyLabel = $('<div/>').text(htmlToInsert).addClass('sputility-readonly');
-            $(spField.Controls).after(spField.ReadOnlyLabel);
-         }
-         spField.ReadOnlyLabel.html(htmlToInsert);
-         spField.ReadOnlyLabel.show();
-      } catch (ex) {
-         throw 'Error making ' + spField.Name + ' read only. ' + ex.toString();
-      }
-      return spField;
    }
    
    function arrayToSemicolonList(arr) {
       var text = '';
       
-      arr.each(function () {
-         text += $(this).text() + '; ';
+      $(arr).each(function (i, elem) {
+         text += $(elem).text() + '; ';
       });
       
       if (text.length > 2) {
@@ -391,9 +368,32 @@ if (!Object.create) {
       toggleSPFieldRows(this.LabelRow, this.ControlsRow, false);
       return this;
    };
+   
+   // should be called in SetValue to update the read-only label
+   SPField.prototype._updateReadOnlyLabel = function(htmlToInsert) {
+      if (this.ReadOnlyLabel) {
+         this.ReadOnlyLabel.html(htmlToInsert);
+      }
+   }
+   
+   // should be called in MakeReadOnly to change a field into read-only mode
+   SPField.prototype._makeReadOnly = function(htmlToInsert) {
+      try {
+         $(this.Controls).hide();
+         if (null === this.ReadOnlyLabel) {
+            this.ReadOnlyLabel = $('<div/>').addClass('sputility-readonly');
+            $(this.Controls).after(this.ReadOnlyLabel);
+         }
+         this.ReadOnlyLabel.html(htmlToInsert);
+         this.ReadOnlyLabel.show();
+      } catch (ex) {
+         throw 'Error making ' + this.Name + ' read only. ' + ex.toString();
+      }
+      return this;
+   }
 
    SPField.prototype.MakeReadOnly = function () {
-      return makeReadOnly(this, this.GetValue().toString());
+      return this._makeReadOnly(this.GetValue().toString());
    };
 
    SPField.prototype.MakeEditable = function () {
@@ -447,7 +447,7 @@ if (!Object.create) {
       
    SPTextField.prototype.SetValue = function (value) {
       $(this.Textbox).val(value);
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
 
@@ -514,12 +514,22 @@ if (!Object.create) {
       return text;
    };
    
+   SPCurrencyField.prototype.SetValue = function (value) {
+      $(this.Textbox).val(value);
+      this._updateReadOnlyLabel(this.GetFormattedValue());
+      return this;
+   };
+   
    // Override the default MakeReadOnly function to allow displaying
    // the value with currency symbols
    SPCurrencyField.prototype.MakeReadOnly = function () {
-      return makeReadOnly(this, this.GetFormattedValue());
+      return this._makeReadOnly(this.GetFormattedValue());
    };
 
+   /*
+   *   SPChoiceField class
+   *   Base class for dropdown, radio, and checkbox fields
+   */
    function SPChoiceField(fieldParams) {
       SPField.call(this, fieldParams);
 
@@ -554,7 +564,7 @@ if (!Object.create) {
    };
 
    /*
-    *   SPChoiceField class
+    *   SPDropdownChoiceField class
     *   Supports single select choice fields that show as a dropdown
     */
    function SPDropdownChoiceField(fieldParams, dropdown) {
@@ -592,12 +602,12 @@ if (!Object.create) {
       } else {
          throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
       }
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
    
    /*
-    *   SPChoiceField class
+    *   SPRadioChoiceField class
     *   Supports single select choice fields that show as radio buttons
     */
    function SPRadioChoiceField(fieldParams) {
@@ -650,10 +660,14 @@ if (!Object.create) {
       } else {
          radioButton.checked = true;
       }
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
 
+   /*
+   *   SPCheckboxChoiceField class
+   *   Supports multi-select choice fields which show as checkboxes
+   */
    function SPCheckboxChoiceField(fieldParams) {
       SPChoiceField.call(this, fieldParams);
 
@@ -672,6 +686,11 @@ if (!Object.create) {
 
    // Inherit from SPChoiceField
    SPCheckboxChoiceField.prototype = Object.create(SPChoiceField.prototype);
+   
+   // display as semicolon delimited list
+   SPCheckboxChoiceField.prototype.MakeReadOnly = function () {
+      return this._makeReadOnly(this.GetValue().join("; "));
+   };
 
    SPCheckboxChoiceField.prototype.GetValue = function () {
       var values = [];
@@ -706,7 +725,7 @@ if (!Object.create) {
       } else {
          checkbox.checked = true;
       }
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue().join("; "));
       return this;
    };
    
@@ -887,7 +906,7 @@ if (!Object.create) {
          
          $(this.MinuteDropdown).val(value.Minute);
       }
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
    
@@ -914,7 +933,7 @@ if (!Object.create) {
 
    SPBooleanField.prototype.SetValue = function (value) {
       this.Checkbox.val(value);
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
    
@@ -930,6 +949,7 @@ if (!Object.create) {
 
       this.TextboxURL = null;
       this.TextboxDescription = null;
+      this.TextOnly = false;
 
       var controls = $(this.Controls).find('input');
       if (null !== controls && 2 === controls.length) {
@@ -952,22 +972,29 @@ if (!Object.create) {
    SPURLField.prototype.SetValue = function (url, description) {
       this.TextboxURL.val(url);
       this.TextboxDescription.val(description);
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetHyperlink());
       return this;
+   };
+   
+   SPURLField.prototype.GetHyperlink = function () {
+      var values = this.GetValue();
+      var hyperlink;
+      if (this.TextOnly) {
+         hyperlink = values[0] + ', ' + values[1];
+      } else {            
+         hyperlink = '<a href="' + values[0] + '">' + values[1] + '</a>';
+      }
+      return hyperlink;
    };
 
    // overriding the default MakeReadOnly function because we have multiple values returned
    // and we want to have the hyperlink field show up as a URL
    SPURLField.prototype.MakeReadOnly = function (options) {
-      var text, values = this.GetValue();
-
       if (options && true === options.TextOnly) {
-         text = values[0] + ', ' + values[1];
-      } else {				
-         text = '<a href="' + values[0] + '">' + values[1] + '</a>';
+         this.TextOnly = true;
       }
 
-      return makeReadOnly(this, text);
+      return this._makeReadOnly(this.GetHyperlink());
    };
    
    /*
@@ -1010,7 +1037,7 @@ if (!Object.create) {
             }
          }
       }
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
    
@@ -1081,7 +1108,7 @@ if (!Object.create) {
          this.HiddenTextbox.val(lookupID);
       }
 
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
    
@@ -1104,7 +1131,7 @@ if (!Object.create) {
 
    SPPlainNoteField.prototype.SetValue = function (value) {
       $(this.Textbox).val(value);
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
    
@@ -1128,7 +1155,7 @@ if (!Object.create) {
    SPRichNoteField.prototype.SetValue = function (value) {
       $(this.Textbox).val(value);
       window.RTE_TransferTextAreaContentsToIFrame(this.Textbox.id);
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
    
@@ -1153,7 +1180,7 @@ if (!Object.create) {
    SPEnhancedNoteField.prototype.SetValue = function (value) {
       $(this.ContentDiv).html(value);
       $(this.Textbox).val(value);
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
    
@@ -1219,7 +1246,7 @@ if (!Object.create) {
 
    // display as semicolon delimited list
    SPLookupMultiField.prototype.MakeReadOnly = function () {
-      return makeReadOnly(this, arrayToSemicolonList(this.GetValue()));
+      return this._makeReadOnly(this.GetValue().join("; "));
    };
 
    SPLookupMultiField.prototype.SetValue = function (value, addValue) {
@@ -1264,7 +1291,7 @@ if (!Object.create) {
       // add or remove the value
       $(button).click();
 
-      updateReadOnlyLabel(this);
+      this._updateReadOnlyLabel(this.GetValue().join("; "));
       return this;
    };
    
@@ -1306,7 +1333,7 @@ if (!Object.create) {
                this.textareaDownLevelTextBox.val(value);
                this.linkCheckNames.onclick();
             }
-            updateReadOnlyLabel(this);
+            this._updateReadOnlyLabel(this.GetValue());
             return this;
          };
       } else if (!isUndefined(window.SPClientPeoplePicker)) {
@@ -1329,7 +1356,7 @@ if (!Object.create) {
          };
          this.SetValue = function (value) {
             this.ClientPeoplePicker.AddUserKeys(value, false);
-            updateReadOnlyLabel(this);
+            this._updateReadOnlyLabel(this.GetValue());
             return this;
          };
       }
@@ -1342,15 +1369,16 @@ if (!Object.create) {
    /**
     *   SPUtility Global object and Public Methods
    **/
-   function Debug(isDebug) {
-      if ('boolean' === typeof isDebug) {
-         _debugMode = isDebug;
-      }
-      return _debugMode;
-   }
+   var SPUtility = {};
+   SPUtility.Debug = function (isDebug) {
+      // Debug method has been deprecated in favor of
+      // exceptions being thrown from the library
+      // Catch the exception, then use console.log or alert
+      return false;
+   };
    
    // Searches the page for a specific field by name
-   function GetSPField(strFieldName) {
+   SPUtility.GetSPField = function (strFieldName) {
       lazyLoadSPFields();
       
       var fieldParams = _fieldsHashtable[strFieldName];
@@ -1365,39 +1393,21 @@ if (!Object.create) {
       }
       
       return fieldParams.spField;
-   }
+   };
 
    // Gets all of the SPFields on the page
-   /*
-   function GetSPFields() {
+   SPUtility.GetSPFields = function () {
       lazyLoadSPFields();
       return _fieldsHashtable;
    }
    
-   function HideSPField(strFieldName) {
+   SPUtility.HideSPField = function (strFieldName) {
       toggleSPField(strFieldName, false);
    }
    
-   function ShowSPField(strFieldName) {
+   SPUtility.ShowSPField = function (strFieldName) {
       toggleSPField(strFieldName, true);
-   }*/
+   }
 
-   /**
-    * Static methods
-   **/
-   //$.sputility = Debug;
-   //$.spfield = GetSPField;
-   
-   var SPUtility = function (settings) {
-      this._defaults = {
-         debug: false
-      };
-      this.settings = $.extend({}, settings, this._defaults);
-   };
-   SPUtility.GetSPField = GetSPField;
-   SPUtility.Debug = Debug;
-   
-   
-   window.SPUtility = SPUtility;
-
-}(window, jQuery));
+   return SPUtility;
+}(jQuery));

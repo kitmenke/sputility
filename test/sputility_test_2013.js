@@ -6,8 +6,11 @@
    module("Main");
 
    test("The static function to get SPFields is available.", function() {
-      ok(SPUtility.GetSPField);
-      ok($);
+      expect(4);
+      ok($, "Should have jQuery available in order to use SPUtility.js");
+      ok(SPUtility.GetSPField, "SPUtility should have a public GetSPField method.");
+      ok(SPUtility.HideSPField, "SPUtility should have a public HideSPField method.");
+      ok(SPUtility.ShowSPField, "SPUtility should have a public ShowSPField method.");
    });
 
    test("SPField throws an error when the field was not found.", function() {
@@ -18,6 +21,21 @@
               "Unable to get a SPField named foo bar",
               "Correct error was thrown"
               );
+   });
+   
+   test("GetSPFields()", function() {
+      expect(0);
+      SPUtility.GetSPFields();
+   });
+   
+   test("HideSPField()", function() {
+      expect(0);
+      SPUtility.HideSPField('Title');
+   });
+   
+   test("ShowSPField()", function() {
+      expect(0);
+      SPUtility.ShowSPField('Title');
    });
 
    module("SPTextField", {
@@ -30,7 +48,7 @@
       expect(3);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldText", "Wrong type: " + this.field.Type);
-      ok(this.field.Textbox, "Expected to have a Textbox property.");
+      ok(this.field.Textbox, "Should have a Textbox property.");
    });
 
    test("Get and set the value", function() {
@@ -52,7 +70,7 @@
       this.field.MakeReadOnly();
       var actual = this.field.ReadOnlyLabel.text();
 
-      equal(actual,
+      strictEqual(actual,
           expected,
           "Validate SetValue() updates the read-only label.");
       strictEqual($(this.field.Controls).css('display'), "none");
@@ -107,6 +125,41 @@
               expected,
               "SetValue() failed to set Textbox.");
    });
+   
+   test("MakeReadOnly()", function() {
+      expect(1);
+
+      var expected = "$42.00";
+      this.field.SetValue(42);
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.text();
+
+      strictEqual(actual,
+              expected,
+              "MakeReadOnly should set a read only label.");
+   });
+
+   function testMakeReadOnlySingleSelectChoiceFields() {
+      expect(2);
+      
+      var expected = "Delta";
+      this.field.SetValue(expected);
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.text();
+      
+      strictEqual(actual,
+         expected,
+         "MakeReadOnly should create a read only label.");
+      
+      expected = "Echo";
+      this.field.SetValue(expected);
+      actual = this.field.ReadOnlyLabel.text();
+
+      strictEqual(actual,
+              expected,
+              "MakeReadOnly should update a read only label.");
+
+   }
 
    module("SPFieldChoice - Dropdown", {
       setup: function() {
@@ -139,6 +192,8 @@
          this.field.SetValue("foo bar");
       });
    });
+   
+   test("MakeReadOnly()", testMakeReadOnlySingleSelectChoiceFields);
    
    module("SPFieldChoice Dropdown (with fill in)", {
       setup: function() {
@@ -207,6 +262,8 @@
       });
    });
    
+   test("MakeReadOnly()", testMakeReadOnlySingleSelectChoiceFields);
+   
    module("SPFieldChoice - Radio buttons with fill-in", {
       setup: function() {
          this.field = SPUtility.GetSPField('Radio Buttons with Fill-in');
@@ -255,12 +312,12 @@
 
    test('GetSPField()', function() {
       expect(3);
-      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
-      strictEqual(this.field.Type, "SPFieldMultiChoice", "Wrong type: " + this.field.Type);
+      notStrictEqual(this.field, null, "GetSPField should return an object.");
+      strictEqual(this.field.Type, "SPFieldMultiChoice", "Should be of type SPFieldMultiChoice");
       strictEqual(
               this.field.Checkboxes.length,
               5,
-              "There are not 5 checkboxes.");
+              "Should have 5 checkboxes.");
    });
 
    test("SetValue() and GetValue()", function() {
@@ -273,6 +330,31 @@
       deepEqual(this.field.GetValue(),
               expected,
               "SetValue() failed to set the checkbox.");
+   });
+   
+   test("MakeReadOnly()", function() {
+      expect(1);
+
+      var expected = "Alpha; Charlie";
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.text();
+
+      strictEqual(actual,
+              expected,
+              "MakeReadOnly should set a read only label.");
+   });
+   
+   test("MakeReadOnly() update", function() {
+      expect(1);
+
+      var expected = "Alpha; Charlie; Delta";
+      this.field.SetValue("Delta");
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.text();
+
+      strictEqual(actual,
+              expected,
+              "MakeReadOnly should update a read only label.");
    });
    
    test("Try setting the field to garbage (throws an exception)", function() {
@@ -310,7 +392,7 @@
 
       deepEqual(this.field.GetValue(),
               expected,
-              "SetValue() failed to set the checkbox.");
+              "SetValue() failed to scet the checkbox.");
 
       // pass a value to fill-in
       this.field.SetValue("foo bar");
@@ -319,8 +401,21 @@
               expected,
               "Fill-in value should be set now.");
    });
+   
+   test("MakeReadOnly()", function() {
+      expect(1);
 
+      var expected = "Alpha; Charlie; foo bar";
+      this.field.SetValue("Alpha");
+      this.field.SetValue("Charlie");
+      this.field.SetValue("foo bar");
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.text();
 
+      strictEqual(actual,
+              expected,
+              "MakeReadOnly should set a read only label.");
+   });
 
    module("SPFieldDateTime (date only)", {
       setup: function() {
@@ -461,6 +556,30 @@
               "GetValue() should return an array of two strings containing URL and Description.");
    });
    
+   test("MakeReadOnly() Default hyperlink", function() {
+      expect(1);
+      this.field.SetValue("http://sputility.codeplex.com", "SPUtility.js");
+      var expected = '<a href="http://sputility.codeplex.com">SPUtility.js</a>';
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.html();
+
+      strictEqual(actual,
+              expected,
+              "MakeReadOnly should set a read only label as a hyperlink.");
+   });
+   
+   test("MakeReadOnly() Text only", function() {
+      expect(1);
+      this.field.SetValue("http://sputility.codeplex.com", "SPUtility.js");
+      var expected = "http://sputility.codeplex.com, SPUtility.js";
+      this.field.MakeReadOnly({ TextOnly: true });
+      var actual = this.field.ReadOnlyLabel.html();
+
+      strictEqual(actual,
+              expected,
+              "MakeReadOnly should set a read only label as text.");
+   });
+   
    module("SPLookupField (single-select, small lookup)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Small Lookup');
@@ -539,6 +658,20 @@
       ok(this.field.ListSelections, "Expected to have a property named ListSelections");
       ok(this.field.ButtonAdd, "Expected to have a property named ButtonAdd");
       ok(this.field.ButtonRemove, "Expected to have a property named ButtonRemove");
+   });
+   
+   test("Can make the field read-only (issue #6)", function() {
+      expect(1);  
+
+      var expected = 'Charlie; Echo';
+      this.field.SetValue('Charlie');
+      this.field.SetValue('Echo');
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.text();
+
+      strictEqual(actual,
+          expected,
+          "Validate SetValue() updates the read-only label.");
    });
 
    test("GetValue() and SetValue()", function() {
