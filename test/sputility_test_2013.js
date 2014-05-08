@@ -6,21 +6,28 @@
    module("Main");
 
    test("The static function to get SPFields is available.", function() {
-      expect(4);
+      expect(5);
       ok($, "Should have jQuery available in order to use SPUtility.js");
       ok(SPUtility.GetSPField, "SPUtility should have a public GetSPField method.");
+      ok(SPUtility.GetSPFieldByInternalName, "SPUtility should have a public GetSPFieldByInternalName method.");
       ok(SPUtility.HideSPField, "SPUtility should have a public HideSPField method.");
       ok(SPUtility.ShowSPField, "SPUtility should have a public ShowSPField method.");
    });
 
-   test("SPField throws an error when the field was not found.", function() {
+   test("GetSPField throws an error when the field was not found.", function() {
       throws(
-              function() {
-                 SPUtility.GetSPField('foo bar');
-              },
-              "Unable to get a SPField named foo bar",
-              "Correct error was thrown"
-              );
+        function() {
+           SPUtility.GetSPField('foo bar');
+        },
+        "Should throw an exception when the field is not found.");
+   });
+
+   test("GetSPFieldByInternalName throws an error when the field was not found.", function() {
+      throws(
+        function() {
+           SPUtility.GetSPFieldByInternalName('foo_x0020_bar');
+        },
+        "Should throw an exception when the field is not found.");
    });
    
    test("GetSPFields()", function() {
@@ -49,6 +56,12 @@
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldText", "Wrong type: " + this.field.Type);
       ok(this.field.Textbox, "Should have a Textbox property.");
+   });
+
+   test("Get the field using the internal name", function() {
+      expect(1);
+      var field = SPUtility.GetSPFieldByInternalName('Title');
+      ok(field, 'Should allow getting fields using internal name.');
    });
 
    test("Get and set the value", function() {
@@ -429,6 +442,12 @@
       strictEqual(this.field.Type, "SPFieldDateTime", "Wrong type: " + this.field.Type);
    });
 
+   test("Get the field using the internal name", function() {
+      expect(1);
+      var field = SPUtility.GetSPFieldByInternalName('Date_x0020_Only');
+      ok(field, 'Should allow getting fields using internal name.');
+   });
+
    test("SetValue() takes individual date parameters", function() {
       expect(1);
 
@@ -441,6 +460,38 @@
               "SetValue() didn't set the date textbox.");
    });
 
+   test("SetValue() takes null or empty string to clear the field", function() {
+      expect(1);
+
+      var expected = ""; // clearing time effectively sets back to 12 AM
+      this.field.SetValue(null);
+
+      var actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "Validate SetValue() can clear out the date.");
+   });
+
+   test("SetDate() can set the date", function() {
+      expect(1);
+
+      var expected = "12/25/2014";
+      this.field.SetDate(2014, 12, 25);
+
+      var actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "Should set date.");
+   });
+
+   test("SetTime() should throw an exception for date only fields", function() {
+      var field = this.field;
+      throws(
+        function() {
+           field.SetTime(9, 30);
+        },
+        "Should throw an exception when trying to set the time on a date only field.");
+   });
 
    module("SPFieldDateTime (date and time)", {
       setup: function() {
@@ -454,16 +505,22 @@
       strictEqual(this.field.Type, "SPFieldDateTime", "Wrong type: " + this.field.Type);
    });
 
+   test("Get the field using the internal name", function() {
+      expect(1);
+      var field = SPUtility.GetSPFieldByInternalName('Date_x0020_and_x0020_Time');
+      ok(field, 'Should allow getting fields using internal name.');
+   });
+
    test("SetValue() takes year, month, day, hour (str), and minute (str) parameters", function() {
       expect(1);
 
       var expected = "08/15/2013 8:30AM";
       this.field.SetValue(2013, 8, 15, '8 AM', '30');
 
-      var actual = this.field.GetValue();
-      equal(actual.toString(),
-              expected,
-              "SetValue() didn't set the date textbox.");
+      var actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "SetValue() didn't set the date textbox.");
    });
    
    test("SetValue() takes year, month, day, hour (integer), and minute (str) parameters", function() {
@@ -472,8 +529,20 @@
       var expected = "08/15/2013 8:30AM";
       this.field.SetValue(2013, 8, 15, 8, '30');
 
-      var actual = this.field.GetValue();
-      equal(actual.toString(),
+      var actual = this.field.GetValue().toString();
+      equal(actual,
+              expected,
+              "SetValue() didn't set the date textbox.");
+   });
+
+   test("SetValue() takes year, month, day, hour (integer), and minute (integer) parameters", function() {
+      expect(1);
+
+      var expected = "08/15/2013 8:30AM";
+      this.field.SetValue(2013, 8, 15, 8, 30);
+
+      var actual = this.field.GetValue().toString();
+      equal(actual,
               expected,
               "SetValue() didn't set the date textbox.");
    });
@@ -481,13 +550,79 @@
    test("SetValue() takes null or empty string to clear the field", function() {
       expect(1);
 
-      var expected = "";
+      var expected = "12:00AM"; // clearing time effectively sets back to 12 AM
       this.field.SetValue(null);
 
-      var actual = this.field.GetValue();
+      var actual = this.field.GetValue().toString();
       equal(actual,
             expected,
             "Validate SetValue() can clear out the date.");
+   });
+
+   test("SetDate() takes year, month, and day parameters to set only the date", function() {
+      expect(1);
+
+      // clear the field
+      this.field.SetValue(null);
+
+      var expected = "05/07/2014 12:00AM";
+      this.field.SetDate(2014, 5, 7);
+
+      var actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "SetDate() should set only the date portion of the field (not the time).");
+   });
+
+   test("SetDate() takes null to clear out only the date", function() {
+      expect(2);
+
+      var expected = "04/02/2014 9:45AM";
+      this.field.SetValue(2014, 4, 2, 9, 45);
+
+      var actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "Should set date and time.");
+
+      expected = "9:45AM";
+      this.field.SetDate(null);
+      actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "SetDate() should change only the date portion of the field (not the time).");
+   });
+
+   test("SetTime() takes hour and minute parameters to set only the time", function() {
+      expect(1);
+
+      var expected = "8:30AM";
+      this.field.SetDate(null);
+      this.field.SetTime(8, 30);
+
+      var actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "SetDate() should clear only the date portion.");
+   });
+
+   test("SetTime() takes null to reset the time to 12 AM", function() {
+      expect(2);
+
+      var expected = "08/15/2014 3:25PM";
+      this.field.SetValue(2014, 8, 15, 15, 25);
+
+      var actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "Should set date and time.");
+
+      expected = "08/15/2014 12:00AM";
+      this.field.SetTime(null);
+      actual = this.field.GetValue().toString();
+      equal(actual,
+            expected,
+            "SetTime() should clear out only the time portion.");
    });
    
    test("SetValue() updates the label if the field is read only (issue #5)", function() {
@@ -502,7 +637,13 @@
             expected,
             "Validate SetValue() updates the read-only label.");
    });
-   
+
+   test("MakeEditable()", function() {
+      expect(1);
+
+      this.field.MakeEditable();
+      strictEqual($(this.field.Controls).css('display'), "inline");
+   });
    
    module("SPBooleanField (yes/no)", {
       setup: function() {
@@ -590,6 +731,12 @@
       expect(2);
       notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
       strictEqual(this.field.Type, "SPFieldLookup", "Wrong type: " + this.field.Type);
+   });
+
+   test("Get the field using the internal name", function() {
+      expect(1);
+      var field = SPUtility.GetSPFieldByInternalName('Small_x0020_Lookup');
+      ok(field, 'Should allow getting fields using internal name.');
    });
 
    test("GetValue() and SetValue()", function() {
