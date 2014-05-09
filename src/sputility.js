@@ -1030,7 +1030,7 @@ var SPUtility = (function ($) {
          $(this.HourDropdown).val(spDate.Hour);
       }
       
-      $(this.MinuteDropdown).val(spDate.Minute);
+      $(this.MinuteDropdown).val(spDate.PadWithZero(spDate.Minute));
 
       this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
