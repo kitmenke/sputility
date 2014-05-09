@@ -419,10 +419,10 @@
    test("SetValue() takes null or empty string to clear the field", function() {
       expect(1);
 
-      var expected = "";
+      var expected = "12:00AM";
       this.field.SetValue(null);
 
-      var actual = this.field.GetValue();
+      var actual = this.field.GetValue().toString();
       equal(actual,
             expected,
             "SetValue() didn't set the date textbox.");

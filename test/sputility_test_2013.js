@@ -704,8 +704,9 @@
       this.field.MakeReadOnly();
       var actual = this.field.ReadOnlyLabel.html();
 
-      strictEqual(actual,
-              expected,
+      // case seems to uppercase in SP 2007 so do a case insensitive compare
+      strictEqual(actual.toUpperCase(),
+              expected.toUpperCase(),
               "MakeReadOnly should set a read only label as a hyperlink.");
    });
    
@@ -909,7 +910,8 @@
       this.field.SetValue(expected);
       
       var actual = this.field.GetValue();
-      strictEqual(actual, expected);
+      // case seems to uppercase in SP 2007 so do a case insensitive compare
+      strictEqual(actual.toUpperCase(), expected.toUpperCase());
    });
 
    module("SPFieldNote (multi-line, ENHANCED rich text) [2010 and 2013 only]", {
