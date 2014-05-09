@@ -699,8 +699,8 @@
    
    test("MakeReadOnly() Default hyperlink", function() {
       expect(1);
-      this.field.SetValue("http://sputility.codeplex.com", "SPUtility.js");
-      var expected = '<a href="http://sputility.codeplex.com">SPUtility.js</a>';
+      this.field.SetValue("http://sputility.codeplex.com/", "SPUtility.js");
+      var expected = '<a href="http://sputility.codeplex.com/">SPUtility.js</a>';
       this.field.MakeReadOnly();
       var actual = this.field.ReadOnlyLabel.html();
 
