@@ -1,0 +1,32 @@
+<script src="/kitsite/Files/jquery.js" type="text/javascript"></script>
+<script src="/kitsite/Files/sputility.js" type="text/javascript"></script>
+<script type="text/javascript">
+// wait for the window to load
+$(window).load(function () {
+   try {
+      // On EditForm, a Content Type field is displayed but it won't be available on NewForm
+      // If you try to get the field on NewForm, an exception will be thrown and then logged below
+      var field = SPUtility.GetSPField('Content Type');
+
+      // Uncomment next line to hide
+      //field.Hide();
+
+      // Uncomment next line to make the field read only
+      //field.MakeReadOnly();
+
+      // set the value using the display name
+      field.SetValue('Item');
+      // ... or the content type ID!
+      //field.SetValue('0x0100DBD234B62463314F8DE3C4AA2635CD51');
+
+      // right now setting the value does not force the page postback
+      // if you want to trigger the postback, use the Dropdown onchange
+      // uncomment the next line to trigger the postback automatically
+      //field.Dropdown.onchange();
+   } catch (e) {
+      console.log(e);
+   }
+   
+
+});
+</script>
