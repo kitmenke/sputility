@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
-   Version: 0.9.0
-   Built: 2014-04-02
+   Version: 0.9.1
+   Built: 2014-05-08
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2014
@@ -27,6 +27,7 @@ var SPUtility = (function ($) {
     *   SPUtility Private Variables
    **/
    var _fieldsHashtable = null,
+      _internalNamesHashtable = null,
       _isSurveyForm = false; 
    
    /*
@@ -117,7 +118,7 @@ var SPUtility = (function ($) {
       });
       return val;
    }
-   
+
    function getSPFieldType(element) {
       var matches, comment, n;
       try {
@@ -131,9 +132,29 @@ var SPUtility = (function ($) {
                }
                break;
             }
-         }         
+         }
       } catch (ex) {
          throw 'getSPFieldType error: ' + ex.toString();
+      }
+      return null;
+   }
+
+   function getSPFieldInternalName(element) {
+      var matches, comment, n;
+      try {
+         // find the HTML comment and get the field's type
+         for (n = 0; n < element.childNodes.length; n += 1) {
+            if (8 === element.childNodes[n].nodeType) {
+               comment = element.childNodes[n].data;
+               matches = comment.match(/FieldInternalName="\w+/);
+               if (null !== matches) {
+                  return matches[0].substring(19); // remove FieldInternalName from the beginning
+               }
+               break;
+            }
+         }
+      } catch (ex) {
+         throw 'getSPFieldInternalName error: ' + ex.toString();
       }
       return null;
    }
@@ -150,6 +171,9 @@ var SPUtility = (function ($) {
          break;
       case 'SPFieldCurrency':
          field = new SPCurrencyField(spFieldParams);
+         break;
+      case 'ContentTypeChoice': // special type for content type field
+         field = new ContentTypeChoiceField(spFieldParams);
          break;
       case 'SPFieldChoice':
          // is this a normal dropdown field?
@@ -219,22 +243,32 @@ var SPUtility = (function ($) {
       }
       return field;
    }
-   
+
+   function getControlsCell(spFieldParams) {
+      if (null === spFieldParams.controlsCell) {
+         // the only time this property will NOT be null is in survey forms
+         spFieldParams.controlsCell = $(spFieldParams.labelCell).next()[0];
+         // use nextSibling?
+      }
+      return spFieldParams.controlsCell;
+   }
+
    function createSPField(spFieldParams) {
       var field = null;
       try {
-         if (null === spFieldParams.controlsCell) {
-            // the only time this property will NOT be null is in survey forms
-            spFieldParams.controlsCell = $(spFieldParams.labelCell).next()[0];
-            // use nextSibling?
-         }
-         spFieldParams.type = getSPFieldType(spFieldParams.controlsCell);
+         spFieldParams.type = getSPFieldType(getControlsCell(spFieldParams));
          
          // if we can't get the type then we can't create the field
          if (null === spFieldParams.type) {
-            return null;
+            if ($(getControlsCell(spFieldParams)).find('select[name$=ContentTypeChoice]').length > 0) {
+               // small hack to support content type fields
+               spFieldParams.type = 'ContentTypeChoice';
+            } else {
+               // normally, if we can't lookup type then throw an error
+               throw 'Unable to parse SPField type.';
+            }
          }
-         
+
          field = getSPFieldFromType(spFieldParams);
       } catch (e) {
          throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
@@ -248,8 +282,16 @@ var SPUtility = (function ($) {
          if (isSurveyForm) {
             elemLabel = elemTD;
          } else {
-            // navigate TD -> ??
-            elemLabel = $(elemTD).children()[0];
+            // attempt to get the element which contains the display name
+            // of the field
+            var elems = $(elemTD).children();
+            if (elems.length > 0) {
+               // normal case: the label is the h3.ms-standardheader element
+               elemLabel = elems[0];
+            } else {
+               // special case: content type label is contained within the td.ms-formlabel
+               elemLabel = elemTD;
+            }
             if (null === elemLabel || elemLabel.nodeName === 'NOBR') {
                return null; // attachments row not currently supported
             }
@@ -294,6 +336,19 @@ var SPUtility = (function ($) {
             if (null !== fieldParams) {
                _fieldsHashtable[fieldParams.name] = fieldParams;
             }
+         }
+      }
+   }
+
+   function lazyLoadInternalColumnNames() {
+      if (null == _internalNamesHashtable) {
+         var internalName, fieldParam, fieldName;
+         _internalNamesHashtable = {};
+         for (fieldName in _fieldsHashtable) {
+            fieldParam = _fieldsHashtable[fieldName];
+            internalName = getSPFieldInternalName(getControlsCell(fieldParam));
+            fieldParam.internalName = internalName;
+            _internalNamesHashtable[internalName] = fieldParam.name;
          }
       }
    }
@@ -535,6 +590,45 @@ var SPUtility = (function ($) {
    };
 
    /*
+   *   ContentTypeChoiceField class
+   *   Support for Content Type special field
+   */
+   function ContentTypeChoiceField(fieldParams) {
+      SPField.call(this, fieldParams);
+
+      if (this.Controls === null) {
+         return;
+      }
+
+      // in the content type field, there is no controls span
+      // so this.Controls is already set to the select element
+      this.Dropdown = this.Controls;
+   }
+
+   // Inherit from SPFIeld
+   ContentTypeChoiceField.prototype = Object.create(SPField.prototype);
+   
+   ContentTypeChoiceField.prototype.GetValue = function () {
+      return this.Dropdown.options[this.Dropdown.selectedIndex].text;
+   };
+
+   ContentTypeChoiceField.prototype.SetValue = function (value) {
+      var i, options, option;
+      // allow value to be either the text or the content type's ID
+      // so we check option.text and option.value
+      options = this.Dropdown.options;
+      for (i = 0; i < options.length; i += 1) {
+         option = options[i];
+         if (option.text === value || option.value === value) {
+            this.Dropdown.selectedIndex = i;
+            break;
+         }
+      }
+      this._updateReadOnlyLabel(this.GetValue());
+      return this;
+   };
+
+   /*
    *   SPChoiceField class
    *   Base class for dropdown, radio, and checkbox fields
    */
@@ -738,47 +832,84 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPDateTimeFieldValue class
-	 *	Used to set/get values for SPDateTimeField fields
-	 */
-   function SPDateTimeFieldValue(year, month, day, hour, strMinute) {
+    * SPDateTimeFieldValue class
+    * Used to set/get values for SPDateTimeField fields
+    */
+   function SPDateTimeFieldValue(year, month, day, hour, minute) {
+      this.Year = null;
+      this.Month = null;
+      this.Day = null;
+      this.IsTimeIncluded = false;
+      this.Hour = null;
+      this.Minute = null;
+
+      if (!isUndefined(year) && !isUndefined(month) && !isUndefined(day)) {
+         this.SetDate(year, month, day);
+      }
+
+      if (!isUndefined(hour) && !isUndefined(minute)) {
+         this.SetTime(hour, minute);
+      }
+   }
+
+   /*
+    * SPDateTimeFieldValue Public Methods
+    */
+   /*
+    * Set the date portion of the value
+    * year (integer), example: 2014
+    * month (integer), example: 5
+    * day (integer), example: 14
+    */
+   SPDateTimeFieldValue.prototype.SetDate = function (year, month, day) {
+      if (isString(year)) {
+         year = getInteger(year);
+      }
+      if (isString(month)) {
+         month = getInteger(month);
+      }
+      if (isString(day)) {
+         day = getInteger(day);
+      }
+      if (!isNumber(year) || !isNumber(month) || !isNumber(day)) {
+         throw "Unable to set date, invalid arguments (requires year, month, and day as integers).";
+      }
       this.Year = year;
       this.Month = month;
       this.Day = day;
-      this.IsTimeIncluded = !isUndefined(hour) && !isUndefined(strMinute);
-      
-      this.Hour = '12 AM';
-      this.HourInt = 0;
-      this.Minute = '00';
+   };
 
-      if (this.IsTimeIncluded) {
-         if (isNumber(hour)) {
-            if (hour < 0 || hour > 23) {
-               throw 'Hour number parameter must be between 0 and 23.';
-            }
-            this.Hour = this.ConvertHourToString(hour);
-            this.HourInt = hour;
-         } else if (isString(hour)) {
-            if (!this.IsValidHour(hour)) {
-               throw 'Hour string parameter must be formatted like "1 PM" or "12 AM".';
-            }
-            this.Hour = hour;
-            this.HourInt = this.ConvertHourToNumber(hour);
+   // hour either an integer 0-23 or a string like '1 PM' or '12 AM'
+   // hour either an integer 0-55 or a string like '00' or '35' (must be increments of 5)
+   SPDateTimeFieldValue.prototype.SetTime = function (hour, minute) {
+      this.IsTimeIncluded = false;
+      if (isNumber(hour)) {
+         if (hour < 0 || hour > 23) {
+            throw 'Hour number parameter must be between 0 and 23.';
          }
-         
-         if (!this.IsValidMinute(strMinute)) {
+         this.Hour = hour;
+      } else if (isString(hour)) {
+         if (!this.IsValidHour(hour)) {
+            throw 'Hour string parameter must be formatted like "1 PM" or "12 AM".';
+         }
+         this.Hour = this.ConvertHourToNumber(hour);
+      }
+      if (isNumber(minute)) {
+         if (minute < 0 || minute >= 60 || (minute % 5) !== 0) {
+            throw 'Minute parameter is not in the correct format. Needs to be formatted like 0, 5, or 35.';
+         }
+         this.Minute = minute;
+      } else if (isString(minute)) {
+         if (!this.IsValidMinute(minute)) {
             throw 'Minute parameter is not in the correct format. Needs to be formatted like "00", "05" or "35".';
          }
-         this.Minute = strMinute;
+         this.Minute = getInteger(minute);
       }
-   }
-		
-   /*
-    *	SPDateTimeFieldValue Public Methods
-    */
+      this.IsTimeIncluded = true;
+   };
 
    SPDateTimeFieldValue.prototype.IsValidDate = function () {
-      return !isUndefined(this.Year) && !isUndefined(this.Month) && !isUndefined(this.Day);
+      return this.Year !== null && this.Month !== null && this.Day !== null;
    };
 
    SPDateTimeFieldValue.prototype.IsValidHour = function (h) {
@@ -843,19 +974,32 @@ var SPUtility = (function ($) {
       return strDate;
    };
 
-   SPDateTimeFieldValue.prototype.toString = function () {
-      var str = this.GetShortDateString(), arrHour;
-      if (this.IsTimeIncluded && this.IsValidHour(this.Hour) && this.IsValidMinute(this.Minute)) {
-         arrHour = this.Hour.split(' ');
-         str += ' ' + arrHour[0] + ':' + this.Minute + arrHour[1];
+   // transforms a date object into a string
+   SPDateTimeFieldValue.prototype.GetShortTimeString = function () {
+      if (this.IsTimeIncluded) {
+         var arrHour = this.ConvertHourToString(this.Hour).split(' ');
+         return arrHour[0] + ':' + this.PadWithZero(this.Minute) + arrHour[1];
       }
-      return str;
+      return '';
+   };
+
+   SPDateTimeFieldValue.prototype.toString = function () {
+      var date = this.GetShortDateString();
+      var time = this.GetShortTimeString();
+      if (date === '' && time === '') {
+         return '';
+      } else if (date === '') {
+         return time;
+      } else if (time === '') {
+         return date;
+      } else {
+         return date + ' ' + time;
+      }
    };
    
    function SPDateTimeField(fieldParams) {
       SPField.call(this, fieldParams);
       this.DateTextbox = getInputControl(this);
-			
       this.HourDropdown = null;
       this.MinuteDropdown = null;
       this.IsDateOnly = true;
@@ -884,44 +1028,81 @@ var SPUtility = (function ($) {
    SPDateTimeField.prototype.GetValue = function () {
       var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split('/');
 
+      var spDate = new SPDateTimeFieldValue();
+      if (arrShortDate.length === 3) {
+         spDate.SetDate(arrShortDate[2], arrShortDate[0], arrShortDate[1]);
+      }
+
       if (!this.IsDateOnly) {
          hour = $(this.HourDropdown).val();
          if (this.HourValueFormat === 'number') {
             hour = getInteger(hour);
          }
          strMinute = $(this.MinuteDropdown).val();
-      }
-      
-      if (arrShortDate.length === 3) {
-         return new SPDateTimeFieldValue(arrShortDate[2], arrShortDate[0], arrShortDate[1], hour, strMinute);
+         spDate.SetTime(hour, strMinute);
       }
 
-      // empty or invalid date
-      return '';
+      return spDate;
    };
-		
-   SPDateTimeField.prototype.SetValue = function (year, month, day, hour, strMinute) {
-      var value = new SPDateTimeFieldValue(year, month, day, hour, strMinute);
-      $(this.DateTextbox).val(value.GetShortDateString());
-      if (null !== this.HourDropdown && null !== this.MinuteDropdown) {
-         // is the hour dropdown values in string or number format
-         // ex: 12 AM versus 0, 1 AM versus 1, etc.
-         if (this.HourValueFormat === 'string') {
-            $(this.HourDropdown).val(value.Hour);
-         } else {
-            $(this.HourDropdown).val(value.HourInt);
+      
+   SPDateTimeField.prototype.SetValue = function (year, month, day, hour, minute) {
+      if (year === null || year === "") {
+         this.SetDate(null);
+         if (!this.IsDateOnly) {
+            this.SetTime(null);
          }
-         
-         $(this.MinuteDropdown).val(value.Minute);
+         return this;
       }
+      this.SetDate(year, month, day);
+      if (!isUndefined(hour) && !isUndefined(minute)) {
+         this.SetTime(hour, minute);
+      }
+      return this;
+   };
+
+   SPDateTimeField.prototype.SetDate = function (year, month, day) {
+      if (year === null || year === "") {
+         $(this.DateTextbox).val('');
+         return this;
+      }
+      var spDate = new SPDateTimeFieldValue();
+      spDate.SetDate(year, month, day);
+      $(this.DateTextbox).val(spDate.GetShortDateString());
+      this._updateReadOnlyLabel(this.GetValue().toString());
+      return this;
+   };
+
+   SPDateTimeField.prototype.SetTime = function (hour, minute) {
+      if (this.IsDateOnly) {
+         throw "Unable to set the time for a Date only field.";
+      }
+
+      var spDate = new SPDateTimeFieldValue();
+      
+      if (hour === null || hour === "") {
+         spDate.SetTime(0, 0);
+      } else {
+         spDate.SetTime(hour, minute);
+      }
+      
+      // is the hour dropdown values in string or number format
+      // ex: 12 AM versus 0, 1 AM versus 1, etc.
+      if (this.HourValueFormat === 'string') {
+         $(this.HourDropdown).val(spDate.ConvertHourToString(spDate.Hour));
+      } else {
+         $(this.HourDropdown).val(spDate.Hour);
+      }
+      
+      $(this.MinuteDropdown).val(spDate.PadWithZero(spDate.Minute));
+
       this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
    
    /*
-	 *	SPBooleanField class
-	 *	Supports yes/no fields (SPFieldBoolean)
-	 */
+    * SPBooleanField class
+    * Supports yes/no fields (SPFieldBoolean)
+    */
    function SPBooleanField(fieldParams) {
       SPField.call(this, fieldParams);
       this.Checkbox = $(getInputControl(this));
@@ -931,8 +1112,8 @@ var SPUtility = (function ($) {
    SPBooleanField.prototype = Object.create(SPField.prototype);
 
    /*
-    *	SPBooleanField Public Methods
-    *	Overrides SPField class methods.
+    * SPBooleanField Public Methods
+    * Overrides SPField class methods.
     */
    SPBooleanField.prototype.GetValue = function () {
       // double negative to return a boolean value
@@ -946,9 +1127,9 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPURLField class
-	 *	Supports hyperlink fields (SPFieldURL)
-	 */
+    * SPURLField class
+    * Supports hyperlink fields (SPFieldURL)
+    */
    function SPURLField(fieldParams) {
       SPField.call(this, fieldParams);
       if (this.Controls === null) {
@@ -968,10 +1149,10 @@ var SPUtility = (function ($) {
    
    // Inherit from SPField
    SPURLField.prototype = Object.create(SPField.prototype);
-		
+      
    /*
-    *	SPURLField Public Methods
-    *	Overrides SPField class methods.
+    * SPURLField Public Methods
+    * Overrides SPField class methods.
     */
    SPURLField.prototype.GetValue = function () {
       return [this.TextboxURL.val(), this.TextboxDescription.val()];
@@ -1006,9 +1187,9 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPDropdownLookupField class
-	 *	Supports single select lookup fields
-	 */
+    * SPDropdownLookupField class
+    * Supports single select lookup fields
+    */
    function SPDropdownLookupField(fieldParams, elemSelect) {
       SPField.call(this, fieldParams);
       if (this.Controls === null) {
@@ -1050,9 +1231,9 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPDropdownLookupField class
-	 *	Supports single select lookup fields
-	 */
+    * SPDropdownLookupField class
+    * Supports single select lookup fields
+    */
    function SPAutocompleteLookupField(fieldParams, elemInputs) {
       SPField.call(this, fieldParams);
       if (this.Controls === null) {
@@ -1121,9 +1302,9 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPPlainNoteField class
-	 *	Supports multi-line plain text fields (SPFieldNote)
-	 */
+    * SPPlainNoteField class
+    * Supports multi-line plain text fields (SPFieldNote)
+    */
    function SPPlainNoteField(fieldParams, textarea) {
       SPField.call(this, fieldParams);
       this.Textbox = textarea;
@@ -1144,9 +1325,9 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPRichNoteField class
-	 *	Supports multi-line rich text fields (SPFieldNote)
-	 */
+    * SPRichNoteField class
+    * Supports multi-line rich text fields (SPFieldNote)
+    */
    function SPRichNoteField(fieldParams, textarea) {
       SPPlainNoteField.call(this, fieldParams, textarea);
       this.TextType = "Rich";
@@ -1168,9 +1349,9 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPEnhancedNoteField class
-	 *	Supports multi-line, enhanced rich text fields in SharePoint 2010/2013 (SPFieldNote)
-	 */
+    * SPEnhancedNoteField class
+    * Supports multi-line, enhanced rich text fields in SharePoint 2010/2013 (SPFieldNote)
+    */
    function SPEnhancedNoteField(fieldParams, hiddenInputs) {
       SPField.call(this, fieldParams);
       this.Textbox = hiddenInputs[0];
@@ -1193,9 +1374,9 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPFileField class
-	 *	Supports the name field of a Document Library
-	 */
+    * SPFileField class
+    * Supports the name field of a Document Library
+    */
    function SPFileField(fieldParams) {
       SPTextField.call(this, fieldParams);
       this.FileExtension = $(this.Textbox).parent().text();
@@ -1205,17 +1386,17 @@ var SPUtility = (function ($) {
    SPFileField.prototype = Object.create(SPTextField.prototype);
 
    /*
-    *	SPFileField Public Methods
-    *	Overrides SPTextField class methods.
+    * SPFileField Public Methods
+    * Overrides SPTextField class methods.
     */
    SPFileField.prototype.GetValue = function () {
       return $(this.Textbox).val() + this.FileExtension;
    };
    
    /*
-	 *	SPLookupMultiField class
-	 *	Supports multi select lookup fields
-	 */
+    * SPLookupMultiField class
+    * Supports multi select lookup fields
+    */
    function SPLookupMultiField(fieldParams) {
       SPField.call(this, fieldParams);
       if (this.Controls === null) {
@@ -1287,6 +1468,7 @@ var SPUtility = (function ($) {
 
          if (option[prop] === value) {
             option.selected = true;
+            break; // found what we were looking for
          } else {
             option.selected = false;
          }
@@ -1304,9 +1486,9 @@ var SPUtility = (function ($) {
    };
    
    /*
-	 *	SPUserField class
-	 *	Supports people fields (SPFieldUser)
-	 */
+    * SPUserField class
+    * Supports people fields (SPFieldUser)
+    */
    function SPUserField(fieldParams) {
       SPField.call(this, fieldParams);
       
@@ -1401,6 +1583,16 @@ var SPUtility = (function ($) {
       }
       
       return fieldParams.spField;
+   };
+
+   SPUtility.GetSPFieldByInternalName = function (strInternalName) {
+      lazyLoadSPFields();
+      lazyLoadInternalColumnNames();
+      var name = _internalNamesHashtable[strInternalName];
+      if (isUndefined(name)) {
+         throw 'Unable to get a SPField with internal name ' + strInternalName;
+      }
+      return SPUtility.GetSPField(name);
    };
 
    // Gets all of the SPFields on the page

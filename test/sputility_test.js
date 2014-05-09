@@ -75,6 +75,60 @@
       ok('make read only ok');
    });
 
+   module("ContentTypeChoice", {
+      setup: function() {
+         this.dropdownId = 'sputility-contenttype';
+         this.field = SPUtility.GetSPField('Content Type');
+      }
+   });
+
+   test("Get the field", function() {
+      expect(3);
+      notStrictEqual(this.field, null, "GetSPField returned null (should have returned an object).");
+      strictEqual(this.field.Type, "ContentTypeChoice", "Wrong type: " + this.field.Type);
+      strictEqual(
+              this.field.Dropdown.id,
+              this.dropdownId,
+              "Dropdown property is not set or is set to the wrong to the wrong DOM object.");
+   });
+
+   test("Get and set the value", function() {
+      expect(1);
+
+      var expected = 'Item';
+      this.field.SetValue(expected);
+
+      strictEqual(this.field.GetValue(),
+              expected,
+              "SetValue() failed to set Textbox.");
+   });
+
+   test("Get and set the value using content type id", function() {
+      expect(1);
+
+      var expected = 'Schedule and Reservations';
+      this.field.SetValue('0x01020072BB2A38F0DB49C3A96CF4FA8552995600C75E64B08FECF44588B8BCA97362240C');
+
+      strictEqual(this.field.GetValue(),
+              expected,
+              "SetValue() failed to set Textbox.");
+   });
+
+   test("MakeReadOnly()", function() {
+      expect(3);
+
+      var expected = 'Reservations';
+      this.field.SetValue('0x0102004F51EFDEA49C49668EF9C6744C8CF87D00107B364268BC6A4BB2FC37572DC79248');
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.text();
+
+      strictEqual(actual,
+          expected,
+          "Validate SetValue() updates the read-only label.");
+      strictEqual($(this.field.Controls).css('display'), "none");
+      this.field.MakeEditable();
+      ok($(this.field.Controls).css('display') !== "none");
+   });
 
    module("SPNumberField", {
       setup: function() {
