@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
-   Version: 0.9.1
-   Built: 2014-05-08
+   Version: 0.9.2
+   Built: 2014-07-01
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2014
@@ -277,7 +277,7 @@ var SPUtility = (function ($) {
    }
    
    function getFieldParams(elemTD, surveyElemTD, isSurveyForm) {
-      var fieldParams = null, fieldName = 'Unknown field', elemLabel, isRequired;
+      var fieldParams = null, fieldName = 'Unknown field', elemLabel, isRequired = false;
       try {
          if (isSurveyForm) {
             elemLabel = elemTD;
@@ -298,7 +298,9 @@ var SPUtility = (function ($) {
          }
          
          fieldName = $.trim($(elemLabel).text());
-         isRequired = fieldName.lastIndexOf(' *') === (fieldName.length - 2);
+         if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
+            isRequired = true;
+         }
          
          if (true === isRequired) {
             fieldName = fieldName.substring(0, fieldName.length - 2);
