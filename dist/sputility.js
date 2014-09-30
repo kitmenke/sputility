@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
-   Version: 0.9.2
-   Built: 2014-07-01
+   Version: 0.9.3
+   Built: 2014-09-29
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2014
@@ -822,13 +822,14 @@ var SPUtility = (function ($) {
          if (this.FillInAllowed) {
             checkbox = this.FillInElement;
             $(this.FillInTextbox).val(value);
-            checkbox.checked = true;
+            checkbox.checked = isChecked;
          } else {
             throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
          }
       } else {
-         checkbox.checked = true;
+         checkbox.checked = isChecked;
       }
+      
       this._updateReadOnlyLabel(this.GetValue().join("; "));
       return this;
    };

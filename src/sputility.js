@@ -813,13 +813,14 @@ var SPUtility = (function ($) {
          if (this.FillInAllowed) {
             checkbox = this.FillInElement;
             $(this.FillInTextbox).val(value);
-            checkbox.checked = true;
+            checkbox.checked = isChecked;
          } else {
             throw 'Unable to set value for ' + this.Name + ' the value "' + value + '" was not found.';
          }
       } else {
-         checkbox.checked = true;
+         checkbox.checked = isChecked;
       }
+      
       this._updateReadOnlyLabel(this.GetValue().join("; "));
       return this;
    };
