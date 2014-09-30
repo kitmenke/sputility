@@ -1,0 +1,30 @@
+<script src="/kitsite/Files/jquery-1.11.0.min.js"></script>
+<script src="/kitsite/Files/sputility.js"></script>
+
+<script>
+$(document).ready(function(){
+    // Get both fields
+    var radioField = SPUtility.GetSPField('Radio Button Field');
+    var checkboxField = SPUtility.GetSPField('Checkbox Field');
+
+    // define a function which shows or hides the issues field based on the sales field's value
+    function handleRadioFieldChange() {
+        // Hide the Listing Issues field if the selected value is No
+        if(radioField.GetValue() === 'No') {
+            checkboxField.Hide();
+        }
+        else {
+            checkboxField.Show();
+        }
+    }
+    
+    // -----  Hide/Show the field based on new selected value.
+    $(radioField.RadioButtons).each(function(index, obj) {
+        var radioButton = obj.value;
+        $(radioButton).change(handleRadioFieldChange);
+    });
+
+    // -----  Hide the field at the beginning if the default value is No.
+    handleRadioFieldChange();
+});
+</script>
