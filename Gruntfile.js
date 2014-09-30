@@ -39,7 +39,7 @@ module.exports = function(grunt) {
       },
     },
     qunit: {
-      files: ['test/**/*.html']
+      files: ['test/sputility.html']
     },
     jshint: {
       gruntfile: {
