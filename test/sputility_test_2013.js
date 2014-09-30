@@ -289,7 +289,7 @@
       strictEqual(this.field.Type, "SPFieldChoice", "Wrong type: " + this.field.Type);
       strictEqual(
               this.field.RadioButtons.length,
-              3,
+              5,
               "RadioButtons property is not set or is set to the wrong to the wrong DOM object.");
    });
 
@@ -376,6 +376,26 @@
       throws(function(){
          this.field.SetValue("foo bar");
       });
+   });
+
+   test("SetValue should allow a second boolean parameter to uncheck a box", function() {
+      expect(2);
+
+      var expected = ["Alpha", "Bravo", "Charlie", "Delta", "Echo"];
+      var field = this.field;
+      $(expected).each(function(i, str) {
+        field.SetValue(str);
+      });
+
+      deepEqual(this.field.GetValue(),
+              expected,
+              "SetValue should have checked all of the checkboxes");
+
+      this.field.SetValue("Bravo", false);
+      expected = ["Alpha", "Charlie", "Delta", "Echo"];
+      deepEqual(this.field.GetValue(),
+              expected,
+              "SetValue should have unchecked one of the checkboxes");
    });
 
    module("SPFieldChoice - Checkboxes with Fill-in", {
@@ -762,7 +782,7 @@
    
    module("SPLookupField (single-select, big lookup with autocomplete)", {
       setup: function() {
-         this.field = SPUtility.GetSPField('Large Lookup Field');
+         this.field = SPUtility.GetSPField('Large Lookup');
       }
    });
 
