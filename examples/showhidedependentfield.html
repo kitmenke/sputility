@@ -1,20 +1,56 @@
-<script src="/kitsite/Files/jquery-1.11.0.min.js"></script>
+<!--
+showhidedependentfield.html
+    Author: Kit Menke
+    Date: Oct. 1, 2014
+
+Requirements:
+    1. Make a checkbox field dependent on a radio button field.
+    2. Checkbox field should be set to "N/A" (and only "N/A") when radio field is "No".
+    3. Checkbox field should not allow setting "N/A" when radio field is "Yes".
+
+List setup:
+    Radio Button Field: Radio button choice field
+        Yes - See section below
+        No
+    Checkbox Field: Checkbox choice field
+        N/A
+        Any
+        Other
+        Values
+        You Want
+-->
+<script src="/kitsite/Files/jquery-1.11.1.min.js"></script>
 <script src="/kitsite/Files/sputility.js"></script>
 
 <script>
 $(document).ready(function(){
-    // Get both fields
+    // Get both SharePoint fields
     var radioField = SPUtility.GetSPField('Radio Button Field');
     var checkboxField = SPUtility.GetSPField('Checkbox Field');
+    
+    // Get the checkbox associated with N/A and hide it
+    $(checkboxField.Checkboxes).each(function(index, obj) {
+        if (obj.key === "N/A") {
+            var checkbox = obj.value;
+            // look up the DOM tree to hide the ROW the checkbox is in
+            $(checkbox).closest('tr').hide();
+            return false; // stop looping
+        }
+    });
 
     // define a function which shows or hides the issues field based on the sales field's value
     function handleRadioFieldChange() {
         // Hide the Listing Issues field if the selected value is No
         if(radioField.GetValue() === 'No') {
             checkboxField.Hide();
-        }
-        else {
+            // set all the other checkboxes to unchecked
+            $(checkboxField.GetValue()).each(function(index, value) {
+                checkboxField.SetValue(value, false);
+            });
+            checkboxField.SetValue("N/A");
+        } else {
             checkboxField.Show();
+            checkboxField.SetValue("N/A", false);
         }
     }
     
