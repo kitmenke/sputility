@@ -1,0 +1,60 @@
+<!--
+showhidedependentfield.html
+    Author: Kit Menke
+    Date: Oct. 1, 2014
+
+Requirements:
+    1. Make a text field dependent on a checkbox field.
+    2. Show the field when the checkbox is checked, otherwise hide it.
+
+List setup:
+    Checkbox Field: Checkbox choice field
+        Alpha
+        Bravo
+        Or any field values you want
+    Text Alpha: Textbox field
+    Text Bravo: Textbox field
+-->
+<script src="/kitsite/Files/jquery-1.11.1.min.js"></script>
+<script src="/kitsite/Files/sputility.js"></script>
+
+<script>
+$(document).ready(function(){
+    // Get both SharePoint fields
+    var checkboxField = SPUtility.GetSPField('Checkbox Field');
+    
+    // attach "change" event handlers to some of the checkboxes
+    $(checkboxField.Checkboxes).each(function(index, obj) {
+        var checkbox = obj.value;
+        var checkboxName = obj.key;
+        var dependentFieldName;
+
+        // set up which field is dependent on the checkbox
+        if (obj.key === "Alpha") {
+            // TODO: modify this to be your field names
+            dependentFieldName = "Text Alpha";
+        } else if (obj.key === "Bravo") {
+            // TODO: modify this to be your field names
+            dependentFieldName = "Text Bravo";
+        } else {
+            // no dependencies
+            dependentFieldName = null;
+            // default field maybe? right now just set to null;
+        }
+        
+        // show or hide field based on the dependent checkbox
+        if (dependentFieldName) {
+            var checkboxEventHandler = function() {
+                if (checkbox.checked) {
+                    SPUtility.GetSPField(dependentFieldName).Show();
+                } else {
+                    SPUtility.GetSPField(dependentFieldName).Hide();
+                }
+            };
+            $(checkbox).change(checkboxEventHandler);
+            // run once at startup
+            checkboxEventHandler();
+        }
+    });
+});
+</script>
