@@ -1,11 +1,11 @@
 /*
    Name: SPUtility.js
-   Version: 0.9.3
-   Built: 2014-09-29
+   Version: 0.9.4
+   Built: 2014-11-09
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2014
-   License: Microsoft Public License (MS-PL)
+   License: Microsoft Public License (MS-PL), The MIT License (MIT)
 */
 // Object.create shim for class inheritance
 if (!Object.create) {
@@ -1108,7 +1108,7 @@ var SPUtility = (function ($) {
     */
    function SPBooleanField(fieldParams) {
       SPField.call(this, fieldParams);
-      this.Checkbox = $(getInputControl(this));
+      this.Checkbox = getInputControl(this);
    }
    
    // Inherit from SPField
@@ -1120,13 +1120,36 @@ var SPUtility = (function ($) {
     */
    SPBooleanField.prototype.GetValue = function () {
       // double negative to return a boolean value
-      return !!this.Checkbox.val();
+      return !!this.Checkbox.checked;
+   };
+
+   SPBooleanField.prototype.GetValueString = function () {
+      return this.GetValue() ? "Yes" : "No";
    };
 
    SPBooleanField.prototype.SetValue = function (value) {
-      this.Checkbox.val(value);
-      this._updateReadOnlyLabel(this.GetValue().toString());
+      if (isString(value)) {
+         if ("YES" === value.toUpperCase()) {
+            value = true;
+         } else {
+            value = false;
+         }
+      } else {
+         if (value) {
+            value = true;
+         } else {
+            value = false;
+         }
+      }
+      this.Checkbox.checked = value;
+      this._updateReadOnlyLabel(this.GetValueString());
       return this;
+   };
+
+   // overriding the default MakeReadOnly function
+   // translate true/false to Yes/No
+   SPBooleanField.prototype.MakeReadOnly = function () {
+      return this._makeReadOnly(this.GetValueString());
    };
    
    /*

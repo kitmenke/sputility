@@ -688,6 +688,30 @@
               expected,
               "SetValue() didn't set the checkbox.");
    });
+
+   test("MakeReadOnly should show yes when setting field to checked", function() {
+      expect(1);
+
+      var expected = "Yes";
+      this.field.SetValue("yes");
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.html();
+      equal(actual,
+              expected,
+              "MakeReadOnly should set the label to be yes.");
+   });
+
+   test("MakeReadOnly should show no when setting field to unchecked", function() {
+      expect(1);
+
+      var expected = "No";
+      this.field.SetValue("no");
+      this.field.MakeReadOnly();
+      var actual = this.field.ReadOnlyLabel.html();
+      equal(actual,
+              expected,
+              "MakeReadOnly should set the label to be yes.");
+   });
    
    module("SPURLField (hyperlink)", {
       setup: function() {
