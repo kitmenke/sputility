@@ -1013,7 +1013,7 @@
    test("GetValue() and SetValue()", function() {
       expect(2);  
 
-      var expected = 'Test User';
+      var expected = 'Chris Menke';
       this.field.SetValue(expected);
       
       var actual = this.field.GetValue();

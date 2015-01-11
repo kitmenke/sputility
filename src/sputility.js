@@ -25,6 +25,10 @@ var SPUtility = (function ($) {
     *   SPUtility Private Methods
    **/
    
+   function isInternetExplorer() {
+      return navigator.userAgent.toLowerCase().indexOf('msie') >= 0;
+   }
+
    function isUndefined(obj) {
       return typeof obj === 'undefined';
    }
@@ -186,7 +190,11 @@ var SPUtility = (function ($) {
          break;
       case 'SPFieldUser':
       case 'SPFieldUserMulti':
-         field = new SPUserField(spFieldParams);
+         if (!isUndefined(window.SPClientPeoplePicker)) {
+            field = new SPUserField2013(spFieldParams);
+         } else {
+            field = new SPUserField(spFieldParams);
+         }
          break;
       case 'SPFieldURL':
          field = new SPURLField(spFieldParams);
@@ -1522,56 +1530,72 @@ var SPUtility = (function ($) {
       var controls = $(this.Controls).find('span.ms-usereditor');
       if (null !== controls && 1 === controls.length) {
          this.spanUserField = controls[0];
-         this.upLevelDiv = $(this.spanUserField.id + '_upLevelDiv');
-         this.textareaDownLevelTextBox = $(this.spanUserField.id + '_downlevelTextBox');
-         this.linkCheckNames = $(this.spanUserField.id + '_checkNames');
-         this.txtHiddenSpanData = $(this.spanUserField.id + '_hiddenSpanData');
-         this.GetValue = function () {
-            //this.textareaDownLevelTextBox.getValue()
-            return this.upLevelDiv.text();
-         };
-
-         this.SetValue = function (value) {
-            if ($.browser.msie) {
-               this.upLevelDiv.innerHTML = value;
-               this.txtHiddenSpanData.val(value);
-               this.linkCheckNames.click();
-            } else { // FireFox (maybe others?)
-               this.textareaDownLevelTextBox.val(value);
-               this.linkCheckNames.onclick();
-            }
-            this._updateReadOnlyLabel(this.GetValue());
-            return this;
-         };
-      } else if (!isUndefined(window.SPClientPeoplePicker)) {
-         // sharepoint 2013 uses a special autofill named SPClientPeoplePicker
-         // _layouts/15/clientpeoplepicker.debug.js
-         var pickerDiv = $(this.Controls).children()[0];
-         this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
-         this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
-         this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
-         this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
-         this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
-         //$('.sp-peoplepicker-userSpan')
-         this.GetValue = function () {
-            // look for any entries that have been resolved
-            var peopleSpans = $(this.ResolvedList).find('span.ms-entity-resolved');
-            if (peopleSpans.length > 0) {
-               return arrayToSemicolonList(peopleSpans);
-            }
-            return '';
-         };
-         this.SetValue = function (value) {
-            this.ClientPeoplePicker.AddUserKeys(value, false);
-            this._updateReadOnlyLabel(this.GetValue());
-            return this;
-         };
+         this.upLevelDiv = $("#" + this.spanUserField.id + '_upLevelDiv');
+         this.textareaDownLevelTextBox = $("#" + this.spanUserField.id + '_downlevelTextBox');
+         this.linkCheckNames = $("#" + this.spanUserField.id + '_checkNames');
+         this.txtHiddenSpanData = $("#" + this.spanUserField.id + '_hiddenSpanData');
       }
    }
    
    // Inherit from SPField
    SPUserField.prototype = Object.create(SPField.prototype);
 
+   SPUserField.prototype.GetValue = function () {
+      return this.upLevelDiv.text();
+   };
+
+   SPUserField.prototype.SetValue = function (value) {
+      if (isInternetExplorer()) {
+         this.upLevelDiv.innerHTML = value;
+         this.txtHiddenSpanData.val(value);
+         this.linkCheckNames.click();
+      } else { // FireFox (maybe others?)
+         this.textareaDownLevelTextBox.val(value);
+         this.linkCheckNames.onclick();
+      }
+      this._updateReadOnlyLabel(this.GetValue());
+      return this;
+   };
+
+   /*
+    * SPUserField2013 class
+    * Supports people fields for SharePoint 2013 (SPFieldUser)
+    */
+   function SPUserField2013(fieldParams) {
+      SPField.call(this, fieldParams);
+      
+      if (this.Controls === null) {
+         return;
+      }
+
+      // sharepoint 2013 uses a special autofill named SPClientPeoplePicker
+      // _layouts/15/clientpeoplepicker.debug.js
+      var pickerDiv = $(this.Controls).children()[0];
+      this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
+      this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
+      //this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
+      //this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
+      //this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
+   }
+
+   // Inherit from SPField
+   SPUserField2013.prototype = Object.create(SPField.prototype);
+
+   SPUserField2013.prototype.GetValue = function () {
+      return this.ClientPeoplePicker.GetAllUserInfo();
+   };
+
+   SPUserField2013.prototype.SetValue = function (value) {
+      if (isUndefined(value) || value === null || value === '') {
+         // delete the user if passed null/empty
+         this.ClientPeoplePicker.DeleteProcessedUser();
+      } else {
+         $(this.EditorInput).val(value);
+         this.ClientPeoplePicker.AddUnresolvedUserFromEditor(true);
+         this._updateReadOnlyLabel(this.GetValue());
+      }
+      return this;
+   };
 
    /**
     *   SPUtility Global object and Public Methods
