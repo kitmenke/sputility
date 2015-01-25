@@ -1530,10 +1530,10 @@ var SPUtility = (function ($) {
       var controls = $(this.Controls).find('span.ms-usereditor');
       if (null !== controls && 1 === controls.length) {
          this.spanUserField = controls[0];
-         this.upLevelDiv = $("#" + this.spanUserField.id + '_upLevelDiv');
-         this.textareaDownLevelTextBox = $("#" + this.spanUserField.id + '_downlevelTextBox');
-         this.linkCheckNames = $("#" + this.spanUserField.id + '_checkNames');
-         this.txtHiddenSpanData = $("#" + this.spanUserField.id + '_hiddenSpanData');
+         this.upLevelDiv = $("#" + this.spanUserField.id + '_upLevelDiv')[0];
+         this.textareaDownLevelTextBox = $("#" + this.spanUserField.id + '_downlevelTextBox')[0];
+         this.linkCheckNames = $("#" + this.spanUserField.id + '_checkNames')[0];
+         this.txtHiddenSpanData = $("#" + this.spanUserField.id + '_hiddenSpanData')[0];
       }
    }
    
@@ -1541,18 +1541,17 @@ var SPUtility = (function ($) {
    SPUserField.prototype = Object.create(SPField.prototype);
 
    SPUserField.prototype.GetValue = function () {
-      return this.upLevelDiv.text();
+      return $(this.upLevelDiv).text();
    };
 
    SPUserField.prototype.SetValue = function (value) {
-      if (isInternetExplorer()) {
-         this.upLevelDiv.innerHTML = value;
-         this.txtHiddenSpanData.val(value);
-         this.linkCheckNames.click();
+      if (isInternetExplorer()) { // internet explorer
+         $(this.upLevelDiv).html(value);
+         $(this.txtHiddenSpanData).val(value);
       } else { // FireFox (maybe others?)
-         this.textareaDownLevelTextBox.val(value);
-         this.linkCheckNames.onclick();
+         $(this.textareaDownLevelTextBox).val(value);
       }
+      $(this.linkCheckNames).click();
       this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
