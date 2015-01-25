@@ -1,0 +1,84 @@
+<!--
+gettingstarted.html
+    Author: Kit Menke
+    Date: January 25, 2014
+
+Get started with SPUtility.js!
+
+First, make sure you've uploaded jQuery and SPUtility to a library in your SharePoint site.
+
+Installation instructions are here:
+https://sputility.codeplex.com/wikipage?title=Installation
+
+Second, update the "src" attribute for the jQuery and SPUtility scripts below.
+
+Third, upload this HTML page to the same Document library.
+--> 
+<!--         vvvvvvvvvvvvvvvvvvvvvvvvvvv CHANGE ME -->
+<script src="/kitsite/Files/jquery.js" type="text/javascript"></script>
+<script src="/kitsite/Files/sputility.js" type="text/javascript"></script>
+<!--         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ CHANGE ME -->
+
+<!-- Messages to help figure out where your problem is! -->
+<div id="sputility-error-jquery" style="display:none">
+   <span style="color:red">jQuery was not found!</span> Please check to make sure your script src is correct and then upload gettingstarted.html again!
+</div>
+<div id="sputility-success-jquery" style="display:none">
+   <span style="color:green">OK!</span> jQuery was loaded!
+</div>
+<div id="sputility-error-sputility" style="display:none">
+   <span style="color:red">SPUtility was not found!</span> Please check to make sure your script src is correct and then upload gettingstarted.html again!
+</div>
+<div id="sputility-success-sputility" style="display:none">
+   <span style="color:green">OK!</span> SPUtility was loaded!
+</div>
+<div id="sputility-output" style="display:none">
+   <div>Found a total of <span id="sputility-field-count"></span> fields!</div>
+   <div><strong>Field list:</strong></div>
+   <div id="sputility-fields"></div>
+</div>
+
+<script type="text/javascript">
+var sputilityError = false;
+if (typeof jQuery === 'undefined') {
+   sputilityError = true;
+   document.getElementById('sputility-error-jquery').style.display = 'block';
+} else {
+   document.getElementById('sputility-success-jquery').style.display = 'block';
+}
+if (typeof SPUtility === 'undefined') {
+   sputilityError = true;
+   document.getElementById('sputility-error-sputility').style.display = 'block';
+} else {
+   document.getElementById('sputility-success-sputility').style.display = 'block';
+}
+
+if (!sputilityError) {
+   // wait for the window to load
+   $(window).load(function () {
+      try {
+         var count = 0;
+         var fields = SPUtility.GetSPFields();
+         var list = "";
+         for (var name in fields) {
+            if (fields.hasOwnProperty(name)) {
+               count++;
+               list += name;
+               list += " ("
+               list += SPUtility.GetSPField(name).Type;
+               list += ")<br/>"
+            }
+         }
+         $('#sputility-output').show();
+         $('#sputility-field-count').text(count);
+         $('#sputility-fields').html(list);
+      } catch (e) {
+         if (typeof console === 'undefined') {
+            alert(e);
+         } else {
+            console.log(e);
+         }
+      }
+   });
+}
+</script>
