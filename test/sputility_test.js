@@ -473,7 +473,7 @@
    test("SetValue() takes null or empty string to clear the field", function() {
       expect(1);
 
-      var expected = "12:00AM";
+      var expected = "12:00 AM";
       this.field.SetValue(null);
 
       var actual = this.field.GetValue().toString();
