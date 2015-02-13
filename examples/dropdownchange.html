@@ -1,0 +1,36 @@
+<!--
+dropdownchange.html
+    Author: Kit Menke
+    Date: February 12, 2015
+
+Two single select dropdown fields: one for Country and one for City.
+
+If the Country field value is set to 'Other', then hide the City field.
+-->
+<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js"></script>
+<script src="/kitsite/Files/sputility.js"></script>
+<script>
+// wait for the window to load
+$(document).ready(function () {
+    // Get a single select dropdown field
+    var countryField = SPUtility.GetSPField('Country');
+
+    // create a function to show or hide City based on Country's value
+    var showOrHideField = function() {
+    	var countryFieldValue = countryField.GetValue();
+		// Hide the City field if the selected value is Other
+	    if(countryFieldValue === 'Other') {
+	        SPUtility.HideSPField('City');
+	    }
+	    else {
+	        SPUtility.ShowSPField('City');
+	    }
+    };
+    
+    // run at startup (for edit form)
+    showOrHideField();
+
+    // make sure if the user changes the value we handle it
+    $(countryField.Dropdown).on('change', showOrHideField);
+});
+</script>
