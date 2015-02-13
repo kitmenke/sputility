@@ -1,10 +1,10 @@
 /*
    Name: SPUtility.js
-   Version: 0.9.4
-   Built: 2014-11-09
+   Version: 0.10.0
+   Built: 2015-02-12
    Author: Kit Menke
    https://sputility.codeplex.com/
-   Copyright (c) 2014
+   Copyright (c) 2015
    License: Microsoft Public License (MS-PL), The MIT License (MIT)
 */
 // Object.create shim for class inheritance
@@ -28,12 +28,17 @@ var SPUtility = (function ($) {
    **/
    var _fieldsHashtable = null,
       _internalNamesHashtable = null,
+      _timeFormat = null, // 12HR or 24HR
       _isSurveyForm = false; 
    
    /*
     *   SPUtility Private Methods
    **/
-   
+
+   function isInternetExplorer() {
+      return navigator.userAgent.toLowerCase().indexOf('msie') >= 0;
+   }
+
    function isUndefined(obj) {
       return typeof obj === 'undefined';
    }
@@ -195,7 +200,11 @@ var SPUtility = (function ($) {
          break;
       case 'SPFieldUser':
       case 'SPFieldUserMulti':
-         field = new SPUserField(spFieldParams);
+         if (!isUndefined(window.SPClientPeoplePicker)) {
+            field = new SPUserField2013(spFieldParams);
+         } else {
+            field = new SPUserField(spFieldParams);
+         }
          break;
       case 'SPFieldURL':
          field = new SPURLField(spFieldParams);
@@ -381,21 +390,7 @@ var SPUtility = (function ($) {
       
       toggleSPFieldRows(fieldParams.labelRow, fieldParams.controlsRow, bShowField);
    }
-   
-   function arrayToSemicolonList(arr) {
-      var text = '';
       
-      $(arr).each(function (i, elem) {
-         text += $(elem).text() + '; ';
-      });
-      
-      if (text.length > 2) {
-         text = text.substring(0, text.length - 2);
-      }
-      
-      return text;
-   }
-   
    /*
     *   SPUtility Classes
    **/
@@ -838,20 +833,23 @@ var SPUtility = (function ($) {
     * SPDateTimeFieldValue class
     * Used to set/get values for SPDateTimeField fields
     */
-   function SPDateTimeFieldValue(year, month, day, hour, minute) {
+   function SPDateTimeFieldValue(year, month, day, hour, minute, format) {
       this.Year = null;
       this.Month = null;
       this.Day = null;
       this.IsTimeIncluded = false;
       this.Hour = null;
       this.Minute = null;
+      this.TimeFormat = null; // 12HR or 24HR
 
       if (!isUndefined(year) && !isUndefined(month) && !isUndefined(day)) {
          this.SetDate(year, month, day);
-      }
-
-      if (!isUndefined(hour) && !isUndefined(minute)) {
-         this.SetTime(hour, minute);
+         if (!isUndefined(hour) && !isUndefined(minute)) {
+            this.SetTime(hour, minute);
+            if (!isUndefined(format)) {
+               this.SetTimeFormat(format);
+            }
+         }
       }
    }
 
@@ -911,6 +909,13 @@ var SPUtility = (function ($) {
       this.IsTimeIncluded = true;
    };
 
+   SPDateTimeFieldValue.prototype.SetTimeFormat = function (format) {
+      if (isUndefined(format) || !(format === '12HR' || format === '24HR')) {
+         throw "Unable to set format, should be 12HR or 24HR.";
+      }
+      this.TimeFormat = format;
+   };
+
    SPDateTimeFieldValue.prototype.IsValidDate = function () {
       return this.Year !== null && this.Month !== null && this.Day !== null;
    };
@@ -921,18 +926,6 @@ var SPUtility = (function ($) {
 
    SPDateTimeFieldValue.prototype.IsValidMinute = function (m) {
       return !isUndefined(m) && (/^([0-5](0|5))$/).test(m);
-   };
-   
-   SPDateTimeFieldValue.prototype.ConvertHourToString = function (num) {
-      var hour;
-      if (num === 0) {
-         hour = '12 AM';
-      } else if (num > 12) {
-         hour = (num - 12).toString() + ' PM';
-      } else {
-         hour = num.toString() + ' AM';
-      }
-      return hour;
    };
    
    SPDateTimeFieldValue.prototype.ConvertHourToNumber = function (str) {
@@ -960,7 +953,7 @@ var SPUtility = (function ($) {
             return '';
          }
       }
-      if (typeof d === 'number' && d < 10) {
+      if (isNumber(d) && d < 10) {
          return '0' + d.toString();
       }
       return d.toString();
@@ -971,17 +964,45 @@ var SPUtility = (function ($) {
       if (!this.IsValidDate()) {
          return '';
       }
-      var strDate = this.PadWithZero(this.Month) + "/" +
-         this.PadWithZero(this.Day) + "/" +
-         this.PadWithZero(this.Year);
+      var strDate;
+      if (this.TimeFormat === '12HR') {
+         // m/d/YYYY
+         strDate = this.Month + "/" +
+            this.Day + "/" +
+            this.Year;
+      } else {
+         // DD/MM/YYYY
+         strDate = this.PadWithZero(this.Day) + "/" +
+            this.PadWithZero(this.Month) + "/" +
+            this.Year;
+      }
+      
       return strDate;
+   };
+
+   // transforms a date object into a string
+   SPDateTimeFieldValue.prototype.GetHour = function () {
+      var h = this.Hour;
+      if (this.TimeFormat === '12HR') {
+         if (h === 0) {
+            h = 12;
+         } else if (h > 12) {
+            h = h - 12;
+         }
+      }
+      return h;
    };
 
    // transforms a date object into a string
    SPDateTimeFieldValue.prototype.GetShortTimeString = function () {
       if (this.IsTimeIncluded) {
-         var arrHour = this.ConvertHourToString(this.Hour).split(' ');
-         return arrHour[0] + ':' + this.PadWithZero(this.Minute) + arrHour[1];
+         if (this.TimeFormat === '12HR') {
+            // ex: 3/14/2014 1:00 AM
+            return this.GetHour() + ':' + this.PadWithZero(this.Minute) + (this.Hour < 12 ? ' AM' : ' PM');
+         } else {
+            // ex: 14/03/2014 01:00
+            return this.PadWithZero(this.GetHour()) + ':' + this.PadWithZero(this.Minute);
+         }
       }
       return '';
    };
@@ -1032,8 +1053,19 @@ var SPUtility = (function ($) {
       var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split('/');
 
       var spDate = new SPDateTimeFieldValue();
+      spDate.SetTimeFormat(_timeFormat);
       if (arrShortDate.length === 3) {
-         spDate.SetDate(arrShortDate[2], arrShortDate[0], arrShortDate[1]);
+         var year, month, day;
+         if (_timeFormat === '12HR') {
+            month = arrShortDate[0];
+            day = arrShortDate[1];
+            year = arrShortDate[2];
+         } else {
+            day = arrShortDate[0];
+            month = arrShortDate[1];
+            year = arrShortDate[2];
+         }
+         spDate.SetDate(year, month, day);
       }
 
       if (!this.IsDateOnly) {
@@ -1069,6 +1101,7 @@ var SPUtility = (function ($) {
          return this;
       }
       var spDate = new SPDateTimeFieldValue();
+      spDate.SetTimeFormat(_timeFormat);
       spDate.SetDate(year, month, day);
       $(this.DateTextbox).val(spDate.GetShortDateString());
       this._updateReadOnlyLabel(this.GetValue().toString());
@@ -1081,7 +1114,7 @@ var SPUtility = (function ($) {
       }
 
       var spDate = new SPDateTimeFieldValue();
-      
+      spDate.SetTimeFormat(_timeFormat);
       if (hour === null || hour === "") {
          spDate.SetTime(0, 0);
       } else {
@@ -1089,9 +1122,21 @@ var SPUtility = (function ($) {
       }
       
       // is the hour dropdown values in string or number format
+      // sharepoint 2013 uses number format exclusively
+      // sharepoint 2007 uses string format
       // ex: 12 AM versus 0, 1 AM versus 1, etc.
       if (this.HourValueFormat === 'string') {
-         $(this.HourDropdown).val(spDate.ConvertHourToString(spDate.Hour));
+         var strHour;
+         if (spDate.Hour === 0) {
+            strHour = '12 AM';
+         } else if (spDate.Hour === 12) {
+            strHour = '12 PM';
+         } else if (spDate.Hour > 12) {
+            strHour = (spDate.Hour - 12).toString() + ' PM';
+         } else {
+            strHour = spDate.Hour.toString() + ' AM';
+         }
+         $(this.HourDropdown).val(strHour);
       } else {
          $(this.HourDropdown).val(spDate.Hour);
       }
@@ -1531,56 +1576,71 @@ var SPUtility = (function ($) {
       var controls = $(this.Controls).find('span.ms-usereditor');
       if (null !== controls && 1 === controls.length) {
          this.spanUserField = controls[0];
-         this.upLevelDiv = $(this.spanUserField.id + '_upLevelDiv');
-         this.textareaDownLevelTextBox = $(this.spanUserField.id + '_downlevelTextBox');
-         this.linkCheckNames = $(this.spanUserField.id + '_checkNames');
-         this.txtHiddenSpanData = $(this.spanUserField.id + '_hiddenSpanData');
-         this.GetValue = function () {
-            //this.textareaDownLevelTextBox.getValue()
-            return this.upLevelDiv.text();
-         };
-
-         this.SetValue = function (value) {
-            if ($.browser.msie) {
-               this.upLevelDiv.innerHTML = value;
-               this.txtHiddenSpanData.val(value);
-               this.linkCheckNames.click();
-            } else { // FireFox (maybe others?)
-               this.textareaDownLevelTextBox.val(value);
-               this.linkCheckNames.onclick();
-            }
-            this._updateReadOnlyLabel(this.GetValue());
-            return this;
-         };
-      } else if (!isUndefined(window.SPClientPeoplePicker)) {
-         // sharepoint 2013 uses a special autofill named SPClientPeoplePicker
-         // _layouts/15/clientpeoplepicker.debug.js
-         var pickerDiv = $(this.Controls).children()[0];
-         this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
-         this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
-         this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
-         this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
-         this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
-         //$('.sp-peoplepicker-userSpan')
-         this.GetValue = function () {
-            // look for any entries that have been resolved
-            var peopleSpans = $(this.ResolvedList).find('span.ms-entity-resolved');
-            if (peopleSpans.length > 0) {
-               return arrayToSemicolonList(peopleSpans);
-            }
-            return '';
-         };
-         this.SetValue = function (value) {
-            this.ClientPeoplePicker.AddUserKeys(value, false);
-            this._updateReadOnlyLabel(this.GetValue());
-            return this;
-         };
+         this.upLevelDiv = $("#" + this.spanUserField.id + '_upLevelDiv')[0];
+         this.textareaDownLevelTextBox = $("#" + this.spanUserField.id + '_downlevelTextBox')[0];
+         this.linkCheckNames = $("#" + this.spanUserField.id + '_checkNames')[0];
+         this.txtHiddenSpanData = $("#" + this.spanUserField.id + '_hiddenSpanData')[0];
       }
    }
    
    // Inherit from SPField
    SPUserField.prototype = Object.create(SPField.prototype);
 
+   SPUserField.prototype.GetValue = function () {
+      return $(this.upLevelDiv).text();
+   };
+
+   SPUserField.prototype.SetValue = function (value) {
+      if (isInternetExplorer()) { // internet explorer
+         $(this.upLevelDiv).html(value);
+         $(this.txtHiddenSpanData).val(value);
+      } else { // FireFox (maybe others?)
+         $(this.textareaDownLevelTextBox).val(value);
+      }
+      $(this.linkCheckNames).click();
+      this._updateReadOnlyLabel(this.GetValue());
+      return this;
+   };
+
+   /*
+    * SPUserField2013 class
+    * Supports people fields for SharePoint 2013 (SPFieldUser)
+    */
+   function SPUserField2013(fieldParams) {
+      SPField.call(this, fieldParams);
+      
+      if (this.Controls === null) {
+         return;
+      }
+
+      // sharepoint 2013 uses a special autofill named SPClientPeoplePicker
+      // _layouts/15/clientpeoplepicker.debug.js
+      var pickerDiv = $(this.Controls).children()[0];
+      this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
+      this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
+      //this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
+      //this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
+      //this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
+   }
+
+   // Inherit from SPField
+   SPUserField2013.prototype = Object.create(SPField.prototype);
+
+   SPUserField2013.prototype.GetValue = function () {
+      return this.ClientPeoplePicker.GetAllUserInfo();
+   };
+
+   SPUserField2013.prototype.SetValue = function (value) {
+      if (isUndefined(value) || value === null || value === '') {
+         // delete the user if passed null/empty
+         this.ClientPeoplePicker.DeleteProcessedUser();
+      } else {
+         $(this.EditorInput).val(value);
+         this.ClientPeoplePicker.AddUnresolvedUserFromEditor(true);
+         this._updateReadOnlyLabel(this.GetValue());
+      }
+      return this;
+   };
 
    /**
     *   SPUtility Global object and Public Methods
@@ -1635,5 +1695,22 @@ var SPUtility = (function ($) {
       toggleSPField(strFieldName, true);
    };
 
+   SPUtility.GetTimeFormat = function () {
+      return _timeFormat;
+   };
+
+   SPUtility.SetTimeFormat = function (format) {
+      if (format === '12HR' || format === '24HR') {
+         _timeFormat = format;
+      } else {
+         throw "Unable to set the time format, should be 12HR or 24HR.";
+      }
+   };
+
+   /*
+    * INITIALIZATION
+    */
+   SPUtility.SetTimeFormat('12HR');
+   
    return SPUtility;
 }(jQuery));

@@ -19,12 +19,13 @@ var SPUtility = (function ($) {
    **/
    var _fieldsHashtable = null,
       _internalNamesHashtable = null,
+      _timeFormat = null, // 12HR or 24HR
       _isSurveyForm = false; 
    
    /*
     *   SPUtility Private Methods
    **/
-   
+
    function isInternetExplorer() {
       return navigator.userAgent.toLowerCase().indexOf('msie') >= 0;
    }
@@ -380,21 +381,7 @@ var SPUtility = (function ($) {
       
       toggleSPFieldRows(fieldParams.labelRow, fieldParams.controlsRow, bShowField);
    }
-   
-   function arrayToSemicolonList(arr) {
-      var text = '';
       
-      $(arr).each(function (i, elem) {
-         text += $(elem).text() + '; ';
-      });
-      
-      if (text.length > 2) {
-         text = text.substring(0, text.length - 2);
-      }
-      
-      return text;
-   }
-   
    /*
     *   SPUtility Classes
    **/
@@ -837,20 +824,23 @@ var SPUtility = (function ($) {
     * SPDateTimeFieldValue class
     * Used to set/get values for SPDateTimeField fields
     */
-   function SPDateTimeFieldValue(year, month, day, hour, minute) {
+   function SPDateTimeFieldValue(year, month, day, hour, minute, format) {
       this.Year = null;
       this.Month = null;
       this.Day = null;
       this.IsTimeIncluded = false;
       this.Hour = null;
       this.Minute = null;
+      this.TimeFormat = null; // 12HR or 24HR
 
       if (!isUndefined(year) && !isUndefined(month) && !isUndefined(day)) {
          this.SetDate(year, month, day);
-      }
-
-      if (!isUndefined(hour) && !isUndefined(minute)) {
-         this.SetTime(hour, minute);
+         if (!isUndefined(hour) && !isUndefined(minute)) {
+            this.SetTime(hour, minute);
+            if (!isUndefined(format)) {
+               this.SetTimeFormat(format);
+            }
+         }
       }
    }
 
@@ -910,6 +900,13 @@ var SPUtility = (function ($) {
       this.IsTimeIncluded = true;
    };
 
+   SPDateTimeFieldValue.prototype.SetTimeFormat = function (format) {
+      if (isUndefined(format) || !(format === '12HR' || format === '24HR')) {
+         throw "Unable to set format, should be 12HR or 24HR.";
+      }
+      this.TimeFormat = format;
+   };
+
    SPDateTimeFieldValue.prototype.IsValidDate = function () {
       return this.Year !== null && this.Month !== null && this.Day !== null;
    };
@@ -920,18 +917,6 @@ var SPUtility = (function ($) {
 
    SPDateTimeFieldValue.prototype.IsValidMinute = function (m) {
       return !isUndefined(m) && (/^([0-5](0|5))$/).test(m);
-   };
-   
-   SPDateTimeFieldValue.prototype.ConvertHourToString = function (num) {
-      var hour;
-      if (num === 0) {
-         hour = '12 AM';
-      } else if (num > 12) {
-         hour = (num - 12).toString() + ' PM';
-      } else {
-         hour = num.toString() + ' AM';
-      }
-      return hour;
    };
    
    SPDateTimeFieldValue.prototype.ConvertHourToNumber = function (str) {
@@ -959,7 +944,7 @@ var SPUtility = (function ($) {
             return '';
          }
       }
-      if (typeof d === 'number' && d < 10) {
+      if (isNumber(d) && d < 10) {
          return '0' + d.toString();
       }
       return d.toString();
@@ -970,17 +955,45 @@ var SPUtility = (function ($) {
       if (!this.IsValidDate()) {
          return '';
       }
-      var strDate = this.PadWithZero(this.Month) + "/" +
-         this.PadWithZero(this.Day) + "/" +
-         this.PadWithZero(this.Year);
+      var strDate;
+      if (this.TimeFormat === '12HR') {
+         // m/d/YYYY
+         strDate = this.Month + "/" +
+            this.Day + "/" +
+            this.Year;
+      } else {
+         // DD/MM/YYYY
+         strDate = this.PadWithZero(this.Day) + "/" +
+            this.PadWithZero(this.Month) + "/" +
+            this.Year;
+      }
+      
       return strDate;
+   };
+
+   // transforms a date object into a string
+   SPDateTimeFieldValue.prototype.GetHour = function () {
+      var h = this.Hour;
+      if (this.TimeFormat === '12HR') {
+         if (h === 0) {
+            h = 12;
+         } else if (h > 12) {
+            h = h - 12;
+         }
+      }
+      return h;
    };
 
    // transforms a date object into a string
    SPDateTimeFieldValue.prototype.GetShortTimeString = function () {
       if (this.IsTimeIncluded) {
-         var arrHour = this.ConvertHourToString(this.Hour).split(' ');
-         return arrHour[0] + ':' + this.PadWithZero(this.Minute) + arrHour[1];
+         if (this.TimeFormat === '12HR') {
+            // ex: 3/14/2014 1:00 AM
+            return this.GetHour() + ':' + this.PadWithZero(this.Minute) + (this.Hour < 12 ? ' AM' : ' PM');
+         } else {
+            // ex: 14/03/2014 01:00
+            return this.PadWithZero(this.GetHour()) + ':' + this.PadWithZero(this.Minute);
+         }
       }
       return '';
    };
@@ -1031,8 +1044,19 @@ var SPUtility = (function ($) {
       var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split('/');
 
       var spDate = new SPDateTimeFieldValue();
+      spDate.SetTimeFormat(_timeFormat);
       if (arrShortDate.length === 3) {
-         spDate.SetDate(arrShortDate[2], arrShortDate[0], arrShortDate[1]);
+         var year, month, day;
+         if (_timeFormat === '12HR') {
+            month = arrShortDate[0];
+            day = arrShortDate[1];
+            year = arrShortDate[2];
+         } else {
+            day = arrShortDate[0];
+            month = arrShortDate[1];
+            year = arrShortDate[2];
+         }
+         spDate.SetDate(year, month, day);
       }
 
       if (!this.IsDateOnly) {
@@ -1068,6 +1092,7 @@ var SPUtility = (function ($) {
          return this;
       }
       var spDate = new SPDateTimeFieldValue();
+      spDate.SetTimeFormat(_timeFormat);
       spDate.SetDate(year, month, day);
       $(this.DateTextbox).val(spDate.GetShortDateString());
       this._updateReadOnlyLabel(this.GetValue().toString());
@@ -1080,7 +1105,7 @@ var SPUtility = (function ($) {
       }
 
       var spDate = new SPDateTimeFieldValue();
-      
+      spDate.SetTimeFormat(_timeFormat);
       if (hour === null || hour === "") {
          spDate.SetTime(0, 0);
       } else {
@@ -1088,9 +1113,21 @@ var SPUtility = (function ($) {
       }
       
       // is the hour dropdown values in string or number format
+      // sharepoint 2013 uses number format exclusively
+      // sharepoint 2007 uses string format
       // ex: 12 AM versus 0, 1 AM versus 1, etc.
       if (this.HourValueFormat === 'string') {
-         $(this.HourDropdown).val(spDate.ConvertHourToString(spDate.Hour));
+         var strHour;
+         if (spDate.Hour === 0) {
+            strHour = '12 AM';
+         } else if (spDate.Hour === 12) {
+            strHour = '12 PM';
+         } else if (spDate.Hour > 12) {
+            strHour = (spDate.Hour - 12).toString() + ' PM';
+         } else {
+            strHour = spDate.Hour.toString() + ' AM';
+         }
+         $(this.HourDropdown).val(strHour);
       } else {
          $(this.HourDropdown).val(spDate.Hour);
       }
@@ -1649,5 +1686,22 @@ var SPUtility = (function ($) {
       toggleSPField(strFieldName, true);
    };
 
+   SPUtility.GetTimeFormat = function () {
+      return _timeFormat;
+   };
+
+   SPUtility.SetTimeFormat = function (format) {
+      if (format === '12HR' || format === '24HR') {
+         _timeFormat = format;
+      } else {
+         throw "Unable to set the time format, should be 12HR or 24HR.";
+      }
+   };
+
+   /*
+    * INITIALIZATION
+    */
+   SPUtility.SetTimeFormat('12HR');
+   
    return SPUtility;
 }(jQuery));
