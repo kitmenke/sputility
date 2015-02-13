@@ -471,13 +471,19 @@
    test("SetValue() takes individual date parameters", function() {
       expect(1);
 
-      var expected = "08/15/2013";
       this.field.SetValue(2013, 8, 15);
 
-      var actual = this.field.GetValue();
-      equal(actual.toString(),
-              expected,
-              "SetValue() didn't set the date textbox.");
+      var actual = this.field.GetValue().toString();
+
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "8/15/2013",
+              "Validate SetValue set the date");
+      } else {
+        equal(actual,
+              "15/08/2013",
+              "Validate SetValue set the date");
+      }
    });
 
    test("SetValue() takes null or empty string to clear the field", function() {
@@ -495,13 +501,18 @@
    test("SetDate() can set the date", function() {
       expect(1);
 
-      var expected = "12/25/2014";
       this.field.SetDate(2014, 12, 25);
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "Should set date.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "12/25/2014",
+              "Validate SetDate set the date");
+      } else {
+        equal(actual,
+              "25/12/2014",
+              "Validate SetDate set the date");
+      }
    });
 
    test("SetTime() should throw an exception for date only fields", function() {
@@ -534,49 +545,70 @@
    test("SetValue() takes year, month, day, hour (str), and minute (str) parameters", function() {
       expect(1);
 
-      var expected = "08/15/2013 8:30AM";
       this.field.SetValue(2013, 8, 15, '8 AM', '30');
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "SetValue() didn't set the date textbox.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "8/15/2013 8:30 AM",
+              "Validate SetValue takes hour and minute parameter as strings");
+      } else {
+        equal(actual,
+              "15/08/2013 08:30",
+              "Validate SetValue takes hour and minute parameter as strings");
+      }
    });
    
    test("SetValue() takes year, month, day, hour (integer), and minute (str) parameters", function() {
       expect(1);
 
-      var expected = "08/15/2013 8:30AM";
       this.field.SetValue(2013, 8, 15, 8, '30');
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-              expected,
-              "SetValue() didn't set the date textbox.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "8/15/2013 8:30 AM",
+              "Validate SetValue takes minute parameter as a string");
+      } else {
+        equal(actual,
+              "15/08/2013 08:30",
+              "Validate SetValue takes minute parameter as a string");
+      }
    });
 
    test("SetValue() takes year, month, day, hour (integer), and minute (integer) parameters", function() {
       expect(1);
 
-      var expected = "08/15/2013 8:30AM";
       this.field.SetValue(2013, 8, 15, 8, 30);
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-              expected,
-              "SetValue() didn't set the date textbox.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "8/15/2013 8:30 AM",
+              "Validate SetValue takes all integer parameters.");
+      } else {
+        equal(actual,
+              "15/08/2013 08:30",
+              "Validate SetValue takes all integer parameters.");
+      }
    });
    
    test("SetValue() takes null or empty string to clear the field", function() {
       expect(1);
 
-      var expected = "12:00AM"; // clearing time effectively sets back to 12 AM
+      // clearing time effectively sets back to 12 AM
       this.field.SetValue(null);
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "Validate SetValue() can clear out the date.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "12:00 AM",
+              "Validate SetValue() can clear out the date.");
+      } else {
+        equal(actual,
+              "00:00",
+              "Validate SetValue() can clear out the date.");
+      }
    });
 
    test("SetDate() takes year, month, and day parameters to set only the date", function() {
@@ -584,78 +616,146 @@
 
       // clear the field
       this.field.SetValue(null);
-
-      var expected = "05/07/2014 12:00AM";
       this.field.SetDate(2014, 5, 7);
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "SetDate() should set only the date portion of the field (not the time).");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "5/7/2014 12:00 AM",
+              "SetDate() should set only the date portion of the field (not the time).");
+      } else {
+        equal(actual,
+              "07/05/2014 00:00",
+              "SetDate() should set only the date portion of the field (not the time).");
+      }
    });
 
    test("SetDate() takes null to clear out only the date", function() {
       expect(2);
 
-      var expected = "04/02/2014 9:45AM";
       this.field.SetValue(2014, 4, 2, 9, 45);
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "Should set date and time.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "4/2/2014 9:45 AM",
+              "Should set date and time.");
+      } else {
+        equal(actual,
+              "02/04/2014 09:45",
+              "Should set date and time.");
+      }
 
-      expected = "9:45AM";
       this.field.SetDate(null);
       actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "SetDate() should change only the date portion of the field (not the time).");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "9:45 AM",
+              "SetDate() should change only the date portion of the field (not the time).");
+      } else {
+        equal(actual,
+              "09:45",
+              "SetDate() should change only the date portion of the field (not the time).");
+      }
    });
 
    test("SetTime() takes hour and minute parameters to set only the time", function() {
       expect(1);
 
-      var expected = "8:30AM";
       this.field.SetDate(null);
       this.field.SetTime(8, 30);
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "SetDate() should clear only the date portion.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "8:30 AM",
+              "SetDate() should clear only the date portion.");
+      } else {
+        equal(actual,
+              "08:30",
+              "SetDate() should clear only the date portion.");
+      }
    });
 
    test("SetTime() takes null to reset the time to 12 AM", function() {
       expect(2);
 
-      var expected = "08/15/2014 3:25PM";
       this.field.SetValue(2014, 8, 15, 15, 25);
 
       var actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "Should set date and time.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "8/15/2014 3:25 PM",
+              "Should set date and time.");
+      } else {
+        equal(actual,
+              "15/08/2014 15:25",
+              "Should set date and time.");
+      }
 
-      expected = "08/15/2014 12:00AM";
       this.field.SetTime(null);
       actual = this.field.GetValue().toString();
-      equal(actual,
-            expected,
-            "SetTime() should clear out only the time portion.");
+
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "8/15/2014 12:00 AM",
+              "SetTime() should clear out only the time portion.");
+      } else {
+        equal(actual,
+              "15/08/2014 00:00",
+              "SetTime() should clear out only the time portion.");
+      }
    });
    
    test("SetValue() updates the label if the field is read only (issue #5)", function() {
       expect(1);
 
-      var expected = "03/14/2014 1:00AM";
       this.field.MakeReadOnly();
-      this.field.SetValue(2014,3,14,'1 AM','00');
+      this.field.SetValue(2013,1,2,'1 PM','35');
       
       var actual = this.field.ReadOnlyLabel.text();
-      equal(actual,
-            expected,
-            "Validate SetValue() updates the read-only label.");
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "1/2/2013 1:35 PM",
+              "Validate SetValue() updates the read-only label.");
+      } else {
+        equal(actual,
+              "02/01/2013 13:35",
+              "Validate SetValue() updates the read-only label.");
+      }
+   });
+
+   test("GetValue() displays the correct time when it is set to 12 PM", function() {
+      expect(1);
+
+      this.field.SetValue(2014,3,14,12,0);
+      
+      var actual = this.field.GetValue().toString();
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        equal(actual,
+              "3/14/2014 12:00 PM",
+              "Validate time is set to 12 PM.");
+      } else {
+        equal(actual,
+              "14/03/2014 12:00",
+              "Validate time is set to 12 PM.");
+      }
+   });
+
+   test("GetValue() returns SPDateTimeValue with a TimeFormat property", function() {
+      expect(1);
+
+      var value = this.field.GetValue();
+
+      if (SPUtility.GetTimeFormat() === '12HR') {
+        strictEqual(value.TimeFormat,
+            '12HR',
+            "Validate TimeFormat is 12HR.");
+      } else {
+        strictEqual(value.TimeFormat,
+            '24HR',
+            "Validate TimeFormat is 24HR.");
+      }
    });
 
    test("MakeEditable()", function() {

@@ -424,7 +424,7 @@
    test("SetValue() takes one string parameter", function() {
       expect(1);
 
-      var expected = "08/15/2013";
+      var expected = "8/15/2013";
       this.field.SetValue(2013, 8, 15);
 
       var actual = this.field.GetValue();
@@ -449,7 +449,7 @@
    test("SetValue() takes year, month, day, hour (str), and minute (str) parameters", function() {
       expect(1);
 
-      var expected = "08/15/2013 8:30AM";
+      var expected = "8/15/2013 8:30 AM";
       this.field.SetValue(2013, 8, 15, '8 AM', '30');
 
       var actual = this.field.GetValue();
@@ -461,7 +461,7 @@
    test("SetValue() takes year, month, day, hour (integer), and minute (str) parameters", function() {
       expect(1);
 
-      var expected = "08/15/2013 8:30AM";
+      var expected = "8/15/2013 8:30 AM";
       this.field.SetValue(2013, 8, 15, 8, '30');
 
       var actual = this.field.GetValue();
