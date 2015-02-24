@@ -58,7 +58,7 @@ var SPUtility = (function ($) {
       return val;
    }
 
-   if (isUndefined(SP)) {
+   if (typeof SP === 'undefined') {
       _spVersion = 12;
    } else {
       _spVersion = getInteger(SP.ClientSchemaVersions.currentVersion);
