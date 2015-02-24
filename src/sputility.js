@@ -20,7 +20,8 @@ var SPUtility = (function ($) {
    var _fieldsHashtable = null,
       _internalNamesHashtable = null,
       _timeFormat = null, // 12HR or 24HR
-      _isSurveyForm = false; 
+      _isSurveyForm = false,
+      _spVersion;
    
    /*
     *   SPUtility Private Methods
@@ -55,6 +56,16 @@ var SPUtility = (function ($) {
          }
       }
       return val;
+   }
+
+   if (isUndefined(SP)) {
+      _spVersion = 12;
+   } else {
+      _spVersion = getInteger(SP.ClientSchemaVersions.currentVersion);
+   }
+
+   function is2013() {
+      return _spVersion === 15;
    }
 
    //+ Jonas Raoni Soares Silva
@@ -420,21 +431,36 @@ var SPUtility = (function ($) {
       return this;
    };
 
-   SPField.prototype.GetDescription = function () {
-      var ctls = this.Controls.parentNode,
-      text = $($(ctls).contents().toArray().reverse()).filter(function() {
-         return this.nodeType === 3;
-      }).text();
-      return text.replace(/^\s+/, '').replace(/\s+$/g, '');
-   };
+   if (is2013()) {
+      SPField.prototype.GetDescription = function () {
+         return $(this.Controls.parentNode).children('span.ms-metadata').text();
+      };
 
-   SPField.prototype.SetDescription = function (descr) {
-      var ctls = this.Controls.parentNode,
-      textNode = $($(ctls).contents().toArray().reverse()).filter(function() {
-         return this.nodeType === 3;
-      });
-      $(textNode)[0].textContent = descr || '';
-   };
+      SPField.prototype.SetDescription = function (descr) {
+         var ctls = $(this.Controls.parentNode).children('span.ms-metadata');
+         if (ctls.length === 0) {
+            ctls = $('<span class="ms-metadata"/>');
+            $(this.Controls.parentNode).append(ctls);
+         }
+         $(ctls).html(descr);
+      };
+   } else {
+      SPField.prototype.GetDescription = function () {
+         var ctls = this.Controls.parentNode,
+         text = $($(ctls).contents().toArray().reverse()).filter(function() {
+            return this.nodeType === 3;
+         }).text();
+         return text.replace(/^\s+/, '').replace(/\s+$/g, '');
+      };
+
+      SPField.prototype.SetDescription = function (descr) {
+         var ctls = this.Controls.parentNode,
+         textNode = $($(ctls).contents().toArray().reverse()).filter(function() {
+            return this.nodeType === 3;
+         });
+         $(textNode)[0].textContent = descr || '';
+      };
+   }
    
    // should be called in SetValue to update the read-only label
    SPField.prototype._updateReadOnlyLabel = function (htmlToInsert) {
