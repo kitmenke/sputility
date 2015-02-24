@@ -419,6 +419,22 @@ var SPUtility = (function ($) {
       toggleSPFieldRows(this.LabelRow, this.ControlsRow, false);
       return this;
    };
+
+   SPField.prototype.GetDescription = function () {
+      var ctls = this.Controls.parentNode,
+      text = $($(ctls).contents().toArray().reverse()).filter(function() {
+         return this.nodeType === 3;
+      }).text();
+      return text.replace(/^\s+/, '').replace(/\s+$/g, '');
+   };
+
+   SPField.prototype.SetDescription = function (descr) {
+      var ctls = this.Controls.parentNode,
+      textNode = $($(ctls).contents().toArray().reverse()).filter(function() {
+         return this.nodeType === 3;
+      });
+      $(textNode)[0].textContent = descr || '';
+   };
    
    // should be called in SetValue to update the read-only label
    SPField.prototype._updateReadOnlyLabel = function (htmlToInsert) {
@@ -1553,7 +1569,7 @@ var SPUtility = (function ($) {
     */
    function SPUserField(fieldParams) {
       SPField.call(this, fieldParams);
-      
+
       if (this.Controls === null) {
          return;
       }
@@ -1567,28 +1583,27 @@ var SPUtility = (function ($) {
       var controls = $(this.Controls).find('span.ms-usereditor');
       if (null !== controls && 1 === controls.length) {
          this.spanUserField = controls[0];
-         this.upLevelDiv = $("#" + this.spanUserField.id + '_upLevelDiv')[0];
-         this.textareaDownLevelTextBox = $("#" + this.spanUserField.id + '_downlevelTextBox')[0];
-         this.linkCheckNames = $("#" + this.spanUserField.id + '_checkNames')[0];
-         this.txtHiddenSpanData = $("#" + this.spanUserField.id + '_hiddenSpanData')[0];
+         this.upLevelDiv = byid(this.spanUserField.id + '_upLevelDiv');
+         this.textareaDownLevelTextBox = byid(this.spanUserField.id + '_downlevelTextBox');
+         this.linkCheckNames = byid(this.spanUserField.id + '_checkNames');
+         this.txtHiddenSpanData = byid(this.spanUserField.id + '_hiddenSpanData');
       }
    }
-   
+
    // Inherit from SPField
    SPUserField.prototype = Object.create(SPField.prototype);
 
    SPUserField.prototype.GetValue = function () {
-      return $(this.upLevelDiv).text();
+      return $(this.upLevelDiv).text().replace(/^\s+|\u00A0|\s+$/g, '');
    };
 
    SPUserField.prototype.SetValue = function (value) {
+      this.upLevelDiv.innerHTML = value;
+      this.textareaDownLevelTextBox.innerHTML = value;
       if (isInternetExplorer()) { // internet explorer
-         $(this.upLevelDiv).html(value);
          $(this.txtHiddenSpanData).val(value);
-      } else { // FireFox (maybe others?)
-         $(this.textareaDownLevelTextBox).val(value);
       }
-      $(this.linkCheckNames).click();
+      this.linkCheckNames.click();
       this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
