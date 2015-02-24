@@ -202,6 +202,7 @@ var SPUtility = (function ($) {
          break;
       case 'SPFieldUser':
       case 'SPFieldUserMulti':
+      case 'SPFieldBusinessData':
          if (!isUndefined(window.SPClientPeoplePicker)) {
             field = new SPUserField2013(spFieldParams);
          } else {
