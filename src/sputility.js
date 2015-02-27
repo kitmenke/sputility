@@ -21,7 +21,7 @@ var SPUtility = (function ($) {
       _internalNamesHashtable = null,
       _timeFormat = null, // 12HR or 24HR
       _isSurveyForm = false,
-      _spVersion;
+      _spVersion = 12;
    
    /*
     *   SPUtility Private Methods
@@ -56,12 +56,6 @@ var SPUtility = (function ($) {
          }
       }
       return val;
-   }
-
-   if (typeof SP === 'undefined') {
-      _spVersion = 12;
-   } else {
-      _spVersion = getInteger(SP.ClientSchemaVersions.currentVersion);
    }
 
    function is2013() {
@@ -341,6 +335,10 @@ var SPUtility = (function ($) {
             fieldElements = $('table.ms-formtable td.ms-formlabel'),
             surveyElements = $('table.ms-formtable td.ms-formbodysurvey'),
             len = fieldElements.length;
+         
+         if (typeof _spPageContextInfo === 'object') {
+            _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
+         }
 
          _isSurveyForm = (surveyElements.length > 0);
          _fieldsHashtable = {};
@@ -432,36 +430,36 @@ var SPUtility = (function ($) {
       return this;
    };
 
-   if (is2013()) {
-      SPField.prototype.GetDescription = function () {
+   SPField.prototype.GetDescription = function () {
+      if (is2013()) {
          return $(this.Controls.parentNode).children('span.ms-metadata').text();
-      };
-
-      SPField.prototype.SetDescription = function (descr) {
-         var ctls = $(this.Controls.parentNode).children('span.ms-metadata');
-         if (ctls.length === 0) {
-            ctls = $('<span class="ms-metadata"/>');
-            $(this.Controls.parentNode).append(ctls);
-         }
-         $(ctls).html(descr);
-      };
-   } else {
-      SPField.prototype.GetDescription = function () {
+      } else {
          var ctls = this.Controls.parentNode,
          text = $($(ctls).contents().toArray().reverse()).filter(function() {
             return this.nodeType === 3;
          }).text();
          return text.replace(/^\s+/, '').replace(/\s+$/g, '');
-      };
+      }
+   };
 
-      SPField.prototype.SetDescription = function (descr) {
-         var ctls = this.Controls.parentNode,
-         textNode = $($(ctls).contents().toArray().reverse()).filter(function() {
+   SPField.prototype.SetDescription = function (descr) {
+      var ctls;
+      if (is2013()) {
+         ctls = $(this.Controls.parentNode).children('span.ms-metadata');
+         if (ctls.length === 0) {
+            ctls = $('<span class="ms-metadata"/>');
+            $(this.Controls.parentNode).append(ctls);
+         }
+         $(ctls).html(descr);
+      } else {
+         ctls = this.Controls.parentNode;
+         var textNode = $($(ctls).contents().toArray().reverse()).filter(function() {
             return this.nodeType === 3;
          });
          $(textNode)[0].textContent = descr || '';
-      };
-   }
+      }
+   };
+   
    
    // should be called in SetValue to update the read-only label
    SPField.prototype._updateReadOnlyLabel = function (htmlToInsert) {
