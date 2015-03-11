@@ -20,6 +20,7 @@ var SPUtility = (function ($) {
    var _fieldsHashtable = null,
       _internalNamesHashtable = null,
       _timeFormat = null, // 12HR or 24HR
+      _dateSeparator = null, // separates month/day/year with / or .
       _isSurveyForm = false,
       _spVersion = 12;
    
@@ -197,10 +198,10 @@ var SPUtility = (function ($) {
       case 'SPFieldUser':
       case 'SPFieldUserMulti':
       case 'SPFieldBusinessData':
-         if (!isUndefined(window.SPClientPeoplePicker)) {
-            field = new SPUserField2013(spFieldParams);
-         } else {
+         if (typeof window.SPClientPeoplePicker === 'undefined') {
             field = new SPUserField(spFieldParams);
+         } else {
+            field = new SPUserField2013(spFieldParams);
          }
          break;
       case 'SPFieldURL':
@@ -444,6 +445,7 @@ var SPUtility = (function ($) {
 
    SPField.prototype.SetDescription = function (descr) {
       var ctls;
+      descr = isUndefined(descr) ? '' : descr;
       if (is2013()) {
          ctls = $(this.Controls.parentNode).children('span.ms-metadata');
          if (ctls.length === 0) {
@@ -453,13 +455,19 @@ var SPUtility = (function ($) {
          $(ctls).html(descr);
       } else {
          ctls = this.Controls.parentNode;
+         // look for the text node
          var textNode = $($(ctls).contents().toArray().reverse()).filter(function() {
             return this.nodeType === 3;
          });
-         $(textNode)[0].textContent = descr || '';
+         if (textNode.length === 0) {
+            // create a new text node and append it after the other controls
+            textNode = document.createTextNode(descr);
+            ctls.appendChild(textNode);
+         } else {
+            $(textNode)[0].nodeValue = descr;
+         }
       }
    };
-   
    
    // should be called in SetValue to update the read-only label
    SPField.prototype._updateReadOnlyLabel = function (htmlToInsert) {
@@ -865,7 +873,7 @@ var SPUtility = (function ($) {
     * SPDateTimeFieldValue class
     * Used to set/get values for SPDateTimeField fields
     */
-   function SPDateTimeFieldValue(year, month, day, hour, minute, format) {
+   function SPDateTimeFieldValue(year, month, day, hour, minute, format, separator) {
       this.Year = null;
       this.Month = null;
       this.Day = null;
@@ -873,13 +881,17 @@ var SPUtility = (function ($) {
       this.Hour = null;
       this.Minute = null;
       this.TimeFormat = null; // 12HR or 24HR
+      this.DateSeparator = null;
 
       if (!isUndefined(year) && !isUndefined(month) && !isUndefined(day)) {
          this.SetDate(year, month, day);
          if (!isUndefined(hour) && !isUndefined(minute)) {
             this.SetTime(hour, minute);
             if (!isUndefined(format)) {
-               this.SetTimeFormat(format);
+               this.TimeFormat = format;
+               if (!isUndefined(separator)) {
+                  this.DateSeparator = separator;
+               }
             }
          }
       }
@@ -941,13 +953,6 @@ var SPUtility = (function ($) {
       this.IsTimeIncluded = true;
    };
 
-   SPDateTimeFieldValue.prototype.SetTimeFormat = function (format) {
-      if (isUndefined(format) || !(format === '12HR' || format === '24HR')) {
-         throw "Unable to set format, should be 12HR or 24HR.";
-      }
-      this.TimeFormat = format;
-   };
-
    SPDateTimeFieldValue.prototype.IsValidDate = function () {
       return this.Year !== null && this.Month !== null && this.Day !== null;
    };
@@ -999,13 +1004,13 @@ var SPUtility = (function ($) {
       var strDate;
       if (this.TimeFormat === '12HR') {
          // m/d/YYYY
-         strDate = this.Month + "/" +
-            this.Day + "/" +
+         strDate = this.Month + _dateSeparator +
+            this.Day + _dateSeparator +
             this.Year;
       } else {
          // DD/MM/YYYY
-         strDate = this.PadWithZero(this.Day) + "/" +
-            this.PadWithZero(this.Month) + "/" +
+         strDate = this.PadWithZero(this.Day) + _dateSeparator +
+            this.PadWithZero(this.Month) + _dateSeparator +
             this.Year;
       }
       
@@ -1082,10 +1087,12 @@ var SPUtility = (function ($) {
    SPDateTimeField.prototype = Object.create(SPField.prototype);
 
    SPDateTimeField.prototype.GetValue = function () {
-      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split('/');
+      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split(_dateSeparator);
 
       var spDate = new SPDateTimeFieldValue();
-      spDate.SetTimeFormat(_timeFormat);
+      spDate.TimeFormat = _timeFormat;
+      spDate.DateSeparator = _dateSeparator;
+      
       if (arrShortDate.length === 3) {
          var year, month, day;
          if (_timeFormat === '12HR') {
@@ -1133,7 +1140,8 @@ var SPUtility = (function ($) {
          return this;
       }
       var spDate = new SPDateTimeFieldValue();
-      spDate.SetTimeFormat(_timeFormat);
+      spDate.TimeFormat = _timeFormat;
+      spDate.DateSeparator = _dateSeparator;
       spDate.SetDate(year, month, day);
       $(this.DateTextbox).val(spDate.GetShortDateString());
       this._updateReadOnlyLabel(this.GetValue().toString());
@@ -1146,7 +1154,9 @@ var SPUtility = (function ($) {
       }
 
       var spDate = new SPDateTimeFieldValue();
-      spDate.SetTimeFormat(_timeFormat);
+      spDate.TimeFormat = _timeFormat;
+      spDate.DateSeparator = _dateSeparator;
+
       if (hour === null || hour === "") {
          spDate.SetTime(0, 0);
       } else {
@@ -1738,10 +1748,19 @@ var SPUtility = (function ($) {
       }
    };
 
+   SPUtility.GetDateSeparator = function () {
+      return _dateSeparator;
+   };
+
+   SPUtility.SetDateSeparator = function (separator) {
+      _dateSeparator = separator;
+   };
+
    /*
     * INITIALIZATION
     */
    SPUtility.SetTimeFormat('12HR');
+   SPUtility.SetDateSeparator('/');
    
    return SPUtility;
 }(jQuery));

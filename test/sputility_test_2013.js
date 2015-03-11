@@ -524,6 +524,26 @@
         "Should throw an exception when trying to set the time on a date only field.");
    });
 
+    test("Twenty-four hour date format with a period separator", function() {
+      expect(3);
+
+      SPUtility.SetDateSeparator('.');
+      SPUtility.SetTimeFormat('24HR');
+
+      this.field.SetValue(2015, 3, 10);
+
+      var actual = this.field.GetValue();
+      strictEqual(actual.TimeFormat, '24HR');
+      strictEqual(actual.DateSeparator, '.');
+      strictEqual(actual.toString(),
+            "10.03.2015",
+            "Should set to March 10, 2015");
+
+      // set it back
+      SPUtility.SetDateSeparator('/');
+      SPUtility.SetTimeFormat('12HR');
+   });
+
    module("SPFieldDateTime (date and time)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Date and Time');
@@ -756,6 +776,26 @@
             '24HR',
             "Validate TimeFormat is 24HR.");
       }
+   });
+
+   test("Twenty-four hour date format with a period separator", function() {
+      expect(3);
+
+      SPUtility.SetDateSeparator('.');
+      SPUtility.SetTimeFormat('24HR');
+
+      this.field.SetValue(2015, 3, 10, 20, 30);
+
+      var actual = this.field.GetValue();
+      strictEqual(actual.TimeFormat, '24HR');
+      strictEqual(actual.DateSeparator, '.');
+      strictEqual(actual.toString(),
+            "10.03.2015 20:30",
+            "Should set to March 10, 2015");
+
+      // set it back
+      SPUtility.SetDateSeparator('/');
+      SPUtility.SetTimeFormat('12HR');
    });
 
    test("MakeEditable()", function() {
