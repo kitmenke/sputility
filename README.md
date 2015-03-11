@@ -56,4 +56,4 @@ fTitle.SetValue('Using my variable!');
 https://sputility.codeplex.com/wikipage?title=Changelog&referringTitle=Home
 
 ## License
-Either MIT or MS-PL.
+MIT
