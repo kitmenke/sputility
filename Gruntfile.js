@@ -5,7 +5,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     // Metadata.
-    pkg: grunt.file.readJSON('sputility.jquery.json'),
+    pkg: grunt.file.readJSON('sputility.json'),
     banner: '/*\n' +
       '   Name: <%= pkg.title || pkg.name %>\n' +
       '   Version: <%= pkg.version %>\n' + 

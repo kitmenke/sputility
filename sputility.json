@@ -2,7 +2,7 @@
   "name": "sputility",
   "title": "SPUtility.js",
   "description": "A JavaScript library that is used to alter SharePoint's user interface (mostly NewForm and EditForm).",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "homepage": "https://sputility.codeplex.com/",
   "author": {
     "name": "Kit Menke",
@@ -15,10 +15,6 @@
   },
   "bugs": "https://github.com/kitmenke/sputility/issues",
   "licenses": [
-    {
-      "type": "Microsoft Public License (MS-PL)",
-      "url": "https://sputility.codeplex.com/license"
-    },
     {
       "type": "The MIT License (MIT)",
       "url": "http://opensource.org/licenses/MIT"
