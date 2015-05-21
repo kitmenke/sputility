@@ -551,6 +551,23 @@ var SPUtility = (function ($) {
       return this;
    };
 
+   /* 
+    *   Changes the title of the field
+    */
+   SPField.prototype.SetTitle = function (value, required) {
+        if (required)
+            value += " <font color='red'>*</font>";
+        $(this.Label).html("<nobr>" + value + "</nobr>");
+        return this;
+    };
+
+   /*
+    * Removes the separator/border between the fields
+    */
+    SPField.prototype.RemoveSeparator = function () {
+        $(this.LabelRow).each(function () { $(this).children('td').css("border-top", "0"); });
+        return this;
+    };
 
    /*
     *   SPNumberField class
