@@ -13,7 +13,7 @@ if (!Object.create) {
 // Export SPUtility global variable
 var SPUtility = (function ($) {
    "use strict";
-   
+
    /*
     *   SPUtility Private Variables
    **/
@@ -23,7 +23,7 @@ var SPUtility = (function ($) {
       _dateSeparator = null, // separates month/day/year with / or .
       _isSurveyForm = false,
       _spVersion = 12;
-   
+
    /*
     *   SPUtility Private Methods
    **/
@@ -35,19 +35,19 @@ var SPUtility = (function ($) {
    function isUndefined(obj) {
       return typeof obj === 'undefined';
    }
-   
+
    function isString(obj) {
       return typeof obj === 'string';
    }
-   
+
    function isNumber(obj) {
       return typeof obj === 'number';
    }
-   
+
    function getInteger(str) {
       return parseInt(str, 10);
    }
-   
+
    function convertStringToNumber(val) {
       if (typeof val === "string") {
          var match = val.match(/[0-9,.]+/g);
@@ -57,6 +57,15 @@ var SPUtility = (function ($) {
          }
       }
       return val;
+   }
+
+   function htmlEscape(str) {
+      return String(str)
+         .replace(/&/g, '&amp;')
+         .replace(/"/g, '&quot;')
+         .replace(/''/g, '&#39;')
+         .replace(/</g, '&lt;')
+         .replace(/>/g, '&gt;');
    }
 
    function is2013() {
@@ -75,11 +84,11 @@ var SPUtility = (function ($) {
       d = (d === undefined ? "." : d);
       t = (t === undefined ? "," : t);
       var s = (n < 0 ? "-" : ""),
-         i = parseInt(n = Math.abs(+n || 0).toFixed(c), 10) + "", 
+         i = parseInt(n = Math.abs(+n || 0).toFixed(c), 10) + "",
          j = (j = i.length) > 3 ? j % 3 : 0;
       return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
    }
-   
+
    // Gets the input controls for a field (used for Textboxes)
    function getInputControl(spField) {
       if (spField.Controls === null) {
@@ -90,12 +99,12 @@ var SPUtility = (function ($) {
       if (null !== controls && 1 === controls.length) {
          return controls[0];
       }
-      
+
       throw 'Unable to retrieve the input control for ' + spField.Name;
    }
-   
+
    function getHashFromInputControls(spField, selector) {
-      var oHash = [], i, 
+      var oHash = [], i,
          inputs = $(spField.Controls).find(selector),
          labels = $(spField.Controls).find("label");
       if (labels.length < inputs.length) {
@@ -109,7 +118,7 @@ var SPUtility = (function ($) {
       }
       return oHash;
    }
-   
+
    function getHashValue(hash, key) {
       var val = null;
       $(hash).each(function (index, pair) {
@@ -160,10 +169,10 @@ var SPUtility = (function ($) {
       }
       return null;
    }
-   
+
    function getSPFieldFromType(spFieldParams) {
       var field = null, controls;
-      
+
       switch (spFieldParams.type) {
       case 'SPFieldText':
          field = new SPTextField(spFieldParams);
@@ -215,7 +224,7 @@ var SPUtility = (function ($) {
          } else {
             controls = $(spFieldParams.controlsCell).find('input');
             field = new SPAutocompleteLookupField(spFieldParams, controls);
-         }         
+         }
          break;
       case 'SPFieldNote':
          controls = $(spFieldParams.controlsCell).find('textarea');
@@ -264,7 +273,7 @@ var SPUtility = (function ($) {
       var field = null;
       try {
          spFieldParams.type = getSPFieldType(getControlsCell(spFieldParams));
-         
+
          // if we can't get the type then we can't create the field
          if (null === spFieldParams.type) {
             if ($(getControlsCell(spFieldParams)).find('select[name$=ContentTypeChoice]').length > 0) {
@@ -282,7 +291,7 @@ var SPUtility = (function ($) {
       }
       return field;
    }
-   
+
    function getFieldParams(elemTD, surveyElemTD, isSurveyForm) {
       var fieldParams = null, fieldName = 'Unknown field', elemLabel, isRequired = false;
       try {
@@ -303,16 +312,16 @@ var SPUtility = (function ($) {
                return null; // attachments row not currently supported
             }
          }
-         
+
          fieldName = $.trim($(elemLabel).text());
          if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
             isRequired = true;
          }
-         
+
          if (true === isRequired) {
             fieldName = fieldName.substring(0, fieldName.length - 2);
          }
-         
+
          fieldParams = {
             'name': fieldName,
             'label': $(elemLabel),
@@ -329,21 +338,21 @@ var SPUtility = (function ($) {
       }
       return fieldParams;
    }
-   
+
    function lazyLoadSPFields() {
       if (null === _fieldsHashtable) {
          var i, fieldParams,
             fieldElements = $('table.ms-formtable td.ms-formlabel'),
             surveyElements = $('table.ms-formtable td.ms-formbodysurvey'),
             len = fieldElements.length;
-         
+
          if (typeof _spPageContextInfo === 'object') {
             _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
          }
 
          _isSurveyForm = (surveyElements.length > 0);
          _fieldsHashtable = {};
-         
+
          for (i = 0; i < len; i += 1) {
             fieldParams = getFieldParams(fieldElements[i], surveyElements[i], _isSurveyForm);
             if (null !== fieldParams) {
@@ -365,7 +374,7 @@ var SPUtility = (function ($) {
          }
       }
    }
-   
+
    function toggleSPFieldRows(labelRow, controlsRow, bShowField) {
       // controlsRow is populated on survey forms (null otherwise)
       if (bShowField) {
@@ -380,23 +389,23 @@ var SPUtility = (function ($) {
          }
       }
    }
-   
+
    function toggleSPField(strFieldName, bShowField) {
       lazyLoadSPFields();
-         
+
       var fieldParams = _fieldsHashtable[strFieldName];
-      
-      if (isUndefined(fieldParams)) { 
+
+      if (isUndefined(fieldParams)) {
          throw 'toggleSPField: Unable to find a SPField named ' + strFieldName + ' - ' + bShowField;
       }
-      
+
       toggleSPFieldRows(fieldParams.labelRow, fieldParams.controlsRow, bShowField);
    }
-      
+
    /*
     *   SPUtility Classes
    **/
-  
+
    /*
     *   SPField class
     *   Contains all of the common properties and functions used by the specialized
@@ -468,14 +477,14 @@ var SPUtility = (function ($) {
          }
       }
    };
-   
+
    // should be called in SetValue to update the read-only label
    SPField.prototype._updateReadOnlyLabel = function (htmlToInsert) {
       if (this.ReadOnlyLabel) {
          this.ReadOnlyLabel.html(htmlToInsert);
       }
    };
-   
+
    // should be called in MakeReadOnly to change a field into read-only mode
    SPField.prototype._makeReadOnly = function (htmlToInsert) {
       try {
@@ -544,13 +553,16 @@ var SPUtility = (function ($) {
    SPTextField.prototype.GetValue = function () {
       return $(this.Textbox).val();
    };
-      
+
    SPTextField.prototype.SetValue = function (value) {
       $(this.Textbox).val(value);
       this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
 
+   SPTextField.prototype.MakeReadOnly = function () {
+      return this._makeReadOnly(htmlEscape(this.GetValue()));
+   };
 
    /*
     *   SPNumberField class
@@ -571,7 +583,7 @@ var SPUtility = (function ($) {
       return convertStringToNumber($(this.Textbox).val());
    };
 
-   
+
    /*
     *   SPCurrencyField class
     *   Supports currency fields (SPCurrencyField)
@@ -605,7 +617,7 @@ var SPUtility = (function ($) {
          }
       }
    };
-   
+
    SPCurrencyField.prototype.GetFormattedValue = function () {
       var text = this.GetValue();
       if (typeof text === "number") {
@@ -613,13 +625,13 @@ var SPUtility = (function ($) {
       }
       return text;
    };
-   
+
    SPCurrencyField.prototype.SetValue = function (value) {
       $(this.Textbox).val(value);
       this._updateReadOnlyLabel(this.GetFormattedValue());
       return this;
    };
-   
+
    // Override the default MakeReadOnly function to allow displaying
    // the value with currency symbols
    SPCurrencyField.prototype.MakeReadOnly = function () {
@@ -644,7 +656,7 @@ var SPUtility = (function ($) {
 
    // Inherit from SPFIeld
    ContentTypeChoiceField.prototype = Object.create(SPField.prototype);
-   
+
    ContentTypeChoiceField.prototype.GetValue = function () {
       return this.Dropdown.options[this.Dropdown.selectedIndex].text;
    };
@@ -675,7 +687,7 @@ var SPUtility = (function ($) {
       if (this.Controls === null) {
          return;
       }
-      
+
       var controls = $(this.Controls).find('input'), numControls = controls.length;
       if (numControls > 1 && controls[numControls - 1].type === "text") {
          // fill-in textbox is always the last input control
@@ -744,7 +756,7 @@ var SPUtility = (function ($) {
       this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
-   
+
    /*
     *   SPRadioChoiceField class
     *   Supports single select choice fields that show as radio buttons
@@ -825,7 +837,7 @@ var SPUtility = (function ($) {
 
    // Inherit from SPChoiceField
    SPCheckboxChoiceField.prototype = Object.create(SPChoiceField.prototype);
-   
+
    // display as semicolon delimited list
    SPCheckboxChoiceField.prototype.MakeReadOnly = function () {
       return this._makeReadOnly(this.GetValue().join("; "));
@@ -839,18 +851,18 @@ var SPUtility = (function ($) {
             values.push(pair.key);
          }
       });
-      
+
       if (this.FillInAllowed && this.FillInElement.checked === true) {
          values.push($(this.FillInTextbox).val());
       }
-      
+
       return values;
    };
 
    SPCheckboxChoiceField.prototype.SetValue = function (value, isChecked) {
       var checkbox = getHashValue(this.Checkboxes, value);
       isChecked = isUndefined(isChecked) ? true : isChecked;
-      
+
       // if couldn't find the element in the hashtable
       // and fill-in is allowed, assume they meant the fill-in value
       if (null === checkbox) {
@@ -864,11 +876,11 @@ var SPUtility = (function ($) {
       } else {
          checkbox.checked = isChecked;
       }
-      
+
       this._updateReadOnlyLabel(this.GetValue().join("; "));
       return this;
    };
-   
+
    /*
     * SPDateTimeFieldValue class
     * Used to set/get values for SPDateTimeField fields
@@ -964,7 +976,7 @@ var SPUtility = (function ($) {
    SPDateTimeFieldValue.prototype.IsValidMinute = function (m) {
       return !isUndefined(m) && (/^([0-5](0|5))$/).test(m);
    };
-   
+
    SPDateTimeFieldValue.prototype.ConvertHourToNumber = function (str) {
       var hour;
       str = str.split(' ');
@@ -1013,7 +1025,7 @@ var SPUtility = (function ($) {
             this.PadWithZero(this.Month) + _dateSeparator +
             this.Year;
       }
-      
+
       return strDate;
    };
 
@@ -1057,7 +1069,7 @@ var SPUtility = (function ($) {
          return date + ' ' + time;
       }
    };
-   
+
    function SPDateTimeField(fieldParams) {
       SPField.call(this, fieldParams);
       this.DateTextbox = getInputControl(this);
@@ -1082,7 +1094,7 @@ var SPUtility = (function ($) {
          this.IsDateOnly = false;
       }
    }
-   
+
    // Inherit from SPField
    SPDateTimeField.prototype = Object.create(SPField.prototype);
 
@@ -1092,7 +1104,7 @@ var SPUtility = (function ($) {
       var spDate = new SPDateTimeFieldValue();
       spDate.TimeFormat = _timeFormat;
       spDate.DateSeparator = _dateSeparator;
-      
+
       if (arrShortDate.length === 3) {
          var year, month, day;
          if (_timeFormat === '12HR') {
@@ -1118,7 +1130,7 @@ var SPUtility = (function ($) {
 
       return spDate;
    };
-      
+
    SPDateTimeField.prototype.SetValue = function (year, month, day, hour, minute) {
       if (year === null || year === "") {
          this.SetDate(null);
@@ -1162,7 +1174,7 @@ var SPUtility = (function ($) {
       } else {
          spDate.SetTime(hour, minute);
       }
-      
+
       // is the hour dropdown values in string or number format
       // sharepoint 2013 uses number format exclusively
       // sharepoint 2007 uses string format
@@ -1182,13 +1194,13 @@ var SPUtility = (function ($) {
       } else {
          $(this.HourDropdown).val(spDate.Hour);
       }
-      
+
       $(this.MinuteDropdown).val(spDate.PadWithZero(spDate.Minute));
 
       this._updateReadOnlyLabel(this.GetValue().toString());
       return this;
    };
-   
+
    /*
     * SPBooleanField class
     * Supports yes/no fields (SPFieldBoolean)
@@ -1197,7 +1209,7 @@ var SPUtility = (function ($) {
       SPField.call(this, fieldParams);
       this.Checkbox = getInputControl(this);
    }
-   
+
    // Inherit from SPField
    SPBooleanField.prototype = Object.create(SPField.prototype);
 
@@ -1238,7 +1250,7 @@ var SPUtility = (function ($) {
    SPBooleanField.prototype.MakeReadOnly = function () {
       return this._makeReadOnly(this.GetValueString());
    };
-   
+
    /*
     * SPURLField class
     * Supports hyperlink fields (SPFieldURL)
@@ -1259,10 +1271,10 @@ var SPUtility = (function ($) {
          this.TextboxDescription = $(controls[1]);
       }
    }
-   
+
    // Inherit from SPField
    SPURLField.prototype = Object.create(SPField.prototype);
-      
+
    /*
     * SPURLField Public Methods
     * Overrides SPField class methods.
@@ -1277,13 +1289,13 @@ var SPUtility = (function ($) {
       this._updateReadOnlyLabel(this.GetHyperlink());
       return this;
    };
-   
+
    SPURLField.prototype.GetHyperlink = function () {
       var values = this.GetValue();
       var hyperlink;
       if (this.TextOnly) {
          hyperlink = values[0] + ', ' + values[1];
-      } else {            
+      } else {
          hyperlink = '<a href="' + values[0] + '">' + values[1] + '</a>';
       }
       return hyperlink;
@@ -1298,7 +1310,7 @@ var SPUtility = (function ($) {
 
       return this._makeReadOnly(this.GetHyperlink());
    };
-   
+
    /*
     * SPDropdownLookupField class
     * Supports single select lookup fields
@@ -1308,7 +1320,7 @@ var SPUtility = (function ($) {
       if (this.Controls === null) {
          return;
       }
-      
+
       if (1 === elemSelect.length) {
          // regular dropdown lookup
          this.Dropdown = elemSelect[0];
@@ -1316,10 +1328,10 @@ var SPUtility = (function ($) {
          throw "Unable to get dropdown element for " + this.Name;
       }
    }
-   
+
    // Inherit from SPField
    SPDropdownLookupField.prototype = Object.create(SPField.prototype);
-   
+
    SPDropdownLookupField.prototype.GetValue = function () {
       return this.Dropdown.options[this.Dropdown.selectedIndex].text;
    };
@@ -1342,7 +1354,7 @@ var SPUtility = (function ($) {
       this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
-   
+
    /*
     * SPDropdownLookupField class
     * Supports single select lookup fields
@@ -1352,7 +1364,7 @@ var SPUtility = (function ($) {
       if (this.Controls === null) {
          return;
       }
-      
+
       if (1 === elemInputs.length) {
          // autocomplete lookup
          this.Textbox = $(elemInputs[0]);
@@ -1361,10 +1373,10 @@ var SPUtility = (function ($) {
          throw "Unable to get input elements for " + this.Name;
       }
    }
-   
+
    // Inherit from SPField
    SPAutocompleteLookupField.prototype = Object.create(SPField.prototype);
-   
+
    SPAutocompleteLookupField.prototype.GetValue = function () {
       return this.Textbox.val();
    };
@@ -1374,7 +1386,7 @@ var SPUtility = (function ($) {
 
       // a list item ID was passed to the function so attempt to lookup the text value
       choices = this.Textbox.attr('choices');
-      
+
       // options are stored in a choices attribute in the following format:
       // (None)|0|Alpha|1|Bravo|2|Charlie|3
       // split the string on every pipe character followed by a digit
@@ -1386,13 +1398,13 @@ var SPUtility = (function ($) {
          c.push(choices[i].substring(pipeIndex + 1));
       }
       c.push(choices[choices.length - 1]);
-      
+
       if (isString(value)) {
          // since the pipe character is used as a delimiter above, any values
          // which have a pipe in them were doubled up
          value = value.replace("|", "||");
       }
-      
+
       // options are stored in a choices attribute in the following format:
       // text|value|text 2|value2
       for (i = 0; i < c.length; i += 2) {
@@ -1413,7 +1425,7 @@ var SPUtility = (function ($) {
       this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
-   
+
    /*
     * SPPlainNoteField class
     * Supports multi-line plain text fields (SPFieldNote)
@@ -1423,10 +1435,10 @@ var SPUtility = (function ($) {
       this.Textbox = textarea;
       this.TextType = "Plain";
    }
-   
+
    // Inherit from SPField
    SPPlainNoteField.prototype = Object.create(SPField.prototype);
-   
+
    SPPlainNoteField.prototype.GetValue = function () {
       return $(this.Textbox).val();
    };
@@ -1436,7 +1448,7 @@ var SPUtility = (function ($) {
       this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
-   
+
    /*
     * SPRichNoteField class
     * Supports multi-line rich text fields (SPFieldNote)
@@ -1445,10 +1457,10 @@ var SPUtility = (function ($) {
       SPPlainNoteField.call(this, fieldParams, textarea);
       this.TextType = "Rich";
    }
-   
+
    // Inherit from SPField
    SPRichNoteField.prototype = Object.create(SPPlainNoteField.prototype);
-   
+
    // RTE functions are defined in layouts/1033/form.js
    SPRichNoteField.prototype.GetValue = function () {
       return window.RTE_GetIFrameContents(this.Textbox.id);
@@ -1460,7 +1472,7 @@ var SPUtility = (function ($) {
       this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
-   
+
    /*
     * SPEnhancedNoteField class
     * Supports multi-line, enhanced rich text fields in SharePoint 2010/2013 (SPFieldNote)
@@ -1471,10 +1483,10 @@ var SPUtility = (function ($) {
       this.ContentDiv = $(this.Controls).find('div[contenteditable="true"]')[0];
       this.TextType = "Enhanced";
    }
-   
+
    // Inherit from SPField
    SPEnhancedNoteField.prototype = Object.create(SPField.prototype);
-   
+
    SPEnhancedNoteField.prototype.GetValue = function () {
       return $(this.ContentDiv).html();
    };
@@ -1485,7 +1497,7 @@ var SPUtility = (function ($) {
       this._updateReadOnlyLabel(this.GetValue());
       return this;
    };
-   
+
    /*
     * SPFileField class
     * Supports the name field of a Document Library
@@ -1494,7 +1506,7 @@ var SPUtility = (function ($) {
       SPTextField.call(this, fieldParams);
       this.FileExtension = $(this.Textbox).parent().text();
    }
-   
+
    // Inherit from SPTextField
    SPFileField.prototype = Object.create(SPTextField.prototype);
 
@@ -1505,7 +1517,7 @@ var SPUtility = (function ($) {
    SPFileField.prototype.GetValue = function () {
       return $(this.Textbox).val() + this.FileExtension;
    };
-   
+
    /*
     * SPLookupMultiField class
     * Supports multi select lookup fields
@@ -1531,10 +1543,10 @@ var SPUtility = (function ($) {
          throw "Error initializing SPLookupMultiField named " + this.Name + ", unable to get select controls.";
       }
    }
-   
+
    // Inherit from SPField
    SPLookupMultiField.prototype = Object.create(SPField.prototype);
-   
+
    SPLookupMultiField.prototype.GetValue = function () {
       var values = [], i, numOptions;
 
@@ -1575,7 +1587,7 @@ var SPUtility = (function ($) {
       } else {
          prop = "text";
       }
-      
+
       for (i = 0; i < numOptions; i += 1) {
          option = options[i];
 
@@ -1597,7 +1609,7 @@ var SPUtility = (function ($) {
       this._updateReadOnlyLabel(this.GetValue().join("; "));
       return this;
    };
-   
+
    /*
     * SPUserField class
     * Supports people fields (SPFieldUser)
@@ -1649,7 +1661,7 @@ var SPUtility = (function ($) {
     */
    function SPUserField2013(fieldParams) {
       SPField.call(this, fieldParams);
-      
+
       if (this.Controls === null) {
          return;
       }
@@ -1693,22 +1705,22 @@ var SPUtility = (function ($) {
       // Catch the exception, then use console.log or alert
       return false;
    };
-   
+
    // Searches the page for a specific field by name
    SPUtility.GetSPField = function (strFieldName) {
       lazyLoadSPFields();
-      
+
       var fieldParams = _fieldsHashtable[strFieldName];
-      
-      if (isUndefined(fieldParams)) { 
+
+      if (isUndefined(fieldParams)) {
          throw 'Unable to get a SPField named ' + strFieldName;
       }
-      
+
       if (fieldParams.spField === null) {
          // field hasn't been initialized yet
          fieldParams.spField = createSPField(fieldParams);
       }
-      
+
       return fieldParams.spField;
    };
 
@@ -1727,11 +1739,11 @@ var SPUtility = (function ($) {
       lazyLoadSPFields();
       return _fieldsHashtable;
    };
-   
+
    SPUtility.HideSPField = function (strFieldName) {
       toggleSPField(strFieldName, false);
    };
-   
+
    SPUtility.ShowSPField = function (strFieldName) {
       toggleSPField(strFieldName, true);
    };
@@ -1761,6 +1773,6 @@ var SPUtility = (function ($) {
     */
    SPUtility.SetTimeFormat('12HR');
    SPUtility.SetDateSeparator('/');
-   
+
    return SPUtility;
 }(jQuery));
