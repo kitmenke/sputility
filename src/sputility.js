@@ -144,7 +144,7 @@ var SPUtility = (function ($) {
    function getSPFieldInternalName(element) {
       var matches, comment, n;
       try {
-         // find the HTML comment and get the field's type
+         // find the HTML comment and get the field's internal name
          for (n = 0; n < element.childNodes.length; n += 1) {
             if (8 === element.childNodes[n].nodeType) {
                comment = element.childNodes[n].data;
@@ -264,6 +264,7 @@ var SPUtility = (function ($) {
       var field = null;
       try {
          spFieldParams.type = getSPFieldType(getControlsCell(spFieldParams));
+         spFieldParams.internalName = getSPFieldInternalName(getControlsCell(spFieldParams));
          
          // if we can't get the type then we can't create the field
          if (null === spFieldParams.type) {
@@ -280,6 +281,7 @@ var SPUtility = (function ($) {
       } catch (e) {
          throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
       }
+
       return field;
    }
    
@@ -315,6 +317,7 @@ var SPUtility = (function ($) {
          
          fieldParams = {
             'name': fieldName,
+            'internalName': null,
             'label': $(elemLabel),
             'labelRow': $(elemTD.parentNode),
             'labelCell': elemTD,
@@ -407,6 +410,7 @@ var SPUtility = (function ($) {
       this.Label = fieldParams.label;
       this.LabelRow = fieldParams.labelRow;
       this.Name = fieldParams.name;
+      this.InternalName = fieldParams.internalName;
       this.IsRequired = fieldParams.isRequired;
       this.Type = fieldParams.type;
       if ($(fieldParams.controlsCell).children().length > 0) {
