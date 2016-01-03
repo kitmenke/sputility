@@ -22,6 +22,7 @@ var SPUtility = (function ($) {
       _timeFormat = null, // 12HR or 24HR
       _dateSeparator = null, // separates month/day/year with / or .
       _isSurveyForm = false,
+      _isDispForm = window.location.pathname.endsWith('DispForm.aspx'),
       _spVersion = 12;
 
    /*
@@ -173,6 +174,10 @@ var SPUtility = (function ($) {
    function getSPFieldFromType(spFieldParams) {
       var field = null, controls;
 
+      if (_isDispForm) {
+         return new SPDispFormField(spFieldParams);
+      }
+
       switch (spFieldParams.type) {
       case 'SPFieldText':
          field = new SPTextField(spFieldParams);
@@ -274,6 +279,7 @@ var SPUtility = (function ($) {
       try {
          spFieldParams.type = getSPFieldType(getControlsCell(spFieldParams));
          spFieldParams.internalName = getSPFieldInternalName(getControlsCell(spFieldParams));
+
          // if we can't get the type then we can't create the field
          if (null === spFieldParams.type) {
             if ($(getControlsCell(spFieldParams)).find('select[name$=ContentTypeChoice]').length > 0) {
@@ -351,7 +357,6 @@ var SPUtility = (function ($) {
          if (typeof _spPageContextInfo === 'object') {
             _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
          }
-
          _isSurveyForm = (surveyElements.length > 0);
          _fieldsHashtable = {};
 
@@ -673,6 +678,14 @@ var SPUtility = (function ($) {
          option = options[i];
          if (option.text === value || option.value === value) {
             this.Dropdown.selectedIndex = i;
+            if (typeof ChangeContentType === 'function') {
+               // ChangeContentType is a built-in function that is bound to the
+               // onchange event on the SELECT control
+               // calling the function switches the form to use different
+               // fields configured on the content type
+               ChangeContentType(this.Dropdown.id);
+            }
+
             break;
          }
       }
@@ -1695,6 +1708,41 @@ var SPUtility = (function ($) {
          this.ClientPeoplePicker.AddUnresolvedUserFromEditor(true);
          this._updateReadOnlyLabel(this.GetValue());
       }
+      return this;
+   };
+
+   /*
+    *   SPDispFormField class
+    *   Supports all DispForm fields
+    */
+   function SPDispFormField(fieldParams) {
+      SPField.call(this, fieldParams);
+      this.Controls = fieldParams.controlsCell;
+   }
+
+   // SPDispFormField inherits from the SPField base class
+   SPDispFormField.prototype = Object.create(SPField.prototype);
+
+   /*
+    *   SPDispFormField Public Methods
+    *   Overrides SPField class methods.
+    */
+   SPDispFormField.prototype.GetValue = function () {
+      return $.trim($(this.Controls).text());
+   };
+
+   SPDispFormField.prototype.SetValue = function (value) {
+      // does nothing
+      return this;
+   };
+
+   SPDispFormField.prototype.MakeEditable = function () {
+      // does nothing
+      return this;
+   };
+
+   SPDispFormField.prototype.MakeReadOnly = function () {
+      // does nothing, already read-only
       return this;
    };
 
