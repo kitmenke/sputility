@@ -1,4 +1,4 @@
-(function($) {
+(function() {
 
    // a generic test to use for each of the different fields
    var test_get_object_with_property = function() {
