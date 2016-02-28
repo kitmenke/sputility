@@ -12,6 +12,6 @@
   "eqnull": true,
   "browser": true,
   "indent": 3,
-  "globals": { "jQuery": false, "window": false, "byid": false, "_spPageContextInfo": false},
+  "globals": { "jQuery": false, "window": false, "byid": false, "_spPageContextInfo": false, "ChangeContentType": false},
   "exported": [ "SPUtility" ]
 }

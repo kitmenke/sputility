@@ -22,7 +22,7 @@ var SPUtility = (function ($) {
       _timeFormat = null, // 12HR or 24HR
       _dateSeparator = null, // separates month/day/year with / or .
       _isSurveyForm = false,
-      _isDispForm = window.location.pathname.endsWith('DispForm.aspx'),
+      _isDispForm = window.location.pathname.indexOf('DispForm.aspx') >= 0,
       _spVersion = 12;
 
    /*
@@ -171,100 +171,6 @@ var SPUtility = (function ($) {
       return null;
    }
 
-   function getSPFieldFromType(spFieldParams) {
-      var field = null, controls;
-
-      if (_isDispForm) {
-         return new SPDispFormField(spFieldParams);
-      }
-
-      switch (spFieldParams.type) {
-      case 'SPFieldText':
-         field = new SPTextField(spFieldParams);
-         break;
-      case 'SPFieldNumber':
-         field = new SPNumberField(spFieldParams);
-         break;
-      case 'SPFieldCurrency':
-         field = new SPCurrencyField(spFieldParams);
-         break;
-      case 'ContentTypeChoice': // special type for content type field
-         field = new ContentTypeChoiceField(spFieldParams);
-         break;
-      case 'SPFieldChoice':
-         // is this a normal dropdown field?
-         controls = $(spFieldParams.controlsCell).find('select');
-         if (controls.length > 0) {
-            field = new SPDropdownChoiceField(spFieldParams, controls);
-         } else {
-            field = new SPRadioChoiceField(spFieldParams);
-         }
-         break;
-      case 'SPFieldMultiChoice':
-         field = new SPCheckboxChoiceField(spFieldParams);
-         break;
-      case 'SPFieldDateTime':
-         field = new SPDateTimeField(spFieldParams);
-         break;
-      case 'SPFieldBoolean':
-         field = new SPBooleanField(spFieldParams);
-         break;
-      case 'SPFieldUser':
-      case 'SPFieldUserMulti':
-      case 'SPFieldBusinessData':
-         if (typeof window.SPClientPeoplePicker === 'undefined') {
-            field = new SPUserField(spFieldParams);
-         } else {
-            field = new SPUserField2013(spFieldParams);
-         }
-         break;
-      case 'SPFieldURL':
-         field = new SPURLField(spFieldParams);
-         break;
-      case 'SPFieldLookup':
-         // is this a normal dropdown field?
-         controls = $(spFieldParams.controlsCell).find('select');
-         if (controls.length > 0) {
-            field = new SPDropdownLookupField(spFieldParams, controls);
-         } else {
-            controls = $(spFieldParams.controlsCell).find('input');
-            field = new SPAutocompleteLookupField(spFieldParams, controls);
-         }
-         break;
-      case 'SPFieldNote':
-         controls = $(spFieldParams.controlsCell).find('textarea');
-         if (controls.length > 0) {
-            // either plain text or rich text
-            controls = controls[0];
-            if (window.RTE_GetEditorIFrame && window.RTE_GetEditorIFrame(controls.id) !== null) {
-               // rich text field detected
-               field = new SPRichNoteField(spFieldParams, controls);
-            }
-         } else {
-            controls = $(spFieldParams.controlsCell).find('input[type="hidden"]');
-            // is this an "enhanced rich text field" in sp 2010/2013?
-            if (controls.length >= 1) {
-               field = new SPEnhancedNoteField(spFieldParams, controls);
-            }
-         }
-         if (null === field) {
-            // default to plain text note field (on DispForm there is no way to tell)
-            field = new SPPlainNoteField(spFieldParams, controls);
-         }
-         break;
-      case 'SPFieldFile':
-         field = new SPFileField(spFieldParams);
-         break;
-      case 'SPFieldLookupMulti':
-         field = new SPLookupMultiField(spFieldParams);
-         break;
-      default:
-         field = new SPField(spFieldParams);
-         break;
-      }
-      return field;
-   }
-
    function getControlsCell(spFieldParams) {
       if (null === spFieldParams.controlsCell) {
          // the only time this property will NOT be null is in survey forms
@@ -272,31 +178,6 @@ var SPUtility = (function ($) {
          // use nextSibling?
       }
       return spFieldParams.controlsCell;
-   }
-
-   function createSPField(spFieldParams) {
-      var field = null;
-      try {
-         spFieldParams.type = getSPFieldType(getControlsCell(spFieldParams));
-         spFieldParams.internalName = getSPFieldInternalName(getControlsCell(spFieldParams));
-
-         // if we can't get the type then we can't create the field
-         if (null === spFieldParams.type) {
-            if ($(getControlsCell(spFieldParams)).find('select[name$=ContentTypeChoice]').length > 0) {
-               // small hack to support content type fields
-               spFieldParams.type = 'ContentTypeChoice';
-            } else {
-               // normally, if we can't lookup type then throw an error
-               throw 'Unable to parse SPField type.';
-            }
-         }
-
-         field = getSPFieldFromType(spFieldParams);
-      } catch (e) {
-         throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
-      }
-
-      return field;
    }
 
    function getFieldParams(elemTD, surveyElemTD, isSurveyForm) {
@@ -1731,7 +1612,7 @@ var SPUtility = (function ($) {
       return $.trim($(this.Controls).text());
    };
 
-   SPDispFormField.prototype.SetValue = function (value) {
+   SPDispFormField.prototype.SetValue = function () {
       // does nothing
       return this;
    };
@@ -1745,6 +1626,128 @@ var SPUtility = (function ($) {
       // does nothing, already read-only
       return this;
    };
+
+   function getSPFieldFromType(spFieldParams) {
+      var field = null, controls;
+
+      if (_isDispForm) {
+         return new SPDispFormField(spFieldParams);
+      }
+
+      switch (spFieldParams.type) {
+      case 'SPFieldText':
+         field = new SPTextField(spFieldParams);
+         break;
+      case 'SPFieldNumber':
+         field = new SPNumberField(spFieldParams);
+         break;
+      case 'SPFieldCurrency':
+         field = new SPCurrencyField(spFieldParams);
+         break;
+      case 'ContentTypeChoice': // special type for content type field
+         field = new ContentTypeChoiceField(spFieldParams);
+         break;
+      case 'SPFieldChoice':
+         // is this a normal dropdown field?
+         controls = $(spFieldParams.controlsCell).find('select');
+         if (controls.length > 0) {
+            field = new SPDropdownChoiceField(spFieldParams, controls);
+         } else {
+            field = new SPRadioChoiceField(spFieldParams);
+         }
+         break;
+      case 'SPFieldMultiChoice':
+         field = new SPCheckboxChoiceField(spFieldParams);
+         break;
+      case 'SPFieldDateTime':
+         field = new SPDateTimeField(spFieldParams);
+         break;
+      case 'SPFieldBoolean':
+         field = new SPBooleanField(spFieldParams);
+         break;
+      case 'SPFieldUser':
+      case 'SPFieldUserMulti':
+      case 'SPFieldBusinessData':
+         if (typeof window.SPClientPeoplePicker === 'undefined') {
+            field = new SPUserField(spFieldParams);
+         } else {
+            field = new SPUserField2013(spFieldParams);
+         }
+         break;
+      case 'SPFieldURL':
+         field = new SPURLField(spFieldParams);
+         break;
+      case 'SPFieldLookup':
+         // is this a normal dropdown field?
+         controls = $(spFieldParams.controlsCell).find('select');
+         if (controls.length > 0) {
+            field = new SPDropdownLookupField(spFieldParams, controls);
+         } else {
+            controls = $(spFieldParams.controlsCell).find('input');
+            field = new SPAutocompleteLookupField(spFieldParams, controls);
+         }
+         break;
+      case 'SPFieldNote':
+         controls = $(spFieldParams.controlsCell).find('textarea');
+         if (controls.length > 0) {
+            // either plain text or rich text
+            controls = controls[0];
+            if (window.RTE_GetEditorIFrame && window.RTE_GetEditorIFrame(controls.id) !== null) {
+               // rich text field detected
+               field = new SPRichNoteField(spFieldParams, controls);
+            }
+         } else {
+            controls = $(spFieldParams.controlsCell).find('input[type="hidden"]');
+            // is this an "enhanced rich text field" in sp 2010/2013?
+            if (controls.length >= 1) {
+               field = new SPEnhancedNoteField(spFieldParams, controls);
+            }
+         }
+         if (null === field) {
+            // default to plain text note field (on DispForm there is no way to tell)
+            field = new SPPlainNoteField(spFieldParams, controls);
+         }
+         break;
+      case 'SPFieldFile':
+         field = new SPFileField(spFieldParams);
+         break;
+      case 'SPFieldLookupMulti':
+         field = new SPLookupMultiField(spFieldParams);
+         break;
+      default:
+         field = new SPField(spFieldParams);
+         break;
+      }
+      return field;
+   }
+
+   /*
+    * Create an instance of the correct class based on the field's type
+    */
+   function createSPField(spFieldParams) {
+      var field = null;
+      try {
+         spFieldParams.type = getSPFieldType(getControlsCell(spFieldParams));
+         spFieldParams.internalName = getSPFieldInternalName(getControlsCell(spFieldParams));
+
+         // if we can't get the type then we can't create the field
+         if (null === spFieldParams.type) {
+            if ($(getControlsCell(spFieldParams)).find('select[name$=ContentTypeChoice]').length > 0) {
+               // small hack to support content type fields
+               spFieldParams.type = 'ContentTypeChoice';
+            } else {
+               // normally, if we can't lookup type then throw an error
+               throw 'Unable to parse SPField type.';
+            }
+         }
+
+         field = getSPFieldFromType(spFieldParams);
+      } catch (e) {
+         throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
+      }
+
+      return field;
+   }
 
    /**
     *   SPUtility Global object and Public Methods
