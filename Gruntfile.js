@@ -40,8 +40,7 @@ module.exports = function(grunt) {
     },
     qunit: {
       files: [
-         'test/test_list.html',
-         'test/test_survey_2013.html'
+         'test/test_*.html'
       ]
     },
     jshint: {

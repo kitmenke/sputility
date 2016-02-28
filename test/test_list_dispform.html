@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SPUtility.js DispForm Tests</title>
+  <!-- Load local jQuery. This can be overridden with a ?jquery=___ param. -->
+  <script src="../libs/jquery-loader.js"></script>
+  <!-- Load local QUnit. -->
+  <link rel="stylesheet" href="../libs/qunit/qunit.css" media="screen">
+  <script src="../libs/qunit/qunit.js"></script>
+  <!-- Load local lib and tests. -->
+  <script src="../src/sputility.js"></script>
+  <script src="test_list_dispform.js"></script>
+  <!-- Removing access to jQuery and $. But it'll still be available as _$, if
+       you REALLY want to mess around with jQuery in the console. REMEMBER WE
+       ARE TESTING A PLUGIN HERE, THIS HELPS ENSURE BEST PRACTICES. REALLY. -->
+  <script>window._$ = jQuery.noConflict(true);</script>
+</head>
+<body>
+
+<div id="qunit"></div>
+
+<!-- start of sharepoint markup -->
+<table class="ms-formtable" style="margin-top: 8px;" width="100%" border="0" cellpadding="0" cellspacing="0">
+
+
+
+		<tbody><tr>
+		<td class="ms-formlabel" nowrap="true" valign="top" width="113px"><span class="ms-h3 ms-standardheader"><a name="SPBookmark_Title"></a>Title</span></td>
+		<td class="ms-formbody" id="SPFieldText" valign="top" width="350px">
+		<!-- FieldName="Title"
+			 FieldInternalName="Title"
+			 FieldType="SPFieldText"
+		  -->
+			Alpha
+
+
+		</td>
+	</tr>
+
+		<tr>
+		<td class="ms-formlabel" nowrap="true" valign="top" width="113px"><span class="ms-h3 ms-standardheader"><a name="SPBookmark_Multi_x002d_line_x0020_Plain_x00"></a>Multi-line Plain Text</span></td>
+		<td class="ms-formbody" id="SPFieldNote" valign="top" width="350px">
+		<!-- FieldName="Multi-line Plain Text"
+			 FieldInternalName="Multi_x002d_line_x0020_Plain_x00"
+			 FieldType="SPFieldNote"
+		  -->
+			<div dir="">Alpha hello world</div>
+
+
+		</td>
+	</tr>
+
+		<tr>
+		<td class="ms-formlabel" nowrap="true" valign="top" width="113px"><span class="ms-h3 ms-standardheader"><a name="SPBookmark_Dropdown_x0020_Choice"></a>Dropdown Choice</span></td>
+		<td class="ms-formbody" id="SPFieldChoice" valign="top" width="350px">
+		<!-- FieldName="Dropdown Choice"
+			 FieldInternalName="Dropdown_x0020_Choice"
+			 FieldType="SPFieldChoice"
+		  -->
+			Alpha
+
+
+		</td>
+	</tr>
+
+		<tr>
+		<td class="ms-formlabel" nowrap="true" valign="top" width="113px"><span class="ms-h3 ms-standardheader"><a name="SPBookmark_Dropdown_x0020_Choice_x0020_with"></a>Dropdown Choice with Fill-in</span></td>
+		<td class="ms-formbody" id="SPFieldChoice" valign="top" width="350px">
+		<!-- FieldName="Dropdown Choice with Fill-in"
+			 FieldInternalName="Dropdown_x0020_Choice_x0020_with"
+			 FieldType="SPFieldChoice"
+		  -->
+			Alpha
+
+
+		</td>
+	</tr>
+
+
+
+		<tr style="display: none;" id="idAttachmentsRow">
+
+		<td class="ms-formlabel" nowrap="true" valign="top" width="113px"><span class="ms-h3 ms-standardheader"><a name="SPBookmark_Attachments"></a>Attachments</span></td>
+		<td class="ms-formbody" id="SPFieldAttachments" valign="top" width="350px">
+		<!-- FieldName="Attachments"
+			 FieldInternalName="Attachments"
+			 FieldType="SPFieldAttachments"
+		  -->
+			<table id="idAttachmentsTable" border="0" cellpadding="0" cellspacing="0"></table>
+
+
+		</td>
+<!-- Commented out by Kit
+<script type="text/javascript">// <![CDATA[
+
+
+				if (typeof ShowAttachmentRows == "function")
+					ShowAttachmentRows();
+			// ]]>
+</script>
+-->
+		</tr>
+
+</tbody></table>
+<!-- end of sharepoint markup -->
+</body>
+</html>

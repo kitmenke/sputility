@@ -21,7 +21,7 @@ var SPUtility = (function ($) {
       _internalNamesHashtable = null,
       _timeFormat = null, // 12HR or 24HR
       _dateSeparator = null, // separates month/day/year with / or .
-      _isDispForm = window.location.pathname.indexOf('DispForm.aspx') >= 0,
+      _isDispForm = false,
       _spVersion = 12;
 
    /*
@@ -209,7 +209,7 @@ var SPUtility = (function ($) {
             'name': fieldName,
             'internalName': null,
             'label': $(elemLabel),
-            'labelRow': $(formBody.parentNode),
+            'labelRow': $(elemLabel.parentNode),
             'labelCell': formLabel,
             'isRequired': isRequired,
             'controlsRow': $(formBody.parentNode),
@@ -229,8 +229,16 @@ var SPUtility = (function ($) {
             formLabels = $('table.ms-formtable td.ms-formlabel'),
             formBodies = $('table.ms-formtable td.ms-formbody');
 
+         // detect sharepoint version based on global variables which are
+         // always defined for sharepoint 2013/2010
          if (typeof _spPageContextInfo === 'object') {
             _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
+         }
+
+         // assuming we found some fields, does the first field have
+         // any controls? if not, then the form is DispForm
+         if (formBodies.length > 0 && $(formBodies[0]).children().length === 0) {
+            _isDispForm = true;
          }
 
          _fieldsHashtable = {};
