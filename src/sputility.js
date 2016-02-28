@@ -21,7 +21,6 @@ var SPUtility = (function ($) {
       _internalNamesHashtable = null,
       _timeFormat = null, // 12HR or 24HR
       _dateSeparator = null, // separates month/day/year with / or .
-      _isSurveyForm = false,
       _isDispForm = window.location.pathname.indexOf('DispForm.aspx') >= 0,
       _spVersion = 12;
 
@@ -180,25 +179,21 @@ var SPUtility = (function ($) {
       return spFieldParams.controlsCell;
    }
 
-   function getFieldParams(elemTD, surveyElemTD, isSurveyForm) {
+   function getFieldParams(formLabel, formBody) {
       var fieldParams = null, fieldName = 'Unknown field', elemLabel, isRequired = false;
       try {
-         if (isSurveyForm) {
-            elemLabel = elemTD;
+         // find element which contains the field's display name
+         var elems = $(formLabel).children('h3');
+         // normally, the label is an h3 element inside the td
+         // but on surveys the h3 doesn't exist
+         if (elems.length > 0) {
+            elemLabel = elems[0];
          } else {
-            // attempt to get the element which contains the display name
-            // of the field
-            var elems = $(elemTD).children();
-            if (elems.length > 0) {
-               // normal case: the label is the h3.ms-standardheader element
-               elemLabel = elems[0];
-            } else {
-               // special case: content type label is contained within the td.ms-formlabel
-               elemLabel = elemTD;
-            }
-            if (null === elemLabel || elemLabel.nodeName === 'NOBR') {
-               return null; // attachments row not currently supported
-            }
+            // special case: content type label is contained within the td.ms-formlabel
+            elemLabel = formLabel;
+         }
+         if (null === elemLabel || elemLabel.nodeName === 'NOBR') {
+            return null; // attachments row not currently supported
          }
 
          fieldName = $.trim($(elemLabel).text());
@@ -214,11 +209,11 @@ var SPUtility = (function ($) {
             'name': fieldName,
             'internalName': null,
             'label': $(elemLabel),
-            'labelRow': $(elemTD.parentNode),
-            'labelCell': elemTD,
+            'labelRow': $(formBody.parentNode),
+            'labelCell': formLabel,
             'isRequired': isRequired,
-            'controlsRow': isUndefined(surveyElemTD) ? null : $(surveyElemTD.parentNode),
-            'controlsCell': isUndefined(surveyElemTD) ? null : surveyElemTD,
+            'controlsRow': $(formBody.parentNode),
+            'controlsCell': formBody,
             'type': null,
             'spField': null
          };
@@ -231,18 +226,21 @@ var SPUtility = (function ($) {
    function lazyLoadSPFields() {
       if (null === _fieldsHashtable) {
          var i, fieldParams,
-            fieldElements = $('table.ms-formtable td.ms-formlabel'),
-            surveyElements = $('table.ms-formtable td.ms-formbodysurvey'),
-            len = fieldElements.length;
+            formLabels = $('table.ms-formtable td.ms-formlabel'),
+            formBodies = $('table.ms-formtable td.ms-formbody');
 
          if (typeof _spPageContextInfo === 'object') {
             _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
          }
-         _isSurveyForm = (surveyElements.length > 0);
+
          _fieldsHashtable = {};
 
-         for (i = 0; i < len; i += 1) {
-            fieldParams = getFieldParams(fieldElements[i], surveyElements[i], _isSurveyForm);
+         if (formLabels.length !== formBodies.length) {
+           throw 'lazyLoadSPFields error loading form controls';
+         }
+
+         for (i = 0; i < formLabels.length; i += 1) {
+            fieldParams = getFieldParams(formLabels[i], formBodies[i]);
             if (null !== fieldParams) {
                _fieldsHashtable[fieldParams.name] = fieldParams;
             }
