@@ -1,5 +1,5 @@
 /* Tests specific to SharePoint lists */
-(function($) {
+(function() {
    module("List DispForm");
 
    test("Get the Title field's value", function() {
