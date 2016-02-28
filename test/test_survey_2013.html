@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SPUtility.js Survey Tests (SharePoint 2013)</title>
+  <!-- Load local jQuery. This can be overridden with a ?jquery=___ param. -->
+  <script src="../libs/jquery-loader.js"></script>
+  <!-- Load local QUnit. -->
+  <link rel="stylesheet" href="../libs/qunit/qunit.css" media="screen">
+  <script src="../libs/qunit/qunit.js"></script>
+  <!-- Load local lib and tests. -->
+  <script src="../src/sputility.js"></script>
+  <script src="test_sputility.js"></script>
+  <script src="survey_2013.js"></script>
+  <!-- Removing access to jQuery and $. But it'll still be available as _$, if
+       you REALLY want to mess around with jQuery in the console. REMEMBER WE
+       ARE TESTING A PLUGIN HERE, THIS HELPS ENSURE BEST PRACTICES. REALLY. -->
+  <script>window._$ = jQuery.noConflict(true);</script>
+</head>
+<body>
+
+<div id="qunit"></div>
+
+<!-- start sharepoint markup -->
+<table class="ms-formtable" style="margin-top: 8px;" border="0" cellpadding="0" cellspacing="0" width="100%">
+
+   <tr>
+     <td valign="top" width="90%" class="ms-formlabel">
+
+            Title<span class="ms-accentText" title="This is a required field." > *</span>
+
+     </td>
+   </tr>
+   <tr>
+     <td valign="top" width="90%" class="ms-formbody">
+     <!-- FieldName="Title"
+       FieldInternalName="Title0"
+       FieldType="SPFieldText"
+     -->
+      <span dir="none">
+   <input name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl00$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" type="text" maxlength="255" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl00_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Title Required Field" class="ms-long ms-spellcheck-true" /><br />
+</span>
+
+     </td>
+   </tr>
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Multiple lines of text
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Multiple lines of text"
+			 FieldInternalName="Multiple_x0020_lines_x0020_of_x0"
+			 FieldType="SPFieldNote"
+		  -->
+			<span dir="none">
+		<textarea name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl02$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" rows="6" cols="20" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl02_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Multiple lines of text" class="ms-long" dir="none">
+</textarea><br />
+	</span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Dropdown Choice
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Dropdown Choice"
+			 FieldInternalName="Dropdown_x0020_Choice"
+			 FieldType="SPFieldChoice"
+		  -->
+			<span dir="none"><select name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl03$ctl00$ctl00$ctl04$ctl00$DropDownChoice" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl03_ctl00_ctl00_ctl04_ctl00_DropDownChoice" title="Dropdown Choice" class="ms-RadioText">
+					<option selected="selected" value=""></option>
+					<option value="Alpha">Alpha</option>
+					<option value="Bravo">Bravo</option>
+					<option value="Charlie">Charlie</option>
+					<option value="Delta">Delta</option>
+					<option value="Echo">Echo</option>
+
+				</select><br/></span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Dropdown Choice with Fill-in
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Dropdown Choice with Fill-in"
+			 FieldInternalName="Dropdown_x0020_Choice_x0020_with"
+			 FieldType="SPFieldChoice"
+		  -->
+			<span dir="none"><table cellpadding="0" cellspacing="1">
+					<tr>
+						<td><span title="Dropdown Choice with Fill-in: Choose Option"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_DropDownButton" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl04$ctl00$ctl00$ctl04$ctl00$FillInButton" value="DropDownButton" checked="checked" /></span><label class="ms-hidden" for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_DropDownButton">Dropdown Choice with Fill-in: Choose Option</label><select onclick="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_DropDownButton')" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl04$ctl00$ctl00$ctl04$ctl00$DropDownChoice" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_DropDownChoice" title="Dropdown Choice with Fill-in: Choice Drop Down" class="ms-RadioText">
+							<option selected="selected" value=""></option>
+							<option value="Alpha">Alpha</option>
+							<option value="Bravo">Bravo</option>
+							<option value="Charlie">Charlie</option>
+							<option value="Delta">Delta</option>
+							<option value="Echo">Echo</option>
+
+						</select></td>
+					</tr><tr>
+						<td><span onclick="SetFocusOnControl('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_ctl01')" class="ms-RadioText" title="Dropdown Choice with Fill-in: Specify your own value:"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_FillInButton" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl04$ctl00$ctl00$ctl04$ctl00$FillInButton" value="FillInButton" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_FillInButton">Specify your own value:</label></span></td>
+					</tr><tr>
+						<td>&#160;&#160;&#160;<input onclick="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_FillInButton')" onfocus="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_FillInButton')" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl04$ctl00$ctl00$ctl04$ctl00$ctl01" type="text" maxlength="255" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl04_ctl00_ctl00_ctl04_ctl00_ctl01" tabindex="-1" title="Dropdown Choice with Fill-in : Specify your own value:" /></td>
+					</tr>
+				</table></span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Radio Buttons
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Radio Buttons"
+			 FieldInternalName="Radio_x0020_Buttons"
+			 FieldType="SPFieldChoice"
+		  -->
+			<span dir="none"><table cellpadding="0" cellspacing="1">
+					<tr>
+						<td><span class="ms-RadioText" title="Alpha"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl00" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl05$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl00" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl00">Alpha</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Bravo"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl01" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl05$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl01" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl01">Bravo</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Charlie"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl02" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl05$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl02" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl02">Charlie</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Delta"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl03" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl05$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl03" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl03">Delta</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Echo"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl04" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl05$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl04" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl05_ctl00_ctl00_ctl04_ctl00_ctl04">Echo</label></span></td>
+					</tr>
+				</table></span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Radio Buttons with Fill-in
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Radio Buttons with Fill-in"
+			 FieldInternalName="Radio_x0020_Buttons_x0020_with_x"
+			 FieldType="SPFieldChoice"
+		  -->
+			<span dir="none"><table cellpadding="0" cellspacing="1">
+					<tr>
+						<td><span class="ms-RadioText" title="Alpha"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl00" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl00" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl00">Alpha</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Bravo"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl01" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl01" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl01">Bravo</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Charlie"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl02" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl02" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl02">Charlie</label></span></td>
+					</tr><tr>
+						<td><span onclick="SetFocusOnControl('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl04')" class="ms-RadioText" title="Specify your own value:"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl03" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl03" checked="checked" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl03">Specify your own value:</label></span></td>
+					</tr><tr>
+						<td>&#160;&#160;&#160;<input onclick="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl03')" onkeypress="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl03')" onpaste="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl03')" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl06$ctl00$ctl00$ctl04$ctl00$ctl04" type="text" maxlength="255" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl06_ctl00_ctl00_ctl04_ctl00_ctl04" tabindex="-1" title="Radio Buttons with Fill-in : Specify your own value:" /></td>
+					</tr>
+				</table></span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Checkboxes
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Checkboxes"
+			 FieldInternalName="Checkboxes"
+			 FieldType="SPFieldMultiChoice"
+		  -->
+			<span dir="none"><table cellpadding="0" cellspacing="1">
+					<tr>
+						<td><span class="ms-RadioText" title="Alpha"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl00" type="checkbox" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl07$ctl00$ctl00$ctl04$ctl00$ctl00" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl00">Alpha</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Bravo"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl01" type="checkbox" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl07$ctl00$ctl00$ctl04$ctl00$ctl01" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl01">Bravo</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Charlie"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl02" type="checkbox" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl07$ctl00$ctl00$ctl04$ctl00$ctl02" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl02">Charlie</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Delta"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl03" type="checkbox" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl07$ctl00$ctl00$ctl04$ctl00$ctl03" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl03">Delta</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Echo"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl04" type="checkbox" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl07$ctl00$ctl00$ctl04$ctl00$ctl04" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl07_ctl00_ctl00_ctl04_ctl00_ctl04">Echo</label></span></td>
+					</tr>
+				</table></span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Checkboxes with Fill-in
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Checkboxes with Fill-in"
+			 FieldInternalName="Checkboxes_x0020_with_x0020_Fill"
+			 FieldType="SPFieldChoice"
+		  -->
+			<span dir="none"><table cellpadding="0" cellspacing="1">
+					<tr>
+						<td><span class="ms-RadioText" title="Alpha"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl08$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl00" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00">Alpha</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Bravo"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl01" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl08$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl01" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl01">Bravo</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Charlie"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl02" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl08$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl02" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl02">Charlie</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Delta"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl03" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl08$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl03" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl03">Delta</label></span></td>
+					</tr><tr>
+						<td><span class="ms-RadioText" title="Echo"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl04" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl08$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl04" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl04">Echo</label></span></td>
+					</tr><tr>
+						<td><span onclick="SetFocusOnControl('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl06')" class="ms-RadioText" title="Specify your own value:"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl08$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl05" checked="checked" /><label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05">Specify your own value:</label></span></td>
+					</tr><tr>
+						<td>&#160;&#160;&#160;<input onclick="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05')" onkeypress="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05')" onpaste="SetChoiceOption('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05')" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl08$ctl00$ctl00$ctl04$ctl00$ctl06" type="text" maxlength="255" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl08_ctl00_ctl00_ctl04_ctl00_ctl06" tabindex="-1" title="Checkboxes with Fill-in : Specify your own value:" /></td>
+					</tr>
+				</table></span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Number
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Number"
+			 FieldInternalName="Number"
+			 FieldType="SPFieldNumber"
+		  -->
+			<span dir="none">
+		<input name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl09$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" type="text" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl09_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Number" class="ms-input" size="11" style="ime-mode:inactive;" /><br />
+	</span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Currency
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Currency"
+			 FieldInternalName="Currency"
+			 FieldType="SPFieldCurrency"
+		  -->
+			<span dir="none">
+		<input name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl10$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" type="text" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl10_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Currency" class="ms-input" size="11" style="ime-mode:inactive;" /><br />
+	</span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Date Only
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Date Only"
+			 FieldInternalName="Date_x0020_Only"
+			 FieldType="SPFieldDateTime"
+		  -->
+			<span dir="none">
+		<table border="0" cellpadding="0" cellspacing="0"><tr>
+				<td class="ms-dtinput" >
+				<label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" style="display:none">Date Only Date</label>
+				<input name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl11$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDate" type="text" maxlength="45" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" title="Date Only" class="ms-input" AutoPostBack="0" /></td>
+				<td class="ms-dtinput" >
+				<a href="#" onclick='clickDatePicker("ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate", "\u002fsputility\u002f_layouts\u002f15\u002fiframe.aspx?&amp;cal=1&amp;lcid=1033&amp;langid=1033&amp;tz=-08:00:00.0000398&amp;ww=0111110&amp;fdow=0&amp;fwoy=0&amp;hj=0&amp;swn=False&amp;minjday=109207&amp;maxjday=2666269&amp;date=", "", event);return false;' ><img id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerImage" src="/_layouts/15/images/calendar_25.gif" border="0" alt="Select a date from the calendar."></img></a></td>
+				<td>
+				<iframe id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerFrame" src="/_layouts/15/images/blank.gif" frameborder="0" scrolling="no" style="DISPLAY:none;POSITION:absolute; width:200px; Z-INDEX:101;" title="Select a date from the calendar."></iframe></td>
+				</tr></table>
+
+	</span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Date and Time
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Date and Time"
+			 FieldInternalName="Date_x0020_and_x0020_Time"
+			 FieldType="SPFieldDateTime"
+		  -->
+			<span dir="none">
+		<table border="0" cellpadding="0" cellspacing="0"><tr>
+				<td class="ms-dtinput" >
+				<label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" style="display:none">Date and Time Date</label>
+				<input name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDate" type="text" maxlength="45" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" title="Date and Time" class="ms-input" AutoPostBack="0" /></td>
+				<td class="ms-dtinput" >
+				<a href="#" onclick='clickDatePicker("ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate", "\u002fsputility\u002f_layouts\u002f15\u002fiframe.aspx?&amp;cal=1&amp;lcid=1033&amp;langid=1033&amp;tz=-08:00:00.0000398&amp;ww=0111110&amp;fdow=0&amp;fwoy=0&amp;hj=0&amp;swn=False&amp;minjday=109207&amp;maxjday=2666269&amp;date=", "", event);return false;' ><img id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerImage" src="/_layouts/15/images/calendar_25.gif" border="0" alt="Select a date from the calendar."></img></a></td>
+				<td>
+				<iframe id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerFrame" src="/_layouts/15/images/blank.gif" frameborder="0" scrolling="no" style="DISPLAY:none;POSITION:absolute; width:200px; Z-INDEX:101;" title="Select a date from the calendar."></iframe></td>
+				<td class="ms-dttimeinput" nowrap="nowrap">
+				<label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateHours" style="display:none">Date and Time Hours</label>
+				<select name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDateHours" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateHours" dir="ltr">
+					<option selected="selected" value="12 AM">12 AM</option>
+					<option value="1 AM">1 AM</option>
+					<option value="2 AM">2 AM</option>
+					<option value="3 AM">3 AM</option>
+					<option value="4 AM">4 AM</option>
+					<option value="5 AM">5 AM</option>
+					<option value="6 AM">6 AM</option>
+					<option value="7 AM">7 AM</option>
+					<option value="8 AM">8 AM</option>
+					<option value="9 AM">9 AM</option>
+					<option value="10 AM">10 AM</option>
+					<option value="11 AM">11 AM</option>
+					<option value="12 PM">12 PM</option>
+					<option value="1 PM">1 PM</option>
+					<option value="2 PM">2 PM</option>
+					<option value="3 PM">3 PM</option>
+					<option value="4 PM">4 PM</option>
+					<option value="5 PM">5 PM</option>
+					<option value="6 PM">6 PM</option>
+					<option value="7 PM">7 PM</option>
+					<option value="8 PM">8 PM</option>
+					<option value="9 PM">9 PM</option>
+					<option value="10 PM">10 PM</option>
+					<option value="11 PM">11 PM</option>
+
+				</select>&nbsp;
+				<label for="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateMinutes" style="display:none">Date and Time Minutes</label>
+				<select name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDateMinutes" id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateMinutes" dir="ltr">
+					<option selected="selected" value="00">00</option>
+					<option value="05">05</option>
+					<option value="10">10</option>
+					<option value="15">15</option>
+					<option value="20">20</option>
+					<option value="25">25</option>
+					<option value="30">30</option>
+					<option value="35">35</option>
+					<option value="40">40</option>
+					<option value="45">45</option>
+					<option value="50">50</option>
+					<option value="55">55</option>
+
+				</select></td>
+				</tr></table>
+
+	</span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Yes/No
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Yes/No"
+			 FieldInternalName="Yes_x002f_No"
+			 FieldType="SPFieldBoolean"
+		  -->
+			<span dir="none">
+		<input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl13_ctl00_ctl00_ctl04_ctl00_ctl00_BooleanField" type="checkbox" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl13$ctl00$ctl00$ctl04$ctl00$ctl00$BooleanField" checked="checked" /><br />
+	</span>
+
+		  </td>
+		</tr>
+
+
+
+		<tr>
+		  <td valign="top" width="90%" class="ms-formlabel">
+
+					Rating Scale
+
+		  </td>
+		</tr>
+		<tr>
+		  <td valign="top" width="90%" class="ms-formbody">
+		  <!-- FieldName="Rating Scale"
+			 FieldInternalName="Rating_x0020_Scale"
+			 FieldType="SPFieldGridChoice"
+		  -->
+			<span dir="none"><table cellpadding="0" cellspacing="1" border="0" height="95%" summary="Rating Scale Question">
+					<tr>
+						<td>&#160;</td><td class="ms-verticaldots">&#160;</td><td class="ms-gridCol">Low&#160;</td><td class="ms-gridCol"></td><td class="ms-gridCol">Average</td><td class="ms-gridCol"></td><td class="ms-gridCol">&#160;High</td><td class="ms-gridCol">&#160;</td>
+					</tr><tr>
+						<td>&#160;</td><td class="ms-verticaldots">&#160;</td><th scope="col" class="ms-gridCol">1</th><th scope="col" class="ms-gridCol">2</th><th scope="col" class="ms-gridCol">3</th><th scope="col" class="ms-gridCol">4</th><th scope="col" class="ms-gridCol">5</th><th scope="col" class="ms-gridCol">N/A</th>
+					</tr><tr>
+						<td class="ms-sectionline" colspan="100%" height="1"><img alt="" src="/_layouts/15/images/blank.gif" /></td>
+					</tr><tr>
+						<th class="ms-gridT1" scope="row">Alpha</th><td class="ms-verticaldots">&#160;</td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl00" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:0" value="ctl00" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl00').title='Alpha Value 1';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl01" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:0" value="ctl01" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl01').title='Alpha Value 2';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl02" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:0" value="ctl02" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl02').title='Alpha Value 3';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl03" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:0" value="ctl03" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl03').title='Alpha Value 4';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl04" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:0" value="ctl04" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl04').title='Alpha Value 5';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl05" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:0" value="ctl05" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl05').title='Alpha Value N\u002fA';</script></td>
+					</tr><tr>
+						<th class="ms-gridT1" scope="row">Bravo</th><td class="ms-verticaldots">&#160;</td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl06" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:1" value="ctl06" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl06').title='Bravo Value 1';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl07" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:1" value="ctl07" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl07').title='Bravo Value 2';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl08" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:1" value="ctl08" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl08').title='Bravo Value 3';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl09" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:1" value="ctl09" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl09').title='Bravo Value 4';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl10" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:1" value="ctl10" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl10').title='Bravo Value 5';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl11" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:1" value="ctl11" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl11').title='Bravo Value N\u002fA';</script></td>
+					</tr><tr>
+						<th class="ms-gridT1" scope="row">Charlie</th><td class="ms-verticaldots">&#160;</td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl12" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:2" value="ctl12" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl12').title='Charlie Value 1';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl13" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:2" value="ctl13" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl13').title='Charlie Value 2';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl14" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:2" value="ctl14" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl14').title='Charlie Value 3';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl15" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:2" value="ctl15" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl15').title='Charlie Value 4';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl16" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:2" value="ctl16" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl16').title='Charlie Value 5';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl17" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:2" value="ctl17" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl17').title='Charlie Value N\u002fA';</script></td>
+					</tr><tr>
+						<th class="ms-gridT1" scope="row">Delta</th><td class="ms-verticaldots">&#160;</td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl18" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:3" value="ctl18" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl18').title='Delta Value 1';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl19" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:3" value="ctl19" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl19').title='Delta Value 2';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl20" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:3" value="ctl20" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl20').title='Delta Value 3';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl21" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:3" value="ctl21" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl21').title='Delta Value 4';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl22" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:3" value="ctl22" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl22').title='Delta Value 5';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl23" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:3" value="ctl23" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl23').title='Delta Value N\u002fA';</script></td>
+					</tr><tr>
+						<th class="ms-gridT1" scope="row">Echo</th><td class="ms-verticaldots">&#160;</td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl24" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:4" value="ctl24" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl24').title='Echo Value 1';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl25" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:4" value="ctl25" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl25').title='Echo Value 2';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl26" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:4" value="ctl26" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl26').title='Echo Value 3';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl27" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:4" value="ctl27" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl27').title='Echo Value 4';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl28" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:4" value="ctl28" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl28').title='Echo Value 5';</script></td><td align="center"><input id="ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl29" type="radio" name="ctl00$ctl33$g_fb04b311_f2ea_4feb_b99a_31e89b601d71$ctl00$ctl02$ctl14$ctl00$ctl00$ctl04$ctl00$RadioButtons:4" value="ctl29" /><script type="text/javascript">document.getElementById('ctl00_ctl33_g_fb04b311_f2ea_4feb_b99a_31e89b601d71_ctl00_ctl02_ctl14_ctl00_ctl00_ctl04_ctl00_ctl29').title='Echo Value N\u002fA';</script></td>
+					</tr>
+				</table></span>
+
+		  </td>
+		</tr>
+
+
+		</table>
+<!-- end sharepoint markup -->
+</body>
+</html>

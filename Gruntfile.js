@@ -8,7 +8,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('sputility.json'),
     banner: '/*\n' +
       '   Name: <%= pkg.title || pkg.name %>\n' +
-      '   Version: <%= pkg.version %>\n' + 
+      '   Version: <%= pkg.version %>\n' +
       '   Built: <%= grunt.template.today("yyyy-mm-dd") %>\n' +
       '   Author: <%= pkg.author.name %>\n' +
       '   <%= pkg.homepage %>\n' +
@@ -39,7 +39,10 @@ module.exports = function(grunt) {
       },
     },
     qunit: {
-      files: ['test/sputility.html']
+      files: [
+         'test/test_list.html',
+         'test/test_survey_2013.html'
+      ]
     },
     jshint: {
       gruntfile: {
