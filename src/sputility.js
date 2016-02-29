@@ -209,10 +209,10 @@ var SPUtility = (function ($) {
             'name': fieldName,
             'internalName': null,
             'label': $(elemLabel),
-            'labelRow': $(elemLabel.parentNode),
+            'labelRow': elemLabel.parentNode,
             'labelCell': formLabel,
             'isRequired': isRequired,
-            'controlsRow': $(formBody.parentNode),
+            'controlsRow': formBody.parentNode,
             'controlsCell': formBody,
             'type': null,
             'spField': null
@@ -270,17 +270,14 @@ var SPUtility = (function ($) {
    }
 
    function toggleSPFieldRows(labelRow, controlsRow, bShowField) {
-      // controlsRow is populated on survey forms (null otherwise)
+      // on survey forms, the labelRow and controlsRow are different
+      // for normal forms, they are the same so it is a redundant call
       if (bShowField) {
          $(labelRow).show();
-         if (null !== controlsRow) {
-            $(controlsRow).show();
-         }
+         $(controlsRow).show();
       } else {
          $(labelRow).hide();
-         if (null !== controlsRow) {
-            $(controlsRow).hide();
-         }
+         $(controlsRow).hide();
       }
    }
 

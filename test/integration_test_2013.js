@@ -29,17 +29,17 @@
         },
         "Should throw an exception when the field is not found.");
    });
-   
+
    test("GetSPFields()", function() {
       expect(0);
       SPUtility.GetSPFields();
    });
-   
+
    test("HideSPField()", function() {
       expect(0);
       SPUtility.HideSPField('Title');
    });
-   
+
    test("ShowSPField()", function() {
       expect(0);
       SPUtility.ShowSPField('Title');
@@ -138,7 +138,7 @@
               expected,
               "SetValue() failed to set Textbox.");
    });
-   
+
    test("MakeReadOnly()", function() {
       expect(1);
 
@@ -154,16 +154,16 @@
 
    function testMakeReadOnlySingleSelectChoiceFields() {
       expect(2);
-      
+
       var expected = "Delta";
       this.field.SetValue(expected);
       this.field.MakeReadOnly();
       var actual = this.field.ReadOnlyLabel.text();
-      
+
       strictEqual(actual,
          expected,
          "MakeReadOnly should create a read only label.");
-      
+
       expected = "Echo";
       this.field.SetValue(expected);
       actual = this.field.ReadOnlyLabel.text();
@@ -197,17 +197,17 @@
               expected,
               "SetValue() failed to set Textbox.");
    });
-   
+
    test("Try setting the field to garbage (throws an exception)", function() {
       expect(1);
-      
+
       throws(function(){
          this.field.SetValue("foo bar");
       });
    });
-   
+
    test("MakeReadOnly()", testMakeReadOnlySingleSelectChoiceFields);
-   
+
    module("SPFieldChoice Dropdown (with fill in)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Dropdown Choice with Fill-in');
@@ -239,7 +239,7 @@
               expected,
               "SetValue() failed to set fill in value.");
    });
-   
+
    module("SPFieldChoice - Radio buttons", {
       setup: function() {
          this.field = SPUtility.GetSPField('Radio Buttons');
@@ -266,17 +266,17 @@
               expected,
               "SetValue() failed to set Radio button.");
    });
-   
+
    test("Try setting the field to garbage (throws an exception)", function() {
       expect(1);
-      
+
       throws(function(){
          this.field.SetValue("foo bar");
       });
    });
-   
+
    test("MakeReadOnly()", testMakeReadOnlySingleSelectChoiceFields);
-   
+
    module("SPFieldChoice - Radio buttons with fill-in", {
       setup: function() {
          this.field = SPUtility.GetSPField('Radio Buttons with Fill-in');
@@ -303,10 +303,10 @@
               expected,
               "SetValue() failed to set Radio button.");
    });
-   
+
    test("Set the fill-in value", function() {
       expect(2);
-      
+
       var expected = "foo bar";
       this.field.SetValue(expected);
       strictEqual(this.field.GetValue(),
@@ -344,7 +344,7 @@
               expected,
               "SetValue() failed to set the checkbox.");
    });
-   
+
    test("MakeReadOnly()", function() {
       expect(1);
 
@@ -356,7 +356,7 @@
               expected,
               "MakeReadOnly should set a read only label.");
    });
-   
+
    test("MakeReadOnly() update", function() {
       expect(1);
 
@@ -369,10 +369,10 @@
               expected,
               "MakeReadOnly should update a read only label.");
    });
-   
+
    test("Try setting the field to garbage (throws an exception)", function() {
       expect(1);
-      
+
       throws(function(){
          this.field.SetValue("foo bar");
       });
@@ -434,7 +434,7 @@
               expected,
               "Fill-in value should be set now.");
    });
-   
+
    test("MakeReadOnly()", function() {
       expect(1);
 
@@ -578,7 +578,7 @@
               "Validate SetValue takes hour and minute parameter as strings");
       }
    });
-   
+
    test("SetValue() takes year, month, day, hour (integer), and minute (str) parameters", function() {
       expect(1);
 
@@ -612,7 +612,7 @@
               "Validate SetValue takes all integer parameters.");
       }
    });
-   
+
    test("SetValue() takes null or empty string to clear the field", function() {
       expect(1);
 
@@ -726,13 +726,13 @@
               "SetTime() should clear out only the time portion.");
       }
    });
-   
+
    test("SetValue() updates the label if the field is read only (issue #5)", function() {
       expect(1);
 
       this.field.MakeReadOnly();
       this.field.SetValue(2013,1,2,'1 PM','35');
-      
+
       var actual = this.field.ReadOnlyLabel.text();
       if (SPUtility.GetTimeFormat() === '12HR') {
         equal(actual,
@@ -749,7 +749,7 @@
       expect(1);
 
       this.field.SetValue(2014,3,14,12,0);
-      
+
       var actual = this.field.GetValue().toString();
       if (SPUtility.GetTimeFormat() === '12HR') {
         equal(actual,
@@ -804,7 +804,7 @@
       this.field.MakeEditable();
       strictEqual($(this.field.Controls).css('display'), "inline");
    });
-   
+
    module("SPBooleanField (yes/no)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Yes/No');
@@ -852,7 +852,7 @@
               expected,
               "MakeReadOnly should set the label to be yes.");
    });
-   
+
    module("SPURLField (hyperlink)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Hyperlink');
@@ -870,17 +870,17 @@
 
       var expected = ['http://sputility.codeplex.com', 'SPUtility.js'];
       this.field.SetValue(expected[0], expected[1]);
-      
+
       // make sure both textboxes were set correctly
       equal(this.field.TextboxURL.val(), expected[0], 'Test the url textbox is set correctly.');
       equal(this.field.TextboxDescription.val(), expected[1], 'Test the description textbox is set correctly.');
-      
+
       // Gets the value of the hyperlink field as an array
       var actual = this.field.GetValue();
       deepEqual(actual, expected,
               "GetValue() should return an array of two strings containing URL and Description.");
    });
-   
+
    test("MakeReadOnly() Default hyperlink", function() {
       expect(1);
       this.field.SetValue("http://sputility.codeplex.com/", "SPUtility.js");
@@ -893,7 +893,7 @@
               expected.toUpperCase(),
               "MakeReadOnly should set a read only label as a hyperlink.");
    });
-   
+
    test("MakeReadOnly() Text only", function() {
       expect(1);
       this.field.SetValue("http://sputility.codeplex.com", "SPUtility.js");
@@ -905,7 +905,7 @@
               expected,
               "MakeReadOnly should set a read only label as text.");
    });
-   
+
    module("SPLookupField (single-select, small lookup)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Small Lookup');
@@ -939,11 +939,11 @@
 
       var expected = 'Kilo';
       this.field.SetValue(11);
-      
+
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
-   
+
    module("SPLookupField (single-select, big lookup with autocomplete)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Large Lookup');
@@ -961,7 +961,7 @@
 
       var expected = 'Charlie';
       this.field.SetValue(expected);
-      
+
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
@@ -971,7 +971,7 @@
 
       var expected = 'Kilo';
       this.field.SetValue(11);
-      
+
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
@@ -991,9 +991,9 @@
       ok(this.field.ButtonAdd, "Expected to have a property named ButtonAdd");
       ok(this.field.ButtonRemove, "Expected to have a property named ButtonRemove");
    });
-   
+
    test("Can make the field read-only (issue #6)", function() {
-      expect(1);  
+      expect(1);
 
       var expected = 'Charlie; Echo';
       this.field.SetValue('Charlie');
@@ -1007,14 +1007,14 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(1);  
+      expect(1);
 
       var expected = ['Charlie', 'Echo', 'Golf', 'Zebra'];
       this.field.SetValue('Charlie');
       this.field.SetValue('Echo');
       this.field.SetValue('Golf');
       this.field.SetValue('Zebra');
-      
+
       var actual = this.field.GetValue();
       deepEqual(actual, expected);
    });
@@ -1024,7 +1024,7 @@
 
       var expected = 'Kilo';
       this.field.SetValue(11);
-      
+
       var actual = this.field.GetValue();
       var isInArray = $.inArray(expected, actual);
       ok(isInArray >= 0);
@@ -1047,7 +1047,7 @@
       isInArray = $.inArray(expected, actual);
       ok(isInArray === -1);
    });
-   
+
    module("SPFieldNote (multi-line, plain text)", {
       setup: function() {
          this.field = SPUtility.GetSPField('Multi-line Plain Text');
@@ -1063,11 +1063,11 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(1);  
+      expect(1);
 
       var expected = 'Hello world!';
       this.field.SetValue(expected);
-      
+
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
@@ -1088,11 +1088,11 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(1);  
+      expect(1);
 
       var expected = '<strong>Hello world!</strong>';
       this.field.SetValue(expected);
-      
+
       var actual = this.field.GetValue();
       // case seems to uppercase in SP 2007 so do a case insensitive compare
       strictEqual(actual.toUpperCase(), expected.toUpperCase());
@@ -1113,7 +1113,7 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(1);  
+      expect(1);
 
       // fancy header, lists, and a table
       var expected = '<h1>​Hello world!</h1>';
@@ -1131,11 +1131,11 @@
       expected += '   </tbody>';
       expected += '</table>';
       this.field.SetValue(expected);
-      
+
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
-   
+
    module("SPUserField", {
       setup: function() {
          this.field = SPUtility.GetSPField('Person or Group');
@@ -1151,20 +1151,20 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(2);  
+      expect(2);
 
-      var expected = 'Chris Menke';
+      var expected = 'Team Site Visitors';
       this.field.SetValue(expected);
-      
+
       var actual = this.field.GetValue();
       strictEqual(actual, expected);
    });
-   
+
    module("Miscellaneous tests");
-   
+
    test('Splitting autocomplete choices', function() {
       expect(1);
-      
+
       // a list item ID was passed to the function so attempt to lookup the text value
       var choices = '(None)|0|A pipe || in the middle|31|AAA BBB CCC|30|Alpha|1|Bravo|2|Charlie|3|Delta|4|Echo|5|Foxtrot|6|Golf|7|Hotel|8|India|9|Juliet|10|Kilo|11|Lima|12|Mike|13|November|14|Oscar|15|Papa|16|Quebec|17|Romeo|18|Sierra|19|Tango|29';
       var expected = [
@@ -1215,7 +1215,7 @@
          "Tango",
          "29"
       ];
-      
+
       // split the string on every pipe character followed by a digit
       choices = choices.split(/\|(?=\d+)/);
       var c = [], pipeIndex;
@@ -1226,8 +1226,8 @@
          c.push(choices[i].substring(pipeIndex+1));
       }
       c.push(choices[choices.length-1]);
-      
+
       deepEqual(c, expected);
    });
-   
+
 }(jQuery));
