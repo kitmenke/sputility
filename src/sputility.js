@@ -1580,6 +1580,7 @@ var SPUtility = (function ($) {
    SPUserField2013.prototype = Object.create(SPField.prototype);
 
    SPUserField2013.prototype.GetValue = function () {
+      // returns an array of objects
       return this.ClientPeoplePicker.GetAllUserInfo();
    };
 
@@ -1593,6 +1594,15 @@ var SPUtility = (function ($) {
          this._updateReadOnlyLabel(this.GetValue());
       }
       return this;
+   };
+
+   // get the display text of each resolved item and display in semicolon
+   // delimited list
+   SPUserField2013.prototype.MakeReadOnly = function () {
+      var displayText = $.map(this.GetValue(), function(obj) {
+         return obj.DisplayText;
+      });
+      return this._makeReadOnly(displayText.join('; '));
    };
 
    /*
