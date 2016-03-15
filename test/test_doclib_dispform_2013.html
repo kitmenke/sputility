@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SPUtility.js Document Library DispForm Tests (SharePoint 2013)</title>
+  <!-- Load local jQuery. This can be overridden with a ?jquery=___ param. -->
+  <script src="../libs/jquery-loader.js"></script>
+  <!-- Load local QUnit. -->
+  <link rel="stylesheet" href="../libs/qunit/qunit.css" media="screen">
+  <script src="../libs/qunit/qunit.js"></script>
+  <!-- Load local lib and tests. -->
+  <script src="../src/sputility.js"></script>
+  <script src="test_dispform.js"></script>
+  <script src="test_doclib_dispform_2013.js"></script>
+  <!-- Removing access to jQuery and $. But it'll still be available as _$, if
+       you REALLY want to mess around with jQuery in the console. REMEMBER WE
+       ARE TESTING A PLUGIN HERE, THIS HELPS ENSURE BEST PRACTICES. REALLY. -->
+  <script>window._$ = jQuery.noConflict(true);</script>
+</head>
+<body>
+
+<div id="qunit"></div>
+
+<!-- start sharepoint markup -->
+<table width="100%">
+				<tbody><tr>
+					<td valign="top" width="100%">
+
+			<table class="ms-formtable" style="margin-top: 8px;" id="formTbl" width="100%" border="0" cellpadding="0" cellspacing="0">
+
+
+
+
+		<tbody><tr>
+		<td class="ms-formlabel" nowrap="true" valign="top" width="113px"><span class="ms-h3 ms-standardheader"><a name="SPBookmark_FileLeafRef"></a>Name</span></td>
+		<td class="ms-formbody" id="SPFieldFile" valign="top" width="350px">
+		<!-- FieldName="Name"
+			 FieldInternalName="FileLeafRef"
+			 FieldType="SPFieldFile"
+		  -->
+			<a rel="sp_DialogLinkNavigate" href="/sputility/Shared%20Documents/Test%20Document.docx" onmousedown="return false;" onclick="return false;">Test Document.docx</a>
+
+
+		</td>
+	</tr>
+
+		<tr>
+		<td class="ms-formlabel" nowrap="true" valign="top" width="113px"><span class="ms-h3 ms-standardheader"><a name="SPBookmark_Title"></a>Title</span></td>
+		<td class="ms-formbody" id="SPFieldText" valign="top" width="350px">
+		<!-- FieldName="Title"
+			 FieldInternalName="Title"
+			 FieldType="SPFieldText"
+		  -->
+
+
+
+		</td>
+	</tr>
+
+
+
+			</tbody></table>
+
+
+			<table style="padding-top: 7px" width="100%" cellpadding="0" cellspacing="0"><tbody><tr><td width="100%">
+
+		<input name="ctl00$ctl33$g_cad68ef1_ceb1_4ea0_a7f6_394959423b92$ctl00$ctl02$ctl00$ctl06$ctl00$owshiddenversion" id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl02_ctl00_ctl06_ctl00_owshiddenversion" type="HIDDEN">
+
+
+
+<table class="ms-formtoolbar" id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl02_ctl00_toolBarTbl" role="presentation" width="100%" border="0" cellpadding="2" cellspacing="0">
+  <tbody><tr>
+
+
+		<td class="ms-toolbar" nowrap="nowrap">
+
+		<table cellpadding="0" cellspacing="0">
+		<tbody><tr><td class="ms-descriptiontext" id="onetidinfoblockV">Version:
+			1.0
+
+		   </td></tr>
+		  <tr><td class="ms-descriptiontext" id="onetidinfoblock1" nowrap="nowrap">
+				<span id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl02_ctl00_toolBarTbl_RptControls_ctl00_ctl00_ctl02">Created  at 3/5/2016 12:14 PM&nbsp;
+ by <nobr><span class="ms-imnSpan"><a tabindex="-1" href="#" onclick="IMNImageOnClick(event); return false;" class="ms-imnlink ms-spimn-presenceLink"><span class="ms-spimn-presenceWrapper ms-imnImg ms-spimn-imgSize-10x10"><img title="" alt="No presence information" name="imnmark" class="ms-spimn-img ms-spimn-presence-disconnected-10x10x32" showofflinepawn="1" src="/_layouts/15/images/spimn.png" sip="firstname.lastname@example.com" id="imn0,type=sip"></span></a></span><span class="ms-noWrap ms-imnSpan"><a href="#" onclick="IMNImageOnClick(event); return false;" class="ms-imnlink" tabindex="-1"><img title="" alt="No presence information" name="imnmark" class="ms-hide" showofflinepawn="1" src="/_layouts/15/images/spimn.png" sip="firstname.lastname@example.com" id="imn1,type=sip"></a><a onclick="GoToLinkOrDialogNewWindow(this); return false;" class="ms-peopleux-userdisplink ms-subtleLink" href="/sputility/_layouts/15/listform.aspx?PageType=4&amp;ListId={3cb8e413-e842-41b3-af04-7a3052a55b97}&amp;ID=10">Firstname Lastname</a></span></nobr>
+</span>
+			</td></tr>
+			<tr><td class="ms-descriptiontext" id="onetidinfoblock2" nowrap="nowrap">
+				<span id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl02_ctl00_toolBarTbl_RptControls_ctl00_ctl00_ctl03">Last modified at 3/5/2016 12:14 PM&nbsp;
+ by <nobr><span class="ms-imnSpan"><a tabindex="-1" href="#" onclick="IMNImageOnClick(event); return false;" class="ms-imnlink ms-spimn-presenceLink"><span class="ms-spimn-presenceWrapper ms-imnImg ms-spimn-imgSize-10x10"><img title="" alt="No presence information" name="imnmark" class="ms-spimn-img ms-spimn-presence-disconnected-10x10x32" showofflinepawn="1" src="/_layouts/15/images/spimn.png" sip="firstname.lastname@example.com" id="imn2,type=sip"></span></a></span><span class="ms-noWrap ms-imnSpan"><a href="#" onclick="IMNImageOnClick(event); return false;" class="ms-imnlink" tabindex="-1"><img title="" alt="No presence information" name="imnmark" class="ms-hide" showofflinepawn="1" src="/_layouts/15/images/spimn.png" sip="firstname.lastname@example.com" id="imn3,type=sip"></a><a onclick="GoToLinkOrDialogNewWindow(this); return false;" class="ms-peopleux-userdisplink ms-subtleLink" href="/sputility/_layouts/15/listform.aspx?PageType=4&amp;ListId={3cb8e413-e842-41b3-af04-7a3052a55b97}&amp;ID=10">Firstname Lastname</a></span></nobr>
+</span>
+			</td></tr>
+		</tbody></table>
+
+		</td>
+
+	<td class="ms-toolbar" nowrap="nowrap" width="99%"><img src="/_layouts/15/images/blank.gif?rev=42" alt="" data-accessibility-nocheck="true" height="18" width="1"></td>
+
+
+		<td class="ms-toolbar" nowrap="nowrap">
+
+		<table width="100%" cellpadding="0" cellspacing="0"><tbody><tr><td nowrap="nowrap" width="100%" align="right">
+			<input name="ctl00$ctl33$g_cad68ef1_ceb1_4ea0_a7f6_394959423b92$ctl00$ctl02$ctl00$toolBarTbl$RightRptControls$ctl01$ctl00$diidIOGoBack" value="Close" onclick="return false;" id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl02_ctl00_toolBarTbl_RightRptControls_ctl01_ctl00_diidIOGoBack" accesskey="C" class="ms-ButtonHeightWidth" target="_self" type="button">
+		</td> </tr> </tbody></table>
+
+		</td>
+
+  </tr>
+</tbody></table>
+
+			</td></tr></tbody></table>
+
+					</td>
+					<td valign="top">
+						<div class="ms-recommendations-panel">
+					<div class="ms-webpart-chrome ms-webpart-chrome-fullWidth ">
+						<div webpartid="00000000-0000-0000-0000-000000000000" haspers="true" id="WebPartWPQ3" width="100%" class="ms-WPBody noindex " onlyformepart="true" allowdelete="false" style=""><div style="display: none;"></div><div componentid="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl04_ctl01_csr" id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl04_ctl01_csr"></div><noscript><div id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl04_ctl01_noscript">It looks like your browser does not have JavaScript enabled. Please turn on JavaScript and try again.</div></noscript><div id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl04_ctl01">
+							<div class="display-none">
+								<div webpartid="00000000-0000-0000-0000-000000000000" haspers="true" id="WebPartWPQ4" width="100%" class="ms-WPBody noindex " onlyformepart="true" allowdelete="false" style=""><div componentid="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl04_ctl01_ctl00_csr" id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl04_ctl01_ctl00_csr"><div class="ms-srch-dataProvider" id="DataProvider" name="Control"></div></div><noscript><div id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl04_ctl01_ctl00_noscript">It looks like your browser does not have JavaScript enabled. Please turn on JavaScript and try again.</div></noscript><div id="ctl00_ctl33_g_cad68ef1_ceb1_4ea0_a7f6_394959423b92_ctl00_ctl04_ctl01_ctl00">
+
+								</div><div class="ms-clear"></div></div>
+							</div>
+						</div><div class="ms-clear"></div></div>
+					</div>
+				</div>
+					</td>
+				</tr>
+			</tbody></table>
+<!-- end sharepoint markup -->
+</body>
+</html>

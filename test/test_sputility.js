@@ -46,7 +46,7 @@
    test("Get the field", function() {
       expect(2);
       notStrictEqual(this.field, null, "GetSPField should have returned an object.");
-      strictEqual(this.field.Type, "SPFieldText", "The field's type should be SPFieldText but is " + this.field.Type);
+      strictEqual(this.field.Type, "SPFieldText", "The field's type should be SPFieldText.");
    });
 
    test("Get and set the value", function() {
