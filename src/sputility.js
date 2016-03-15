@@ -21,12 +21,18 @@ var SPUtility = (function ($) {
       _internalNamesHashtable = null,
       _timeFormat = null, // 12HR or 24HR
       _dateSeparator = null, // separates month/day/year with / or .
-      _isDispForm = false,
+      _isDispForm = null,
       _spVersion = 12;
 
    /*
     *   SPUtility Private Methods
    **/
+   function isDispForm() {
+      if (_isDispForm === null) {
+         _isDispForm = $("table.ms-formtoolbar input[value='Close']").length >= 1;
+      }
+      return _isDispForm;
+   }
 
    function isInternetExplorer() {
       return navigator.userAgent.toLowerCase().indexOf('msie') >= 0;
@@ -233,12 +239,6 @@ var SPUtility = (function ($) {
          // always defined for sharepoint 2013/2010
          if (typeof _spPageContextInfo === 'object') {
             _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
-         }
-
-         // assuming we found some fields, does the first field have
-         // any controls? if not, then the form is DispForm
-         if (formBodies.length > 0 && $(formBodies[0]).children().length === 0) {
-            _isDispForm = true;
          }
 
          _fieldsHashtable = {};
@@ -1606,12 +1606,49 @@ var SPUtility = (function ($) {
    };
 
    /*
-    *   SPDispFormField class
-    *   Supports all DispForm fields
+    *   SPDispFormTextField class
+    *   Supports DispForm text fields
     */
-   function SPDispFormField(fieldParams) {
+   function SPDispFormTextField(fieldParams, textNode) {
       SPField.call(this, fieldParams);
       this.Controls = fieldParams.controlsCell;
+      this.TextNode = textNode;
+   }
+
+   // SPDispFormField inherits from the SPField base class
+   SPDispFormTextField.prototype = Object.create(SPField.prototype);
+
+   /*
+    *   SPDispFormField Public Methods
+    *   Overrides SPField class methods.
+    */
+   SPDispFormTextField.prototype.GetValue = function () {
+      return $.trim($(this.TextNode).text());
+   };
+
+   SPDispFormTextField.prototype.SetValue = function (value) {
+      this.TextNode.nodeValue = value;
+      return this;
+   };
+
+   SPDispFormTextField.prototype.MakeEditable = function () {
+      // does nothing
+      return this;
+   };
+
+   SPDispFormTextField.prototype.MakeReadOnly = function () {
+      // does nothing, already read-only
+      return this;
+   };
+
+   /*
+    *   SPDispFormField class
+    *   Supports DispForm html fields
+    */
+   function SPDispFormField(fieldParams, element) {
+      SPField.call(this, fieldParams);
+      this.Controls = fieldParams.controlsCell;
+      this.Element = element;
    }
 
    // SPDispFormField inherits from the SPField base class
@@ -1622,11 +1659,12 @@ var SPUtility = (function ($) {
     *   Overrides SPField class methods.
     */
    SPDispFormField.prototype.GetValue = function () {
-      return $.trim($(this.Controls).text());
+      // TODO: need to figure out some more advanced parsing
+      return $(this.Element).text();
    };
 
    SPDispFormField.prototype.SetValue = function () {
-      // does nothing
+      // TODO: not supported yet
       return this;
    };
 
@@ -1643,8 +1681,15 @@ var SPUtility = (function ($) {
    function getSPFieldFromType(spFieldParams) {
       var field = null, controls;
 
-      if (_isDispForm) {
-         return new SPDispFormField(spFieldParams);
+      if (isDispForm()) {
+         // DispForm fields display differently
+         controls = spFieldParams.controlsCell.childNodes;
+         if (controls.length === 5) {
+            // fields which have an HTML element
+            return new SPDispFormField(spFieldParams, controls[3]);
+         }
+         // fields which have a text node element
+         return new SPDispFormTextField(spFieldParams, controls[2]);
       }
 
       switch (spFieldParams.type) {
@@ -1833,6 +1878,10 @@ var SPUtility = (function ($) {
 
    SPUtility.SetDateSeparator = function (separator) {
       _dateSeparator = separator;
+   };
+
+   SPUtility.IsDispForm = function () {
+      return isDispForm();
    };
 
    /*
