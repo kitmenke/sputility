@@ -52,6 +52,9 @@ var fTitle = SPUtility.GetSPField('Title');
 fTitle.SetValue('Using my variable!');
 ```
 
+## Contributing
+Contributions are welcome! Documetation for getting started with contributing to SPUtility.js is on the GitHub wiki: https://github.com/kitmenke/sputility/wiki
+
 ## Release History
 https://sputility.codeplex.com/wikipage?title=Changelog&referringTitle=Home
 
