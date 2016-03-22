@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
    Version: 0.12.0
-   Built: 2016-02-28
+   Built: 2016-03-22
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2016
@@ -30,12 +30,20 @@ var SPUtility = (function ($) {
       _internalNamesHashtable = null,
       _timeFormat = null, // 12HR or 24HR
       _dateSeparator = null, // separates month/day/year with / or .
-      _isDispForm = false,
+      _decimalSeperator = null,
+      _thousandsSeperator = null,
+      _isDispForm = null,
       _spVersion = 12;
 
    /*
     *   SPUtility Private Methods
    **/
+   function isDispForm() {
+      if (_isDispForm === null) {
+         _isDispForm = $("table.ms-formtoolbar input[value='Close']").length >= 1;
+      }
+      return _isDispForm;
+   }
 
    function isInternetExplorer() {
       return navigator.userAgent.toLowerCase().indexOf('msie') >= 0;
@@ -61,7 +69,9 @@ var SPUtility = (function ($) {
       if (typeof val === "string") {
          var match = val.match(/[0-9,.]+/g);
          if (null !== match) {
-            val = match[0].replace(/,/g, ''); // commas to delimit thousands need to be removed
+            var regexExpression = new RegExp("\\" + _decimalSeperator, 'g');
+            val = match[0].replace(_thousandsSeperator, ''); // commas to delimit thousands need to be removed
+            val = val.replace(regexExpression, '.');
             val = parseFloat(val);
          }
       }
@@ -90,8 +100,8 @@ var SPUtility = (function ($) {
    // t = thousands separator, default ","
    function formatMoney(n, c, d, t) {
       c = (isNaN(c = Math.abs(c)) ? 2 : c);
-      d = (d === undefined ? "." : d);
-      t = (t === undefined ? "," : t);
+      d = (d === undefined ? _decimalSeperator : d);
+      t = (t === undefined ? _thousandsSeperator : t);
       var s = (n < 0 ? "-" : ""),
          i = parseInt(n = Math.abs(+n || 0).toFixed(c), 10) + "",
          j = (j = i.length) > 3 ? j % 3 : 0;
@@ -244,12 +254,6 @@ var SPUtility = (function ($) {
             _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
          }
 
-         // assuming we found some fields, does the first field have
-         // any controls? if not, then the form is DispForm
-         if (formBodies.length > 0 && $(formBodies[0]).children().length === 0) {
-            _isDispForm = true;
-         }
-
          _fieldsHashtable = {};
 
          if (formLabels.length !== formBodies.length) {
@@ -319,8 +323,10 @@ var SPUtility = (function ($) {
       this.InternalName = fieldParams.internalName;
       this.IsRequired = fieldParams.isRequired;
       this.Type = fieldParams.type;
-      if ($(fieldParams.controlsCell).children().length > 0) {
-         this.Controls = $(fieldParams.controlsCell).children()[0];
+      
+      var children = $(fieldParams.controlsCell).children().not("script"); // support for binding framework e.g. jsviews      
+      if (children.length > 0) {
+         this.Controls = children[0];
       } else {
          this.Controls = null;
       }
@@ -522,7 +528,7 @@ var SPUtility = (function ($) {
    SPCurrencyField.prototype.GetFormattedValue = function () {
       var text = this.GetValue();
       if (typeof text === "number") {
-         text = '$' + formatMoney(text, this.FormatOptions.decimalPlaces);
+         text = formatMoney(text, this.FormatOptions.decimalPlaces);
       }
       return text;
    };
@@ -1580,6 +1586,12 @@ var SPUtility = (function ($) {
       var pickerDiv = $(this.Controls).children()[0];
       this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
       this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
+      
+      var that = this;
+      this.ClientPeoplePicker.OnUserResolvedClientScript = function() {
+        that._updateReadOnlyLabel(that._getValue());  
+      };
+      
       //this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
       //this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
       //this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
@@ -1592,6 +1604,12 @@ var SPUtility = (function ($) {
       // returns an array of objects
       return this.ClientPeoplePicker.GetAllUserInfo();
    };
+   
+   SPUserField2013.prototype._getValue = function() {
+      return $.map(this.GetValue(), function (val) {
+          return val.DisplayText;
+      }).join(", ");
+   };
 
    SPUserField2013.prototype.SetValue = function (value) {
       if (isUndefined(value) || value === null || value === '') {
@@ -1600,27 +1618,60 @@ var SPUtility = (function ($) {
       } else {
          $(this.EditorInput).val(value);
          this.ClientPeoplePicker.AddUnresolvedUserFromEditor(true);
-         this._updateReadOnlyLabel(this.GetValue());
       }
       return this;
    };
 
-   // get the display text of each resolved item and display in semicolon
+   // get the display text of each resolved item and display in comma
    // delimited list
    SPUserField2013.prototype.MakeReadOnly = function () {
-      var displayText = $.map(this.GetValue(), function(obj) {
-         return obj.DisplayText;
-      });
-      return this._makeReadOnly(displayText.join('; '));
+      return this._makeReadOnly(this._getValue());
+   };
+
+   /*
+    *   SPDispFormTextField class
+    *   Supports DispForm text fields
+    */
+   function SPDispFormTextField(fieldParams, textNode) {
+      SPField.call(this, fieldParams);
+      this.Controls = fieldParams.controlsCell;
+      this.TextNode = textNode;
+   }
+
+   // SPDispFormField inherits from the SPField base class
+   SPDispFormTextField.prototype = Object.create(SPField.prototype);
+
+   /*
+    *   SPDispFormField Public Methods
+    *   Overrides SPField class methods.
+    */
+   SPDispFormTextField.prototype.GetValue = function () {
+      return $.trim($(this.TextNode).text());
+   };
+
+   SPDispFormTextField.prototype.SetValue = function (value) {
+      this.TextNode.nodeValue = value;
+      return this;
+   };
+
+   SPDispFormTextField.prototype.MakeEditable = function () {
+      // does nothing
+      return this;
+   };
+
+   SPDispFormTextField.prototype.MakeReadOnly = function () {
+      // does nothing, already read-only
+      return this;
    };
 
    /*
     *   SPDispFormField class
-    *   Supports all DispForm fields
+    *   Supports DispForm html fields
     */
-   function SPDispFormField(fieldParams) {
+   function SPDispFormField(fieldParams, element) {
       SPField.call(this, fieldParams);
       this.Controls = fieldParams.controlsCell;
+      this.Element = element;
    }
 
    // SPDispFormField inherits from the SPField base class
@@ -1631,11 +1682,12 @@ var SPUtility = (function ($) {
     *   Overrides SPField class methods.
     */
    SPDispFormField.prototype.GetValue = function () {
-      return $.trim($(this.Controls).text());
+      // TODO: need to figure out some more advanced parsing
+      return $(this.Element).text();
    };
 
    SPDispFormField.prototype.SetValue = function () {
-      // does nothing
+      // TODO: not supported yet
       return this;
    };
 
@@ -1652,8 +1704,15 @@ var SPUtility = (function ($) {
    function getSPFieldFromType(spFieldParams) {
       var field = null, controls;
 
-      if (_isDispForm) {
-         return new SPDispFormField(spFieldParams);
+      if (isDispForm()) {
+         // DispForm fields display differently
+         controls = spFieldParams.controlsCell.childNodes;
+         if (controls.length === 5) {
+            // fields which have an HTML element
+            return new SPDispFormField(spFieldParams, controls[3]);
+         }
+         // fields which have a text node element
+         return new SPDispFormTextField(spFieldParams, controls[2]);
       }
 
       switch (spFieldParams.type) {
@@ -1843,12 +1902,34 @@ var SPUtility = (function ($) {
    SPUtility.SetDateSeparator = function (separator) {
       _dateSeparator = separator;
    };
+   
+   SPUtility.SetDecimalSeperator = function (decimalSeperator) {
+      _decimalSeperator = decimalSeperator;  
+   };
+   
+   SPUtility.GetDecimalSeperator = function () {
+      return _decimalSeperator;  
+   };
+   
+   SPUtility.SetThousandsSeperator = function (thousandsSeperator) {
+      _thousandsSeperator = thousandsSeperator;  
+   };
+   
+   SPUtility.GetThousandsSeperator = function() {
+      return _thousandsSeperator;
+   };
+
+   SPUtility.IsDispForm = function () {
+      return isDispForm();
+   };
 
    /*
     * INITIALIZATION
     */
    SPUtility.SetTimeFormat('12HR');
    SPUtility.SetDateSeparator('/');
+   SPUtility.SetDecimalSeperator('.');
+   SPUtility.SetThousandsSeperator(',');
 
    return SPUtility;
 }(jQuery));
