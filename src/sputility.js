@@ -21,8 +21,8 @@ var SPUtility = (function ($) {
       _internalNamesHashtable = null,
       _timeFormat = null, // 12HR or 24HR
       _dateSeparator = null, // separates month/day/year with / or .
-      _decimalSeperator = null,
-      _thousandsSeperator = null,
+      _decimalSeparator = null,
+      _thousandsSeparator = null,
       _isDispForm = null,
       _spVersion = 12;
 
@@ -56,15 +56,23 @@ var SPUtility = (function ($) {
       return parseInt(str, 10);
    }
 
+   // escapeRegExp and replaceAll from http://stackoverflow.com/a/1144788/98933
+   function escapeRegExp(str) {
+      return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+   }
+
+   function replaceAll(str, find, replace) {
+     return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+   }
+
    function convertStringToNumber(val) {
       if (typeof val === "string") {
-         var match = val.match(/[0-9,.]+/g);
-         if (null !== match) {
-            var regexExpression = new RegExp("\\" + _decimalSeperator, 'g');
-            val = match[0].replace(_thousandsSeperator, ''); // commas to delimit thousands need to be removed
-            val = val.replace(regexExpression, '.');
-            val = parseFloat(val);
-         }
+         // remove all thousands separators including spaces
+         val = replaceAll(val, ' ', '');
+         val = replaceAll(val, _thousandsSeparator, '');
+         // replace the first instance of the decimal separator
+         val = val.replace(_decimalSeparator, '.');
+         val = parseFloat(val);
       }
       return val;
    }
@@ -91,8 +99,8 @@ var SPUtility = (function ($) {
    // t = thousands separator, default ","
    function formatMoney(n, c, d, t) {
       c = (isNaN(c = Math.abs(c)) ? 2 : c);
-      d = (d === undefined ? _decimalSeperator : d);
-      t = (t === undefined ? _thousandsSeperator : t);
+      d = (d === undefined ? _decimalSeparator : d);
+      t = (t === undefined ? _thousandsSeparator : t);
       var s = (n < 0 ? "-" : ""),
          i = parseInt(n = Math.abs(+n || 0).toFixed(c), 10) + "",
          j = (j = i.length) > 3 ? j % 3 : 0;
@@ -314,8 +322,8 @@ var SPUtility = (function ($) {
       this.InternalName = fieldParams.internalName;
       this.IsRequired = fieldParams.isRequired;
       this.Type = fieldParams.type;
-      
-      var children = $(fieldParams.controlsCell).children().not("script"); // support for binding framework e.g. jsviews      
+
+      var children = $(fieldParams.controlsCell).children().not("script"); // support for binding framework e.g. jsviews
       if (children.length > 0) {
          this.Controls = children[0];
       } else {
@@ -1577,12 +1585,12 @@ var SPUtility = (function ($) {
       var pickerDiv = $(this.Controls).children()[0];
       this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
       this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
-      
+
       var that = this;
       this.ClientPeoplePicker.OnUserResolvedClientScript = function() {
-        that._updateReadOnlyLabel(that._getValue());  
+        that._updateReadOnlyLabel(that._getValue());
       };
-      
+
       //this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
       //this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
       //this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
@@ -1595,7 +1603,7 @@ var SPUtility = (function ($) {
       // returns an array of objects
       return this.ClientPeoplePicker.GetAllUserInfo();
    };
-   
+
    SPUserField2013.prototype._getValue = function() {
       return $.map(this.GetValue(), function (val) {
           return val.DisplayText;
@@ -1893,21 +1901,21 @@ var SPUtility = (function ($) {
    SPUtility.SetDateSeparator = function (separator) {
       _dateSeparator = separator;
    };
-   
-   SPUtility.SetDecimalSeperator = function (decimalSeperator) {
-      _decimalSeperator = decimalSeperator;  
+
+   SPUtility.SetDecimalSeparator = function (decimalSeparator) {
+      _decimalSeparator = decimalSeparator;
    };
-   
-   SPUtility.GetDecimalSeperator = function () {
-      return _decimalSeperator;  
+
+   SPUtility.GetDecimalSeparator = function () {
+      return _decimalSeparator;
    };
-   
-   SPUtility.SetThousandsSeperator = function (thousandsSeperator) {
-      _thousandsSeperator = thousandsSeperator;  
+
+   SPUtility.SetThousandsSeparator = function (thousandsSeparator) {
+      _thousandsSeparator = thousandsSeparator;
    };
-   
-   SPUtility.GetThousandsSeperator = function() {
-      return _thousandsSeperator;
+
+   SPUtility.GetThousandsSeparator = function() {
+      return _thousandsSeparator;
    };
 
    SPUtility.IsDispForm = function () {
@@ -1919,8 +1927,8 @@ var SPUtility = (function ($) {
     */
    SPUtility.SetTimeFormat('12HR');
    SPUtility.SetDateSeparator('/');
-   SPUtility.SetDecimalSeperator('.');
-   SPUtility.SetThousandsSeperator(',');
+   SPUtility.SetDecimalSeparator('.');
+   SPUtility.SetThousandsSeparator(',');
 
    return SPUtility;
 }(jQuery));
