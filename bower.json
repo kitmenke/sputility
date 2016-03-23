@@ -1,0 +1,24 @@
+{
+  "name": "sputility",
+  "description": "A JavaScript library used to make modifications to SharePoint's list forms (NewForm.aspx and EditForm.aspx in a survey, custom list or library).",
+  "main": "src/sputility.js",
+  "authors": [
+    "Kit Menke <cwmenke@gmail.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "sharepoint",
+    "utility"
+  ],
+  "homepage": "https://github.com/kitmenke/sputility",
+  "moduleType": [ "globals" ],
+  "devDependencies": {
+    "grunt-contrib-jshint": "1.0.x",
+    "grunt-contrib-qunit": "1.0.x",
+    "grunt-contrib-concat": "1.0.x",
+    "grunt-contrib-uglify": "0.11.x",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-clean": "1.0.x",
+    "grunt": "0.4.x"
+  }
+}
