@@ -264,7 +264,7 @@ var SPUtility = (function ($) {
             fieldParams = getFieldParams(formLabels[i], formBodies[i]);
             if (null !== fieldParams) {
                _fieldsHashtable[fieldParams.name] = fieldParams;
-               _internalNamesHashtable[internalName] = fieldParams;
+               _internalNamesHashtable[fieldParams.internalName] = fieldParams;
             }
          }
       }
