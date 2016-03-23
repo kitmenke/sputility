@@ -158,28 +158,22 @@ var SPUtility = (function ($) {
                 var typeMatches = comment.match(/SPField\w+/);
                 if (typeMatches !== null && typeMatches.length > 0) {
                     fieldParams.type = typeMatches[0];                            
-                } else if ($(controlCell).find('select[name$=ContentTypeChoice]').length > 0) {
-                    // small hack to support content type fields
-                    fieldParams.type = 'ContentTypeChoice';
                 }
                 
                 // Retrieve field internal name
-                internalNameMatches = comment.match(/FieldInternalName="\w+/);
+                var internalNameMatches = comment.match(/FieldInternalName="\w+/);
                 if (internalNameMatches !== null) {
                     fieldParams.internalName = internalNameMatches[0].substring(19); // remove FieldInternalName from the beginning
                 }               
                 break;
             }
         }
-   }
-
-   function getControlsCell(spFieldParams) {
-      if (null === spFieldParams.controlsCell) {
-         // the only time this property will NOT be null is in survey forms
-         spFieldParams.controlsCell = $(spFieldParams.labelCell).next()[0];
-         // use nextSibling?
-      }
-      return spFieldParams.controlsCell;
+        
+        if (fieldParams.type === null && $(element).find('select[name$=ContentTypeChoice]').length > 0) {
+            // small hack to support content type fields
+            fieldParams.type = 'ContentTypeChoice';
+            fieldParams.internalName = 'ContentType';
+        }
    }
 
    function getFieldParams(formLabel, formBody) {
@@ -1789,7 +1783,7 @@ var SPUtility = (function ($) {
             throw 'Unknown SPField type.';
          }
 
-         return field = getSPFieldFromType(spFieldParams);
+         return getSPFieldFromType(spFieldParams);
       } catch (e) {
          throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
       }

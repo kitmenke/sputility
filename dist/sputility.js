@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
    Version: 0.13.0
-   Built: 2016-03-22
+   Built: 2016-03-23
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2016
@@ -157,53 +157,32 @@ var SPUtility = (function ($) {
       return val;
    }
 
-   function getSPFieldType(element) {
-      var matches, comment, n;
-      try {
-         // find the HTML comment and get the field's type
-         for (n = 0; n < element.childNodes.length; n += 1) {
+   function fillSPFieldInfo(element, fieldParams) {
+        // find the HTML comment and fill fieldparams with type and internal name
+        for (var n = 0; n < element.childNodes.length; n += 1) {
             if (8 === element.childNodes[n].nodeType) {
-               comment = element.childNodes[n].data;
-               matches = comment.match(/SPField\w+/);
-               if (null !== matches) {
-                  return matches[0];
-               }
-               break;
+                var comment = element.childNodes[n].data;
+                
+                // Retrieve field type
+                var typeMatches = comment.match(/SPField\w+/);
+                if (typeMatches !== null && typeMatches.length > 0) {
+                    fieldParams.type = typeMatches[0];                            
+                }
+                
+                // Retrieve field internal name
+                var internalNameMatches = comment.match(/FieldInternalName="\w+/);
+                if (internalNameMatches !== null) {
+                    fieldParams.internalName = internalNameMatches[0].substring(19); // remove FieldInternalName from the beginning
+                }               
+                break;
             }
-         }
-      } catch (ex) {
-         throw 'getSPFieldType error: ' + ex.toString();
-      }
-      return null;
-   }
-
-   function getSPFieldInternalName(element) {
-      var matches, comment, n;
-      try {
-         // find the HTML comment and get the field's internal name
-         for (n = 0; n < element.childNodes.length; n += 1) {
-            if (8 === element.childNodes[n].nodeType) {
-               comment = element.childNodes[n].data;
-               matches = comment.match(/FieldInternalName="\w+/);
-               if (null !== matches) {
-                  return matches[0].substring(19); // remove FieldInternalName from the beginning
-               }
-               break;
-            }
-         }
-      } catch (ex) {
-         throw 'getSPFieldInternalName error: ' + ex.toString();
-      }
-      return null;
-   }
-
-   function getControlsCell(spFieldParams) {
-      if (null === spFieldParams.controlsCell) {
-         // the only time this property will NOT be null is in survey forms
-         spFieldParams.controlsCell = $(spFieldParams.labelCell).next()[0];
-         // use nextSibling?
-      }
-      return spFieldParams.controlsCell;
+        }
+        
+        if (fieldParams.type === null && $(element).find('select[name$=ContentTypeChoice]').length > 0) {
+            // small hack to support content type fields
+            fieldParams.type = 'ContentTypeChoice';
+            fieldParams.internalName = 'ContentType';
+        }
    }
 
    function getFieldParams(formLabel, formBody) {
@@ -233,17 +212,21 @@ var SPUtility = (function ($) {
          }
 
          fieldParams = {
-            'name': fieldName,
-            'internalName': null,
-            'label': $(elemLabel),
-            'labelRow': elemLabel.parentNode,
-            'labelCell': formLabel,
-            'isRequired': isRequired,
-            'controlsRow': formBody.parentNode,
-            'controlsCell': formBody,
-            'type': null,
-            'spField': null
+            name: fieldName,
+            internalName: null,
+            label: $(elemLabel),
+            labelRow: elemLabel.parentNode,
+            labelCell: formLabel,
+            isRequired: isRequired,
+            controlsRow: formBody.parentNode,
+            controlsCell: formBody,
+            type: null,
+            spField: null
          };
+         
+         // Retrieve type and internalName
+         fillSPFieldInfo(formBody, fieldParams);
+         
       } catch (e) {
          throw 'getFieldParams error getting parameters for ' + fieldName + ': ' + e.toString();
       }
@@ -263,6 +246,7 @@ var SPUtility = (function ($) {
          }
 
          _fieldsHashtable = {};
+         _internalNamesHashtable = {};
 
          if (formLabels.length !== formBodies.length) {
            throw 'lazyLoadSPFields error loading form controls';
@@ -272,20 +256,8 @@ var SPUtility = (function ($) {
             fieldParams = getFieldParams(formLabels[i], formBodies[i]);
             if (null !== fieldParams) {
                _fieldsHashtable[fieldParams.name] = fieldParams;
+               _internalNamesHashtable[fieldParams.internalName] = fieldParams;
             }
-         }
-      }
-   }
-
-   function lazyLoadInternalColumnNames() {
-      if (null == _internalNamesHashtable) {
-         var internalName, fieldParam, fieldName;
-         _internalNamesHashtable = {};
-         for (fieldName in _fieldsHashtable) {
-            fieldParam = _fieldsHashtable[fieldName];
-            internalName = getSPFieldInternalName(getControlsCell(fieldParam));
-            fieldParam.internalName = internalName;
-            _internalNamesHashtable[internalName] = fieldParam.name;
          }
       }
    }
@@ -1814,28 +1786,16 @@ var SPUtility = (function ($) {
     * Create an instance of the correct class based on the field's type
     */
    function createSPField(spFieldParams) {
-      var field = null;
       try {
-         spFieldParams.type = getSPFieldType(getControlsCell(spFieldParams));
-         spFieldParams.internalName = getSPFieldInternalName(getControlsCell(spFieldParams));
-
          // if we can't get the type then we can't create the field
          if (null === spFieldParams.type) {
-            if ($(getControlsCell(spFieldParams)).find('select[name$=ContentTypeChoice]').length > 0) {
-               // small hack to support content type fields
-               spFieldParams.type = 'ContentTypeChoice';
-            } else {
-               // normally, if we can't lookup type then throw an error
-               throw 'Unable to parse SPField type.';
-            }
+            throw 'Unknown SPField type.';
          }
 
-         field = getSPFieldFromType(spFieldParams);
+         return getSPFieldFromType(spFieldParams);
       } catch (e) {
          throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
       }
-
-      return field;
    }
 
    /**
@@ -1869,18 +1829,31 @@ var SPUtility = (function ($) {
 
    SPUtility.GetSPFieldByInternalName = function (strInternalName) {
       lazyLoadSPFields();
-      lazyLoadInternalColumnNames();
-      var name = _internalNamesHashtable[strInternalName];
-      if (isUndefined(name)) {
+
+      var fieldParams = _internalNamesHashtable[strInternalName];
+      
+      if (isUndefined(fieldParams)) {
          throw 'Unable to get a SPField with internal name ' + strInternalName;
       }
-      return SPUtility.GetSPField(name);
+
+      if (fieldParams.spField === null) {
+          // field hasn't been initialized yet
+          fieldParams.spField = createSPField(fieldParams);
+      }
+      
+      return fieldParams.spField;
    };
 
-   // Gets all of the SPFields on the page
+   // Gets all of the SPFields by name on the page
    SPUtility.GetSPFields = function () {
       lazyLoadSPFields();
       return _fieldsHashtable;
+   };
+   
+   // Gets all of the SPFields by internal name on the page
+   SPUtility.GetSPFieldsInternal = function () {
+       lazyLoadSPFields();
+       return _internalNamesHashtable;
    };
 
    SPUtility.HideSPField = function (strFieldName) {
