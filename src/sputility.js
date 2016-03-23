@@ -254,6 +254,7 @@ var SPUtility = (function ($) {
          }
 
          _fieldsHashtable = {};
+         _internalNamesHashtable = {};
 
          if (formLabels.length !== formBodies.length) {
            throw 'lazyLoadSPFields error loading form controls';
@@ -263,20 +264,8 @@ var SPUtility = (function ($) {
             fieldParams = getFieldParams(formLabels[i], formBodies[i]);
             if (null !== fieldParams) {
                _fieldsHashtable[fieldParams.name] = fieldParams;
+               _internalNamesHashtable[internalName] = fieldParams;
             }
-         }
-      }
-   }
-
-   function lazyLoadInternalColumnNames() {
-      if (null == _internalNamesHashtable) {
-         var internalName, fieldParam, fieldName;
-         _internalNamesHashtable = {};
-         for (fieldName in _fieldsHashtable) {
-            fieldParam = _fieldsHashtable[fieldName];
-            internalName = getSPFieldInternalName(getControlsCell(fieldParam));
-            fieldParam.internalName = internalName;
-            _internalNamesHashtable[internalName] = fieldParam.name;
          }
       }
    }
@@ -1860,18 +1849,31 @@ var SPUtility = (function ($) {
 
    SPUtility.GetSPFieldByInternalName = function (strInternalName) {
       lazyLoadSPFields();
-      lazyLoadInternalColumnNames();
-      var name = _internalNamesHashtable[strInternalName];
-      if (isUndefined(name)) {
+
+      var fieldParams = _internalNamesHashtable[strInternalName];
+      
+      if (isUndefined(fieldParams)) {
          throw 'Unable to get a SPField with internal name ' + strInternalName;
       }
-      return SPUtility.GetSPField(name);
+
+      if (fieldParams.spField === null) {
+          // field hasn't been initialized yet
+          fieldParams.spField = createSPField(fieldParams);
+      }
+      
+      return fieldParams.spField;
    };
 
-   // Gets all of the SPFields on the page
+   // Gets all of the SPFields by name on the page
    SPUtility.GetSPFields = function () {
       lazyLoadSPFields();
       return _fieldsHashtable;
+   };
+   
+   // Gets all of the SPFields by internal name on the page
+   SPUtility.GetSPFieldsInternal = function () {
+       lazyLoadSPFields();
+       return _internalNamesHashtable;
    };
 
    SPUtility.HideSPField = function (strFieldName) {
