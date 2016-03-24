@@ -1145,8 +1145,13 @@ var SPUtility = (function ($) {
       return !!this.Checkbox.checked;
    };
 
-   SPBooleanField.prototype.GetValueString = function () {
-      return this.GetValue() ? "Yes" : "No";
+   //added localization. now i can get value in local language.
+   SPBooleanField.prototype.GetValueString = function (stringYES, stringNO) {
+        if (stringYES !== 'undefined' && stringNO !== 'undefined') {
+            return this.GetValue() ? stringYES : stringNO;
+        } else {
+            return this.GetValue() ? "Yes" : "No";
+        }
    };
 
    SPBooleanField.prototype.SetValue = function (value) {
@@ -1164,7 +1169,7 @@ var SPUtility = (function ($) {
          }
       }
       this.Checkbox.checked = value;
-      this._updateReadOnlyLabel(this.GetValueString());
+      this._updateReadOnlyLabel(this.GetValueString(stringYES, stringNO));
       return this;
    };
 
@@ -1632,8 +1637,59 @@ var SPUtility = (function ($) {
 
    // get the display text of each resolved item and display in comma
    // delimited list
+   // updated: it will show as hyperlinks but not a plain text
    SPUserField2013.prototype.MakeReadOnly = function () {
-      return this._makeReadOnly(this._getValue());
+      var tmpArray = [];
+
+        $.each(this.GetValue(), function (key, val) {
+            if (val.Key !== null) { tmpArray.push(val.Key); }
+        });
+
+        var SPUserField = this;
+        var x = getUserId(tmpArray, SPUserField);
+
+        x.done(function (result) {
+            // result is an SP.List because that is what we passed to resolve()!
+            var htmlText = "";
+            for (var i = 0; i < result.users.length; i++) {
+                var user = result.users[i];
+                if (htmlText !== "") { htmlText += "; "; }
+                htmlText += '<a href="/_layouts/15/userdisp.aspx?ID=' + user.get_id().toString() + '&amp;RootFolder=*">' + user.get_title() + '</a>';
+            }
+            return result.SPUserField._makeReadOnly(htmlText);
+        });
+        
+        x.fail(function (result) {
+            // result is a string because that is what we passed to reject()!
+            var error = result;
+            console.log(error);
+        });
+
+        function successCallback(d) {
+            var o = { users: this.users, SPUserField: this.SPUserField };
+            this.d.resolve(o);
+        }
+
+        function failCallback() {
+            this.d.reject("Something went wrong...");
+        }
+
+        function getUserId(loginNames, SPUserField) {
+            var d = $.Deferred();
+            var context = new SP.ClientContext.get_current();
+            var arrayLength = loginNames.length;
+            var users = [];
+
+            for (var i = 0; i < arrayLength; i++) {
+                var user = context.get_web().ensureUser(loginNames[i]);
+                context.load(user);
+                users.push(user);
+            }
+
+            var o = { d: d, loginNames: loginNames, users: users, SPUserField: SPUserField };
+            context.executeQueryAsync(Function.createDelegate(o, successCallback), Function.createDelegate(o, failCallback));
+            return d.promise();
+        }
    };
 
    /*
