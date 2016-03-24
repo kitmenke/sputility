@@ -1176,7 +1176,7 @@ var SPUtility = (function ($) {
    // overriding the default MakeReadOnly function
    // translate true/false to Yes/No
    SPBooleanField.prototype.MakeReadOnly = function () {
-      return this._makeReadOnly(this.GetValueString());
+      return this._makeReadOnly(this.GetValueString(stringYES, stringNO));
    };
 
    /*
