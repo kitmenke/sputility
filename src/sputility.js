@@ -161,14 +161,14 @@ var SPUtility = (function ($) {
                 }
                 
                 // Retrieve field name
-                var nameMatches = comment.match(/FieldName="\w+/);
-                if (nameMatches !== null) {
-                    fieldParams.name = nameMatches[0];
+                var nameMatches = comment.match(/FieldName="[^"]+/);
+                if (nameMatches !== null && nameMatches.length > 0) {
+                    fieldParams.name = nameMatches[0].substring(11); // remove FieldName from the beginning
                 }
                 
                 // Retrieve field internal name
                 var internalNameMatches = comment.match(/FieldInternalName="\w+/);
-                if (internalNameMatches !== null) {
+                if (internalNameMatches !== null && internalNameMatches.length > 0) {
                     fieldParams.internalName = internalNameMatches[0].substring(19); // remove FieldInternalName from the beginning
                 }               
                 break;
@@ -179,6 +179,7 @@ var SPUtility = (function ($) {
             // small hack to support content type fields
             fieldParams.type = 'ContentTypeChoice';
             fieldParams.internalName = 'ContentType';
+            fieldParams.name = 'Content Type';
         }
    }
 
@@ -189,12 +190,12 @@ var SPUtility = (function ($) {
         var formLabel = $(formBody).siblings(".ms-formlabel");
         if (formLabel !== null) {
             // find element which contains the field's display name
-            var elems = $(formLabel).children('h3');
+            var elems = formLabel.children('h3');
             
             // normally, the label is an h3 element inside the td
             // but on surveys the h3 doesn't exist
             // special case: content type label is contained within the td.ms-formlabel
-            elemLabel = elemens.length > 0 ? elems[0] : formLabel;
+            elemLabel = elems.length > 0 ? elems[0] : formLabel;
             
             // If label row not null and not attachment row
             if (elemLabel !== null && elemLabel.nodeName !== 'NOBR') {
@@ -225,7 +226,9 @@ var SPUtility = (function ($) {
    }
 
    function lazyLoadSPFields() {
-        if (_fieldsHashtable !== null && _internalNamesHashtable !== null) return;
+        if (_fieldsHashtable !== null && _internalNamesHashtable !== null) {
+            return;
+        }
         
         // detect sharepoint version based on global variables which are
         // always defined for sharepoint 2013/2010
