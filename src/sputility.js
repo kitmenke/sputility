@@ -160,6 +160,12 @@ var SPUtility = (function ($) {
                     fieldParams.type = typeMatches[0];                            
                 }
                 
+                // Retrieve field name
+                var nameMatches = comment.match(/FieldName="\w+/);
+                if (nameMatches !== null) {
+                    fieldParams.name = nameMatches[0];
+                }
+                
                 // Retrieve field internal name
                 var internalNameMatches = comment.match(/FieldInternalName="\w+/);
                 if (internalNameMatches !== null) {
@@ -176,91 +182,82 @@ var SPUtility = (function ($) {
         }
    }
 
-   function getFieldParams(formLabel, formBody) {
-      var fieldParams = null, fieldName = 'Unknown field', elemLabel, isRequired = false;
-      try {
-         // find element which contains the field's display name
-         var elems = $(formLabel).children('h3');
-         // normally, the label is an h3 element inside the td
-         // but on surveys the h3 doesn't exist
-         if (elems.length > 0) {
-            elemLabel = elems[0];
-         } else {
+   function getFieldParams(formBody) {
+        var elemLabel = null;
+        var isRequired = null;
+        
+        var formLabel = $(formBody).siblings(".ms-formlabel");
+        if (formLabel !== null) {
+            // find element which contains the field's display name
+            var elems = $(formLabel).children('h3');
+            
+            // normally, the label is an h3 element inside the td
+            // but on surveys the h3 doesn't exist
             // special case: content type label is contained within the td.ms-formlabel
-            elemLabel = formLabel;
-         }
-         if (null === elemLabel || elemLabel.nodeName === 'NOBR') {
-            return null; // attachments row not currently supported
-         }
+            elemLabel = elemens.length > 0 ? elems[0] : formLabel;
+            
+            // If label row not null and not attachment row
+            if (elemLabel !== null && elemLabel.nodeName !== 'NOBR') {
+                var fieldName = $.trim($(elemLabel).text());
+                if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
+                    isRequired = true;
+                }
+            }
+        }
 
-         fieldName = $.trim($(elemLabel).text());
-         if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
-            isRequired = true;
-         }
-
-         if (true === isRequired) {
-            fieldName = fieldName.substring(0, fieldName.length - 2);
-         }
-
-         fieldParams = {
-            name: fieldName,
+        var fieldParams = {
+            name: null,
             internalName: null,
-            label: $(elemLabel),
-            labelRow: elemLabel.parentNode,
+            label: elemLabel !== null ? $(elemLabel) : null,
+            labelRow: elemLabel !== null ? elemLabel.parentNode : null,
             labelCell: formLabel,
             isRequired: isRequired,
             controlsRow: formBody.parentNode,
             controlsCell: formBody,
             type: null,
             spField: null
-         };
-         
-         // Retrieve type and internalName
-         fillSPFieldInfo(formBody, fieldParams);
-         
-      } catch (e) {
-         throw 'getFieldParams error getting parameters for ' + fieldName + ': ' + e.toString();
-      }
-      return fieldParams;
+        };
+
+        // Retrieve type and internalName
+        fillSPFieldInfo(formBody, fieldParams);
+        
+        return fieldParams;
    }
 
    function lazyLoadSPFields() {
-      if (null === _fieldsHashtable) {
-         var i, fieldParams,
-            formLabels = $('table.ms-formtable td.ms-formlabel'),
-            formBodies = $('table.ms-formtable td.ms-formbody');
-
-         // detect sharepoint version based on global variables which are
-         // always defined for sharepoint 2013/2010
-         if (typeof _spPageContextInfo === 'object') {
+        if (_fieldsHashtable !== null && _internalNamesHashtable !== null) return;
+        
+        // detect sharepoint version based on global variables which are
+        // always defined for sharepoint 2013/2010
+        if (typeof _spPageContextInfo === 'object') {
             _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
-         }
+        }
 
-         _fieldsHashtable = {};
-         _internalNamesHashtable = {};
+        _fieldsHashtable = {};
+        _internalNamesHashtable = {};
 
-         if (formLabels.length !== formBodies.length) {
-           throw 'lazyLoadSPFields error loading form controls';
-         }
-
-         for (i = 0; i < formLabels.length; i += 1) {
-            fieldParams = getFieldParams(formLabels[i], formBodies[i]);
-            if (null !== fieldParams) {
-               _fieldsHashtable[fieldParams.name] = fieldParams;
-               _internalNamesHashtable[fieldParams.internalName] = fieldParams;
+        var formBodies = $('table.ms-formtable td.ms-formbody');
+        for (var i = 0; i < formBodies.length; i += 1) {
+            var fieldParams = getFieldParams(formBodies[i]);
+            if (fieldParams !== null) {
+                _fieldsHashtable[fieldParams.name] = fieldParams;
+                _internalNamesHashtable[fieldParams.internalName] = fieldParams;
             }
-         }
-      }
+        }
    }
 
    function toggleSPFieldRows(labelRow, controlsRow, bShowField) {
       // on survey forms, the labelRow and controlsRow are different
       // for normal forms, they are the same so it is a redundant call
       if (bShowField) {
-         $(labelRow).show();
+          if (labelRow !== null) {
+            $(labelRow).show();
+          }
          $(controlsRow).show();
       } else {
-         $(labelRow).hide();
+          if (labelRow !== null) {
+            $(labelRow).hide();
+          }
          $(controlsRow).hide();
       }
    }
