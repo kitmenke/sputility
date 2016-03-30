@@ -21,11 +21,21 @@
     throws(block, [expected], [message])
     */
 
-   module("Main");
+   module("SPUtility.js");
 
-   test("The static function to get SPFields is available.", function() {
-      ok(SPUtility.GetSPField);
-      ok($);
+   test("SPUtility global variable", function() {
+      expect(1);
+      strictEqual(typeof SPUtility, 'object', "The SPUtility object should be available.");
+   });
+
+   test("SPUtility.GetSPField", function() {
+      expect(1);
+      strictEqual(typeof SPUtility.GetSPField, 'function', "SPUtility should have a GetSPField function.");
+   });
+
+   test("SPUtility.Setup", function() {
+      expect(1);
+      strictEqual(typeof SPUtility.Setup, 'function', "SPUtility should have a Setup function.");
    });
 
    test("GetSPField throws an error when the field was not found", function() {
