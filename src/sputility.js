@@ -153,104 +153,104 @@ var SPUtility = (function ($) {
    }
 
    function fillSPFieldInfo(element, fieldParams) {
-        // find the HTML comment and fill fieldparams with type and internal name
-        for (var n = 0; n < element.childNodes.length; n += 1) {
-            if (8 === element.childNodes[n].nodeType) {
-                var comment = element.childNodes[n].data;
-                
-                // Retrieve field type
-                var typeMatches = comment.match(/SPField\w+/);
-                if (typeMatches !== null && typeMatches.length > 0) {
-                    fieldParams.type = typeMatches[0];                            
-                }
-                
-                // Retrieve field name
-                var nameMatches = comment.match(/FieldName="[^"]+/);
-                if (nameMatches !== null && nameMatches.length > 0) {
-                    fieldParams.name = nameMatches[0].substring(11); // remove FieldName from the beginning
-                }
-                
-                // Retrieve field internal name
-                var internalNameMatches = comment.match(/FieldInternalName="\w+/);
-                if (internalNameMatches !== null && internalNameMatches.length > 0) {
-                    fieldParams.internalName = internalNameMatches[0].substring(19); // remove FieldInternalName from the beginning
-                }               
-                break;
+      // find the HTML comment and fill fieldparams with type and internal name
+      for (var n = 0; n < element.childNodes.length; n += 1) {
+         if (8 === element.childNodes[n].nodeType) {
+            var comment = element.childNodes[n].data;
+
+            // Retrieve field type
+            var typeMatches = comment.match(/SPField\w+/);
+            if (typeMatches !== null && typeMatches.length > 0) {
+               fieldParams.type = typeMatches[0];
             }
-        }
-        
-        if (fieldParams.type === null && $(element).find('select[name$=ContentTypeChoice]').length > 0) {
-            // small hack to support content type fields
-            fieldParams.type = 'ContentTypeChoice';
-            fieldParams.internalName = 'ContentType';
-            fieldParams.name = 'Content Type';
-        }
+
+            // Retrieve field name
+            var nameMatches = comment.match(/FieldName="[^"]+/);
+            if (nameMatches !== null && nameMatches.length > 0) {
+               fieldParams.name = nameMatches[0].substring(11); // remove FieldName from the beginning
+            }
+
+            // Retrieve field internal name
+            var internalNameMatches = comment.match(/FieldInternalName="\w+/);
+            if (internalNameMatches !== null && internalNameMatches.length > 0) {
+               fieldParams.internalName = internalNameMatches[0].substring(19); // remove FieldInternalName from the beginning
+            }
+            break;
+         }
+      }
+
+      if (fieldParams.type === null && $(element).find('select[name$=ContentTypeChoice]').length > 0) {
+         // small hack to support content type fields
+         fieldParams.type = 'ContentTypeChoice';
+         fieldParams.internalName = 'ContentType';
+         fieldParams.name = 'Content Type';
+      }
    }
 
    function getFieldParams(formBody) {
-        var elemLabel = null;
-        var isRequired = null;
-        
-        var formLabel = $(formBody).siblings(".ms-formlabel");
-        if (formLabel !== null) {
-            // find element which contains the field's display name
-            var elems = formLabel.children('h3');
-            
-            // normally, the label is an h3 element inside the td
-            // but on surveys the h3 doesn't exist
-            // special case: content type label is contained within the td.ms-formlabel
-            elemLabel = elems.length > 0 ? elems[0] : formLabel;
-            
-            // If label row not null and not attachment row
-            if (elemLabel !== null && elemLabel.nodeName !== 'NOBR') {
-                var fieldName = $.trim($(elemLabel).text());
-                if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
-                    isRequired = true;
-                }
+      var elemLabel = null;
+      var isRequired = null;
+
+      var formLabel = $(formBody).siblings(".ms-formlabel");
+      if (formLabel !== null) {
+         // find element which contains the field's display name
+         var elems = formLabel.children('h3');
+
+         // normally, the label is an h3 element inside the td
+         // but on surveys the h3 doesn't exist
+         // special case: content type label is contained within the td.ms-formlabel
+         elemLabel = elems.length > 0 ? elems[0] : formLabel;
+
+         // If label row not null and not attachment row
+         if (elemLabel !== null && elemLabel.nodeName !== 'NOBR') {
+            var fieldName = $.trim($(elemLabel).text());
+            if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
+               isRequired = true;
             }
-        }
+         }
+      }
 
-        var fieldParams = {
-            name: null,
-            internalName: null,
-            label: elemLabel !== null ? $(elemLabel) : null,
-            labelRow: elemLabel !== null ? elemLabel.parentNode : null,
-            labelCell: formLabel,
-            isRequired: isRequired,
-            controlsRow: formBody.parentNode,
-            controlsCell: formBody,
-            type: null,
-            spField: null
-        };
+      var fieldParams = {
+         name: null,
+         internalName: null,
+         label: elemLabel !== null ? $(elemLabel) : null,
+         labelRow: elemLabel !== null ? elemLabel.parentNode : null,
+         labelCell: formLabel,
+         isRequired: isRequired,
+         controlsRow: formBody.parentNode,
+         controlsCell: formBody,
+         type: null,
+         spField: null
+      };
 
-        // Retrieve type and internalName
-        fillSPFieldInfo(formBody, fieldParams);
-        
-        return fieldParams;
+      // Retrieve type and internalName
+      fillSPFieldInfo(formBody, fieldParams);
+
+      return fieldParams;
    }
 
    function lazyLoadSPFields() {
-        if (_fieldsHashtable !== null && _internalNamesHashtable !== null) {
-            return;
-        }
-        
-        // detect sharepoint version based on global variables which are
-        // always defined for sharepoint 2013/2010
-        if (typeof _spPageContextInfo === 'object') {
-            _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
-        }
+      if (_fieldsHashtable !== null && _internalNamesHashtable !== null) {
+         return;
+      }
 
-        _fieldsHashtable = {};
-        _internalNamesHashtable = {};
+      // detect sharepoint version based on global variables which are
+      // always defined for sharepoint 2013/2010
+      if (typeof _spPageContextInfo === 'object') {
+         _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
+      }
 
-        var formBodies = $('table.ms-formtable td.ms-formbody');
-        for (var i = 0; i < formBodies.length; i += 1) {
-            var fieldParams = getFieldParams(formBodies[i]);
-            if (fieldParams !== null) {
-                _fieldsHashtable[fieldParams.name] = fieldParams;
-                _internalNamesHashtable[fieldParams.internalName] = fieldParams;
-            }
-        }
+      _fieldsHashtable = {};
+      _internalNamesHashtable = {};
+
+      var formBodies = $('table.ms-formtable td.ms-formbody');
+      for (var i = 0; i < formBodies.length; i += 1) {
+         var fieldParams = getFieldParams(formBodies[i]);
+         if (fieldParams !== null) {
+            _fieldsHashtable[fieldParams.name] = fieldParams;
+            _internalNamesHashtable[fieldParams.internalName] = fieldParams;
+         }
+      }
    }
 
    function toggleSPFieldRows(labelRow, controlsRow, bShowField) {
@@ -1868,7 +1868,6 @@ var SPUtility = (function ($) {
          if (null === spFieldParams.type) {
             throw 'Unknown SPField type.';
          }
-
          return getSPFieldFromType(spFieldParams);
       } catch (e) {
          throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
@@ -1908,7 +1907,7 @@ var SPUtility = (function ($) {
       lazyLoadSPFields();
 
       var fieldParams = _internalNamesHashtable[strInternalName];
-      
+
       if (isUndefined(fieldParams)) {
          throw 'Unable to get a SPField with internal name ' + strInternalName;
       }
@@ -1917,7 +1916,7 @@ var SPUtility = (function ($) {
           // field hasn't been initialized yet
           fieldParams.spField = createSPField(fieldParams);
       }
-      
+
       return fieldParams.spField;
    };
 
@@ -1926,7 +1925,7 @@ var SPUtility = (function ($) {
       lazyLoadSPFields();
       return _fieldsHashtable;
    };
-   
+
    // Gets all of the SPFields by internal name on the page
    SPUtility.GetSPFieldsInternal = function () {
        lazyLoadSPFields();
