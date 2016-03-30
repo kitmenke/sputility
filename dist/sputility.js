@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
    Version: 0.13.0
-   Built: 2016-03-30
+   Built: 2016-03-22
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2016
@@ -26,18 +26,14 @@ var SPUtility = (function ($) {
    /*
     *   SPUtility Private Variables
    **/
-   var _fieldsHashtable = null, // stores all fields by display name
-      _internalNamesHashtable = null, // stores all fields by internal name
-      _isDispForm = null, // whether or not current form is the display form
-      _spVersion = 12,    // current sharepoint version
-      _settings = {                 // DEFAULT SETTINGS:
-         'timeFormat': '12HR',      // 12HR or 24HR
-         'dateSeparator': '/',      // separates month/day/year with / or .
-         'decimalSeparator': '.',   // separates decimal from number
-         'thousandsSeparator': ',', // separates thousands in number
-         'stringYes': 'Yes',        // Text for when boolean field is True
-         'stringNo': 'No'           // Text for when boolean field is False
-      };
+   var _fieldsHashtable = null,
+      _internalNamesHashtable = null,
+      _timeFormat = null, // 12HR or 24HR
+      _dateSeparator = null, // separates month/day/year with / or .
+      _decimalSeparator = null,
+      _thousandsSeparator = null,
+      _isDispForm = null,
+      _spVersion = 12;
 
    /*
     *   SPUtility Private Methods
@@ -82,9 +78,9 @@ var SPUtility = (function ($) {
       if (typeof val === "string") {
          // remove all thousands separators including spaces
          val = replaceAll(val, ' ', '');
-         val = replaceAll(val, _settings['thousandsSeparator'], '');
+         val = replaceAll(val, _thousandsSeparator, '');
          // replace the first instance of the decimal separator
-         val = val.replace(_settings['decimalSeparator'], '.');
+         val = val.replace(_decimalSeparator, '.');
          val = parseFloat(val);
       }
       return val;
@@ -112,8 +108,8 @@ var SPUtility = (function ($) {
    // t = thousands separator, default ","
    function formatMoney(n, c, d, t) {
       c = (isNaN(c = Math.abs(c)) ? 2 : c);
-      d = (d === undefined ? _settings['decimalSeparator'] : d);
-      t = (t === undefined ? _settings['thousandsSeparator'] : t);
+      d = (d === undefined ? _decimalSeparator : d);
+      t = (t === undefined ? _thousandsSeparator : t);
       var s = (n < 0 ? "-" : ""),
          i = parseInt(n = Math.abs(+n || 0).toFixed(c), 10) + "",
          j = (j = i.length) > 3 ? j % 3 : 0;
@@ -943,13 +939,13 @@ var SPUtility = (function ($) {
       var strDate;
       if (this.TimeFormat === '12HR') {
          // m/d/YYYY
-         strDate = this.Month + _settings['dateSeparator'] +
-            this.Day + _settings['dateSeparator'] +
+         strDate = this.Month + _dateSeparator +
+            this.Day + _dateSeparator +
             this.Year;
       } else {
          // DD/MM/YYYY
-         strDate = this.PadWithZero(this.Day) + _settings['dateSeparator'] +
-            this.PadWithZero(this.Month) + _settings['dateSeparator'] +
+         strDate = this.PadWithZero(this.Day) + _dateSeparator +
+            this.PadWithZero(this.Month) + _dateSeparator +
             this.Year;
       }
 
@@ -1026,15 +1022,15 @@ var SPUtility = (function ($) {
    SPDateTimeField.prototype = Object.create(SPField.prototype);
 
    SPDateTimeField.prototype.GetValue = function () {
-      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split(_settings['dateSeparator']);
+      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split(_dateSeparator);
 
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _settings['timeFormat'];
-      spDate.DateSeparator = _settings['dateSeparator'];
+      spDate.TimeFormat = _timeFormat;
+      spDate.DateSeparator = _dateSeparator;
 
       if (arrShortDate.length === 3) {
          var year, month, day;
-         if (_settings['timeFormat'] === '12HR') {
+         if (_timeFormat === '12HR') {
             month = arrShortDate[0];
             day = arrShortDate[1];
             year = arrShortDate[2];
@@ -1079,8 +1075,8 @@ var SPUtility = (function ($) {
          return this;
       }
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _settings['timeFormat'];
-      spDate.DateSeparator = _settings['dateSeparator'];
+      spDate.TimeFormat = _timeFormat;
+      spDate.DateSeparator = _dateSeparator;
       spDate.SetDate(year, month, day);
       $(this.DateTextbox).val(spDate.GetShortDateString());
       this._updateReadOnlyLabel(this.GetValue().toString());
@@ -1093,8 +1089,8 @@ var SPUtility = (function ($) {
       }
 
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _settings['timeFormat'];
-      spDate.DateSeparator = _settings['dateSeparator'];
+      spDate.TimeFormat = _timeFormat;
+      spDate.DateSeparator = _dateSeparator;
 
       if (hour === null || hour === "") {
          spDate.SetTime(0, 0);
@@ -1149,16 +1145,13 @@ var SPUtility = (function ($) {
       return !!this.Checkbox.checked;
    };
 
-   // Get the Yes/No field's value as a string
-   // By default this returns Yes when True and No when False
-   // Customize this behavior by altering the stringYes and stringNo settings
    SPBooleanField.prototype.GetValueString = function () {
-      return this.GetValue() ? _settings['stringYes'] : _settings['stringNo'];
+      return this.GetValue() ? "Yes" : "No";
    };
 
    SPBooleanField.prototype.SetValue = function (value) {
       if (isString(value)) {
-         if (_settings['stringYes'].toUpperCase() === value.toUpperCase()) {
+         if ("YES" === value.toUpperCase()) {
             value = true;
          } else {
             value = false;
@@ -1602,7 +1595,11 @@ var SPUtility = (function ($) {
       this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
       this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
 
-      //this.ClientPeoplePicker.OnUserResolvedClientScript = function () {...}
+      var that = this;
+      this.ClientPeoplePicker.OnUserResolvedClientScript = function() {
+        that._updateReadOnlyLabel(that._getValue());
+      };
+
       //this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
       //this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
       //this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
@@ -1616,84 +1613,7 @@ var SPUtility = (function ($) {
       return this.ClientPeoplePicker.GetAllUserInfo();
    };
 
-   // Iterates over all entities currently in the field, gets the user ID
-   // for each one, and builds an HTML link
-   // callback should be a function which takes one parameter for the returned HTML
-   SPUserField2013.prototype._getValueLinks = function (callback) {
-      // TODO: doesn't support sharepoint groups
-
-      var tmpArray = [], self = this;
-
-      // build an array of all the entities currently resolved
-      $.each(self.GetValue(), function (key, val) {
-         if (val.Key !== null) {
-            tmpArray.push(val.Key);
-         }
-      });
-
-      function successCallback(parms) {
-         var o = { 'users': parms.users };
-         parms.d.resolve(o);
-      }
-
-      function failCallback(parms) {
-         parms.d.reject("Something went wrong...");
-      }
-
-      function getUserId(loginNames, field) {
-         var d = $.Deferred();
-         var context = new SP.ClientContext.get_current();
-         var arrayLength = loginNames.length;
-         var users = [];
-
-         for (var i = 0; i < arrayLength; i++) {
-            var user = context.get_web().ensureUser(loginNames[i]);
-            context.load(user);
-            users.push(user);
-         }
-
-         var parms = { d: d, loginNames: loginNames, users: users };
-         context.executeQueryAsync(
-            successCallback.bind(field, parms),
-            failCallback.bind(field, parms));
-         return d.promise();
-      }
-
-      var x = getUserId(tmpArray, self);
-
-      x.done(function (result) {
-         // result is an SP.List because that is what we passed to resolve()!
-         var htmlText = "";
-         for (var i = 0; i < result.users.length; i++) {
-            var user = result.users[i];
-            if (htmlText !== "") { htmlText += "; "; }
-               htmlText += '<a href="/_layouts/15/userdisp.aspx?ID=' + user.get_id().toString() + '&amp;RootFolder=*">' + user.get_title() + '</a>';
-         }
-         // finally! send the result to our callback
-         return callback(htmlText);
-      });
-
-      x.fail(function (result) {
-         // result is a string because that is what we passed to reject()!
-         var error = result;
-         console.log(error);
-      });
-   };
-
-   // should be called in SetValue to update the read-only label
-   // Customized for SPUserField2013 because updating the label is async
-   SPUserField2013.prototype._updateReadOnlyLabel = function () {
-      var self = this;
-      if (self.ReadOnlyLabel) {
-         // after getting links, update the label inside callback
-         this._getValueLinks(function (html) {
-            self.ReadOnlyLabel.html(html);
-         });
-      }
-   };
-
-   // Get the field's value as a comma delimited string
-   SPUserField2013.prototype.GetValueString = function() {
+   SPUserField2013.prototype._getValue = function() {
       return $.map(this.GetValue(), function (val) {
           return val.DisplayText;
       }).join(", ");
@@ -1707,19 +1627,13 @@ var SPUtility = (function ($) {
          $(this.EditorInput).val(value);
          this.ClientPeoplePicker.AddUnresolvedUserFromEditor(true);
       }
-      // schedule a callback to update the read-only label if necessary
-      this._updateReadOnlyLabel();
       return this;
    };
 
-   // Make the field read only and display a link to each person or group
+   // get the display text of each resolved item and display in comma
+   // delimited list
    SPUserField2013.prototype.MakeReadOnly = function () {
-      // make the field read-only
-      // field will display empty until callback resolves in _updateReadOnlyLabel
-      this._makeReadOnly('');
-      // schedule callback to update read only label
-      this._updateReadOnlyLabel();
-      return this;
+      return this._makeReadOnly(this._getValue());
    };
 
    /*
@@ -1977,75 +1891,53 @@ var SPUtility = (function ($) {
       toggleSPField(strFieldName, true);
    };
 
-   /*
-    * True if the current page is the DispForm. Otherwise, will return
-    * False if it is EditForm or NewForm.
-   **/
+   SPUtility.GetTimeFormat = function () {
+      return _timeFormat;
+   };
+
+   SPUtility.SetTimeFormat = function (format) {
+      if (format === '12HR' || format === '24HR') {
+         _timeFormat = format;
+      } else {
+         throw "Unable to set the time format, should be 12HR or 24HR.";
+      }
+   };
+
+   SPUtility.GetDateSeparator = function () {
+      return _dateSeparator;
+   };
+
+   SPUtility.SetDateSeparator = function (separator) {
+      _dateSeparator = separator;
+   };
+
+   SPUtility.SetDecimalSeparator = function (decimalSeparator) {
+      _decimalSeparator = decimalSeparator;
+   };
+
+   SPUtility.GetDecimalSeparator = function () {
+      return _decimalSeparator;
+   };
+
+   SPUtility.SetThousandsSeparator = function (thousandsSeparator) {
+      _thousandsSeparator = thousandsSeparator;
+   };
+
+   SPUtility.GetThousandsSeparator = function() {
+      return _thousandsSeparator;
+   };
+
    SPUtility.IsDispForm = function () {
       return isDispForm();
    };
 
    /*
-    * Configure SPUtility by passing an object containing settings.
-    _settings = {                 // DEFAULT SETTINGS:
-      'timeFormat': '12HR',      // 12HR or 24HR
-      'dateSeparator': '/',      // separates month/day/year with / or .
-      'decimalSeparator': '.',   // separates decimal from number
-      'thousandsSeparator': ',', // separates thousands in number
-      'stringYes': 'Yes',        // Text for when boolean field is True
-      'stringNo': 'No'           // Text for when boolean field is False
-    }
-   **/
-   SPUtility.Setup = function (settings) {
-      var s = $.extend( {}, _settings, settings );
-      // validate the passed settings
-      if (s['timeFormat'] !== '12HR' && s['timeFormat'] !== '24HR') {
-         throw "Unable to set timeFormat, should be 12HR or 24HR.";
-      }
-      // TODO: validate other settings?
-      _settings = s;
-      return s;
-   };
-
-   // deprecated
-   SPUtility.GetTimeFormat = function () {
-      return _settings['timeFormat'];
-   };
-
-   // deprecated
-   SPUtility.SetTimeFormat = function (format) {
-      SPUtility.Setup({ 'timeFormat': format });
-   };
-
-   // deprecated
-   SPUtility.GetDateSeparator = function () {
-      return _settings['dateSeparator'];
-   };
-
-   // deprecated
-   SPUtility.SetDateSeparator = function (separator) {
-      SPUtility.Setup({ 'dateSeparator': separator });
-   };
-
-   // deprecated
-   SPUtility.GetDecimalSeparator = function () {
-      return _settings['decimalSeparator'];
-   };
-
-   // deprecated
-   SPUtility.SetDecimalSeparator = function (separator) {
-      SPUtility.Setup({ 'decimalSeparator': separator });
-   };
-
-   // deprecated
-   SPUtility.GetThousandsSeparator = function () {
-      return _settings['thousandsSeparator'];
-   };
-
-   // deprecated
-   SPUtility.SetThousandsSeparator = function (separator) {
-      SPUtility.Setup({ 'thousandsSeparator': separator });
-   };
+    * INITIALIZATION
+    */
+   SPUtility.SetTimeFormat('12HR');
+   SPUtility.SetDateSeparator('/');
+   SPUtility.SetDecimalSeparator('.');
+   SPUtility.SetThousandsSeparator(',');
 
    return SPUtility;
 }(jQuery));
