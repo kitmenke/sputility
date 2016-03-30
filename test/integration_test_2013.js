@@ -142,7 +142,7 @@
    test("MakeReadOnly()", function() {
       expect(1);
 
-      var expected = "$42.00";
+      var expected = "42.00";
       this.field.SetValue(42);
       this.field.MakeReadOnly();
       var actual = this.field.ReadOnlyLabel.text();
@@ -1151,12 +1151,12 @@
    });
 
    test("GetValue() and SetValue()", function() {
-      expect(2);
+      expect(1);
 
       var expected = 'Team Site Visitors';
       this.field.SetValue(expected);
 
-      var actual = this.field.GetValue();
+      var actual = this.field.GetValueString();
       strictEqual(actual, expected);
    });
 
