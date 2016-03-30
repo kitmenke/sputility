@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
-   Version: 0.13.0
-   Built: 2016-03-22
+   Version: 0.14.0
+   Built: 2016-03-30
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2016
@@ -26,14 +26,18 @@ var SPUtility = (function ($) {
    /*
     *   SPUtility Private Variables
    **/
-   var _fieldsHashtable = null,
-      _internalNamesHashtable = null,
-      _timeFormat = null, // 12HR or 24HR
-      _dateSeparator = null, // separates month/day/year with / or .
-      _decimalSeparator = null,
-      _thousandsSeparator = null,
-      _isDispForm = null,
-      _spVersion = 12;
+   var _fieldsHashtable = null, // stores all fields by display name
+      _internalNamesHashtable = null, // stores all fields by internal name
+      _isDispForm = null, // whether or not current form is the display form
+      _spVersion = 12,    // current sharepoint version
+      _settings = {                 // DEFAULT SETTINGS:
+         'timeFormat': '12HR',      // 12HR or 24HR
+         'dateSeparator': '/',      // separates month/day/year with / or .
+         'decimalSeparator': '.',   // separates decimal from number
+         'thousandsSeparator': ',', // separates thousands in number
+         'stringYes': 'Yes',        // Text for when boolean field is True
+         'stringNo': 'No'           // Text for when boolean field is False
+      };
 
    /*
     *   SPUtility Private Methods
@@ -78,9 +82,9 @@ var SPUtility = (function ($) {
       if (typeof val === "string") {
          // remove all thousands separators including spaces
          val = replaceAll(val, ' ', '');
-         val = replaceAll(val, _thousandsSeparator, '');
+         val = replaceAll(val, _settings['thousandsSeparator'], '');
          // replace the first instance of the decimal separator
-         val = val.replace(_decimalSeparator, '.');
+         val = val.replace(_settings['decimalSeparator'], '.');
          val = parseFloat(val);
       }
       return val;
@@ -108,8 +112,8 @@ var SPUtility = (function ($) {
    // t = thousands separator, default ","
    function formatMoney(n, c, d, t) {
       c = (isNaN(c = Math.abs(c)) ? 2 : c);
-      d = (d === undefined ? _decimalSeparator : d);
-      t = (t === undefined ? _thousandsSeparator : t);
+      d = (d === undefined ? _settings['decimalSeparator'] : d);
+      t = (t === undefined ? _settings['thousandsSeparator'] : t);
       var s = (n < 0 ? "-" : ""),
          i = parseInt(n = Math.abs(+n || 0).toFixed(c), 10) + "",
          j = (j = i.length) > 3 ? j % 3 : 0;
@@ -157,135 +161,103 @@ var SPUtility = (function ($) {
       return val;
    }
 
-   function getSPFieldType(element) {
-      var matches, comment, n;
-      try {
-         // find the HTML comment and get the field's type
-         for (n = 0; n < element.childNodes.length; n += 1) {
-            if (8 === element.childNodes[n].nodeType) {
-               comment = element.childNodes[n].data;
-               matches = comment.match(/SPField\w+/);
-               if (null !== matches) {
-                  return matches[0];
-               }
-               break;
+   function fillSPFieldInfo(element, fieldParams) {
+      // find the HTML comment and fill fieldparams with type and internal name
+      for (var n = 0; n < element.childNodes.length; n += 1) {
+         if (8 === element.childNodes[n].nodeType) {
+            var comment = element.childNodes[n].data;
+
+            // Retrieve field type
+            var typeMatches = comment.match(/SPField\w+/);
+            if (typeMatches !== null && typeMatches.length > 0) {
+               fieldParams.type = typeMatches[0];
             }
-         }
-      } catch (ex) {
-         throw 'getSPFieldType error: ' + ex.toString();
-      }
-      return null;
-   }
 
-   function getSPFieldInternalName(element) {
-      var matches, comment, n;
-      try {
-         // find the HTML comment and get the field's internal name
-         for (n = 0; n < element.childNodes.length; n += 1) {
-            if (8 === element.childNodes[n].nodeType) {
-               comment = element.childNodes[n].data;
-               matches = comment.match(/FieldInternalName="\w+/);
-               if (null !== matches) {
-                  return matches[0].substring(19); // remove FieldInternalName from the beginning
-               }
-               break;
+            // Retrieve field name
+            var nameMatches = comment.match(/FieldName="[^"]+/);
+            if (nameMatches !== null && nameMatches.length > 0) {
+               fieldParams.name = nameMatches[0].substring(11); // remove FieldName from the beginning
             }
+
+            // Retrieve field internal name
+            var internalNameMatches = comment.match(/FieldInternalName="\w+/);
+            if (internalNameMatches !== null && internalNameMatches.length > 0) {
+               fieldParams.internalName = internalNameMatches[0].substring(19); // remove FieldInternalName from the beginning
+            }
+            break;
          }
-      } catch (ex) {
-         throw 'getSPFieldInternalName error: ' + ex.toString();
       }
-      return null;
+
+      if (fieldParams.type === null && $(element).find('select[name$=ContentTypeChoice]').length > 0) {
+         // small hack to support content type fields
+         fieldParams.type = 'ContentTypeChoice';
+         fieldParams.internalName = 'ContentType';
+         fieldParams.name = 'Content Type';
+      }
    }
 
-   function getControlsCell(spFieldParams) {
-      if (null === spFieldParams.controlsCell) {
-         // the only time this property will NOT be null is in survey forms
-         spFieldParams.controlsCell = $(spFieldParams.labelCell).next()[0];
-         // use nextSibling?
-      }
-      return spFieldParams.controlsCell;
-   }
+   function getFieldParams(formBody) {
+      var elemLabel = null;
+      var isRequired = null;
 
-   function getFieldParams(formLabel, formBody) {
-      var fieldParams = null, fieldName = 'Unknown field', elemLabel, isRequired = false;
-      try {
+      var formLabel = $(formBody).siblings(".ms-formlabel");
+      if (formLabel !== null) {
          // find element which contains the field's display name
-         var elems = $(formLabel).children('h3');
+         var elems = formLabel.children('h3');
+
          // normally, the label is an h3 element inside the td
          // but on surveys the h3 doesn't exist
-         if (elems.length > 0) {
-            elemLabel = elems[0];
-         } else {
-            // special case: content type label is contained within the td.ms-formlabel
-            elemLabel = formLabel;
-         }
-         if (null === elemLabel || elemLabel.nodeName === 'NOBR') {
-            return null; // attachments row not currently supported
-         }
+         // special case: content type label is contained within the td.ms-formlabel
+         elemLabel = elems.length > 0 ? elems[0] : formLabel;
 
-         fieldName = $.trim($(elemLabel).text());
-         if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
-            isRequired = true;
+         // If label row not null and not attachment row
+         if (elemLabel !== null && elemLabel.nodeName !== 'NOBR') {
+            var fieldName = $.trim($(elemLabel).text());
+            if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
+               isRequired = true;
+            }
          }
-
-         if (true === isRequired) {
-            fieldName = fieldName.substring(0, fieldName.length - 2);
-         }
-
-         fieldParams = {
-            'name': fieldName,
-            'internalName': null,
-            'label': $(elemLabel),
-            'labelRow': elemLabel.parentNode,
-            'labelCell': formLabel,
-            'isRequired': isRequired,
-            'controlsRow': formBody.parentNode,
-            'controlsCell': formBody,
-            'type': null,
-            'spField': null
-         };
-      } catch (e) {
-         throw 'getFieldParams error getting parameters for ' + fieldName + ': ' + e.toString();
       }
+
+      var fieldParams = {
+         name: null,
+         internalName: null,
+         label: elemLabel !== null ? $(elemLabel) : null,
+         labelRow: elemLabel !== null ? elemLabel.parentNode : null,
+         labelCell: formLabel,
+         isRequired: isRequired,
+         controlsRow: formBody.parentNode,
+         controlsCell: formBody,
+         type: null,
+         spField: null
+      };
+
+      // Retrieve type and internalName
+      fillSPFieldInfo(formBody, fieldParams);
+
       return fieldParams;
    }
 
    function lazyLoadSPFields() {
-      if (null === _fieldsHashtable) {
-         var i, fieldParams,
-            formLabels = $('table.ms-formtable td.ms-formlabel'),
-            formBodies = $('table.ms-formtable td.ms-formbody');
-
-         // detect sharepoint version based on global variables which are
-         // always defined for sharepoint 2013/2010
-         if (typeof _spPageContextInfo === 'object') {
-            _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
-         }
-
-         _fieldsHashtable = {};
-
-         if (formLabels.length !== formBodies.length) {
-           throw 'lazyLoadSPFields error loading form controls';
-         }
-
-         for (i = 0; i < formLabels.length; i += 1) {
-            fieldParams = getFieldParams(formLabels[i], formBodies[i]);
-            if (null !== fieldParams) {
-               _fieldsHashtable[fieldParams.name] = fieldParams;
-            }
-         }
+      if (_fieldsHashtable !== null && _internalNamesHashtable !== null) {
+         return;
       }
-   }
 
-   function lazyLoadInternalColumnNames() {
-      if (null == _internalNamesHashtable) {
-         var internalName, fieldParam, fieldName;
-         _internalNamesHashtable = {};
-         for (fieldName in _fieldsHashtable) {
-            fieldParam = _fieldsHashtable[fieldName];
-            internalName = getSPFieldInternalName(getControlsCell(fieldParam));
-            fieldParam.internalName = internalName;
-            _internalNamesHashtable[internalName] = fieldParam.name;
+      // detect sharepoint version based on global variables which are
+      // always defined for sharepoint 2013/2010
+      if (typeof _spPageContextInfo === 'object') {
+         _spVersion = _spPageContextInfo.webUIVersion === 15 ? 15 : 14;
+      }
+
+      _fieldsHashtable = {};
+      _internalNamesHashtable = {};
+
+      var formBodies = $('table.ms-formtable td.ms-formbody');
+      for (var i = 0; i < formBodies.length; i += 1) {
+         var fieldParams = getFieldParams(formBodies[i]);
+         if (fieldParams !== null) {
+            _fieldsHashtable[fieldParams.name] = fieldParams;
+            _internalNamesHashtable[fieldParams.internalName] = fieldParams;
          }
       }
    }
@@ -294,10 +266,14 @@ var SPUtility = (function ($) {
       // on survey forms, the labelRow and controlsRow are different
       // for normal forms, they are the same so it is a redundant call
       if (bShowField) {
-         $(labelRow).show();
+          if (labelRow !== null) {
+            $(labelRow).show();
+          }
          $(controlsRow).show();
       } else {
-         $(labelRow).hide();
+          if (labelRow !== null) {
+            $(labelRow).hide();
+          }
          $(controlsRow).hide();
       }
    }
@@ -939,13 +915,13 @@ var SPUtility = (function ($) {
       var strDate;
       if (this.TimeFormat === '12HR') {
          // m/d/YYYY
-         strDate = this.Month + _dateSeparator +
-            this.Day + _dateSeparator +
+         strDate = this.Month + _settings['dateSeparator'] +
+            this.Day + _settings['dateSeparator'] +
             this.Year;
       } else {
          // DD/MM/YYYY
-         strDate = this.PadWithZero(this.Day) + _dateSeparator +
-            this.PadWithZero(this.Month) + _dateSeparator +
+         strDate = this.PadWithZero(this.Day) + _settings['dateSeparator'] +
+            this.PadWithZero(this.Month) + _settings['dateSeparator'] +
             this.Year;
       }
 
@@ -1022,15 +998,15 @@ var SPUtility = (function ($) {
    SPDateTimeField.prototype = Object.create(SPField.prototype);
 
    SPDateTimeField.prototype.GetValue = function () {
-      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split(_dateSeparator);
+      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split(_settings['dateSeparator']);
 
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _timeFormat;
-      spDate.DateSeparator = _dateSeparator;
+      spDate.TimeFormat = _settings['timeFormat'];
+      spDate.DateSeparator = _settings['dateSeparator'];
 
       if (arrShortDate.length === 3) {
          var year, month, day;
-         if (_timeFormat === '12HR') {
+         if (_settings['timeFormat'] === '12HR') {
             month = arrShortDate[0];
             day = arrShortDate[1];
             year = arrShortDate[2];
@@ -1075,8 +1051,8 @@ var SPUtility = (function ($) {
          return this;
       }
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _timeFormat;
-      spDate.DateSeparator = _dateSeparator;
+      spDate.TimeFormat = _settings['timeFormat'];
+      spDate.DateSeparator = _settings['dateSeparator'];
       spDate.SetDate(year, month, day);
       $(this.DateTextbox).val(spDate.GetShortDateString());
       this._updateReadOnlyLabel(this.GetValue().toString());
@@ -1089,8 +1065,8 @@ var SPUtility = (function ($) {
       }
 
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _timeFormat;
-      spDate.DateSeparator = _dateSeparator;
+      spDate.TimeFormat = _settings['timeFormat'];
+      spDate.DateSeparator = _settings['dateSeparator'];
 
       if (hour === null || hour === "") {
          spDate.SetTime(0, 0);
@@ -1145,13 +1121,16 @@ var SPUtility = (function ($) {
       return !!this.Checkbox.checked;
    };
 
+   // Get the Yes/No field's value as a string
+   // By default this returns Yes when True and No when False
+   // Customize this behavior by altering the stringYes and stringNo settings
    SPBooleanField.prototype.GetValueString = function () {
-      return this.GetValue() ? "Yes" : "No";
+      return this.GetValue() ? _settings['stringYes'] : _settings['stringNo'];
    };
 
    SPBooleanField.prototype.SetValue = function (value) {
       if (isString(value)) {
-         if ("YES" === value.toUpperCase()) {
+         if (_settings['stringYes'].toUpperCase() === value.toUpperCase()) {
             value = true;
          } else {
             value = false;
@@ -1595,11 +1574,7 @@ var SPUtility = (function ($) {
       this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
       this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
 
-      var that = this;
-      this.ClientPeoplePicker.OnUserResolvedClientScript = function() {
-        that._updateReadOnlyLabel(that._getValue());
-      };
-
+      //this.ClientPeoplePicker.OnUserResolvedClientScript = function () {...}
       //this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
       //this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
       //this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
@@ -1613,7 +1588,84 @@ var SPUtility = (function ($) {
       return this.ClientPeoplePicker.GetAllUserInfo();
    };
 
-   SPUserField2013.prototype._getValue = function() {
+   // Iterates over all entities currently in the field, gets the user ID
+   // for each one, and builds an HTML link
+   // callback should be a function which takes one parameter for the returned HTML
+   SPUserField2013.prototype._getValueLinks = function (callback) {
+      // TODO: doesn't support sharepoint groups
+
+      var tmpArray = [], self = this;
+
+      // build an array of all the entities currently resolved
+      $.each(self.GetValue(), function (key, val) {
+         if (val.Key !== null) {
+            tmpArray.push(val.Key);
+         }
+      });
+
+      function successCallback(parms) {
+         var o = { 'users': parms.users };
+         parms.d.resolve(o);
+      }
+
+      function failCallback(parms) {
+         parms.d.reject("Something went wrong...");
+      }
+
+      function getUserId(loginNames, field) {
+         var d = $.Deferred();
+         var context = new SP.ClientContext.get_current();
+         var arrayLength = loginNames.length;
+         var users = [];
+
+         for (var i = 0; i < arrayLength; i++) {
+            var user = context.get_web().ensureUser(loginNames[i]);
+            context.load(user);
+            users.push(user);
+         }
+
+         var parms = { d: d, loginNames: loginNames, users: users };
+         context.executeQueryAsync(
+            successCallback.bind(field, parms),
+            failCallback.bind(field, parms));
+         return d.promise();
+      }
+
+      var x = getUserId(tmpArray, self);
+
+      x.done(function (result) {
+         // result is an SP.List because that is what we passed to resolve()!
+         var htmlText = "";
+         for (var i = 0; i < result.users.length; i++) {
+            var user = result.users[i];
+            if (htmlText !== "") { htmlText += "; "; }
+               htmlText += '<a href="/_layouts/15/userdisp.aspx?ID=' + user.get_id().toString() + '&amp;RootFolder=*">' + user.get_title() + '</a>';
+         }
+         // finally! send the result to our callback
+         return callback(htmlText);
+      });
+
+      x.fail(function (result) {
+         // result is a string because that is what we passed to reject()!
+         var error = result;
+         console.log(error);
+      });
+   };
+
+   // should be called in SetValue to update the read-only label
+   // Customized for SPUserField2013 because updating the label is async
+   SPUserField2013.prototype._updateReadOnlyLabel = function () {
+      var self = this;
+      if (self.ReadOnlyLabel) {
+         // after getting links, update the label inside callback
+         this._getValueLinks(function (html) {
+            self.ReadOnlyLabel.html(html);
+         });
+      }
+   };
+
+   // Get the field's value as a comma delimited string
+   SPUserField2013.prototype.GetValueString = function() {
       return $.map(this.GetValue(), function (val) {
           return val.DisplayText;
       }).join(", ");
@@ -1627,13 +1679,19 @@ var SPUtility = (function ($) {
          $(this.EditorInput).val(value);
          this.ClientPeoplePicker.AddUnresolvedUserFromEditor(true);
       }
+      // schedule a callback to update the read-only label if necessary
+      this._updateReadOnlyLabel();
       return this;
    };
 
-   // get the display text of each resolved item and display in comma
-   // delimited list
+   // Make the field read only and display a link to each person or group
    SPUserField2013.prototype.MakeReadOnly = function () {
-      return this._makeReadOnly(this._getValue());
+      // make the field read-only
+      // field will display empty until callback resolves in _updateReadOnlyLabel
+      this._makeReadOnly('');
+      // schedule callback to update read only label
+      this._updateReadOnlyLabel();
+      return this;
    };
 
    /*
@@ -1814,28 +1872,15 @@ var SPUtility = (function ($) {
     * Create an instance of the correct class based on the field's type
     */
    function createSPField(spFieldParams) {
-      var field = null;
       try {
-         spFieldParams.type = getSPFieldType(getControlsCell(spFieldParams));
-         spFieldParams.internalName = getSPFieldInternalName(getControlsCell(spFieldParams));
-
          // if we can't get the type then we can't create the field
          if (null === spFieldParams.type) {
-            if ($(getControlsCell(spFieldParams)).find('select[name$=ContentTypeChoice]').length > 0) {
-               // small hack to support content type fields
-               spFieldParams.type = 'ContentTypeChoice';
-            } else {
-               // normally, if we can't lookup type then throw an error
-               throw 'Unable to parse SPField type.';
-            }
+            throw 'Unknown SPField type.';
          }
-
-         field = getSPFieldFromType(spFieldParams);
+         return getSPFieldFromType(spFieldParams);
       } catch (e) {
          throw 'Error creating field named ' + spFieldParams.name + ': ' + e.toString();
       }
-
-      return field;
    }
 
    /**
@@ -1869,18 +1914,31 @@ var SPUtility = (function ($) {
 
    SPUtility.GetSPFieldByInternalName = function (strInternalName) {
       lazyLoadSPFields();
-      lazyLoadInternalColumnNames();
-      var name = _internalNamesHashtable[strInternalName];
-      if (isUndefined(name)) {
+
+      var fieldParams = _internalNamesHashtable[strInternalName];
+
+      if (isUndefined(fieldParams)) {
          throw 'Unable to get a SPField with internal name ' + strInternalName;
       }
-      return SPUtility.GetSPField(name);
+
+      if (fieldParams.spField === null) {
+          // field hasn't been initialized yet
+          fieldParams.spField = createSPField(fieldParams);
+      }
+
+      return fieldParams.spField;
    };
 
-   // Gets all of the SPFields on the page
+   // Gets all of the SPFields by name on the page
    SPUtility.GetSPFields = function () {
       lazyLoadSPFields();
       return _fieldsHashtable;
+   };
+
+   // Gets all of the SPFields by internal name on the page
+   SPUtility.GetSPFieldsInternal = function () {
+       lazyLoadSPFields();
+       return _internalNamesHashtable;
    };
 
    SPUtility.HideSPField = function (strFieldName) {
@@ -1891,53 +1949,75 @@ var SPUtility = (function ($) {
       toggleSPField(strFieldName, true);
    };
 
-   SPUtility.GetTimeFormat = function () {
-      return _timeFormat;
-   };
-
-   SPUtility.SetTimeFormat = function (format) {
-      if (format === '12HR' || format === '24HR') {
-         _timeFormat = format;
-      } else {
-         throw "Unable to set the time format, should be 12HR or 24HR.";
-      }
-   };
-
-   SPUtility.GetDateSeparator = function () {
-      return _dateSeparator;
-   };
-
-   SPUtility.SetDateSeparator = function (separator) {
-      _dateSeparator = separator;
-   };
-
-   SPUtility.SetDecimalSeparator = function (decimalSeparator) {
-      _decimalSeparator = decimalSeparator;
-   };
-
-   SPUtility.GetDecimalSeparator = function () {
-      return _decimalSeparator;
-   };
-
-   SPUtility.SetThousandsSeparator = function (thousandsSeparator) {
-      _thousandsSeparator = thousandsSeparator;
-   };
-
-   SPUtility.GetThousandsSeparator = function() {
-      return _thousandsSeparator;
-   };
-
+   /*
+    * True if the current page is the DispForm. Otherwise, will return
+    * False if it is EditForm or NewForm.
+   **/
    SPUtility.IsDispForm = function () {
       return isDispForm();
    };
 
    /*
-    * INITIALIZATION
-    */
-   SPUtility.SetTimeFormat('12HR');
-   SPUtility.SetDateSeparator('/');
-   SPUtility.SetDecimalSeparator('.');
-   SPUtility.SetThousandsSeparator(',');
+    * Configure SPUtility by passing an object containing settings.
+    _settings = {                 // DEFAULT SETTINGS:
+      'timeFormat': '12HR',      // 12HR or 24HR
+      'dateSeparator': '/',      // separates month/day/year with / or .
+      'decimalSeparator': '.',   // separates decimal from number
+      'thousandsSeparator': ',', // separates thousands in number
+      'stringYes': 'Yes',        // Text for when boolean field is True
+      'stringNo': 'No'           // Text for when boolean field is False
+    }
+   **/
+   SPUtility.Setup = function (settings) {
+      var s = $.extend( {}, _settings, settings );
+      // validate the passed settings
+      if (s['timeFormat'] !== '12HR' && s['timeFormat'] !== '24HR') {
+         throw "Unable to set timeFormat, should be 12HR or 24HR.";
+      }
+      // TODO: validate other settings?
+      _settings = s;
+      return s;
+   };
+
+   // deprecated
+   SPUtility.GetTimeFormat = function () {
+      return _settings['timeFormat'];
+   };
+
+   // deprecated
+   SPUtility.SetTimeFormat = function (format) {
+      SPUtility.Setup({ 'timeFormat': format });
+   };
+
+   // deprecated
+   SPUtility.GetDateSeparator = function () {
+      return _settings['dateSeparator'];
+   };
+
+   // deprecated
+   SPUtility.SetDateSeparator = function (separator) {
+      SPUtility.Setup({ 'dateSeparator': separator });
+   };
+
+   // deprecated
+   SPUtility.GetDecimalSeparator = function () {
+      return _settings['decimalSeparator'];
+   };
+
+   // deprecated
+   SPUtility.SetDecimalSeparator = function (separator) {
+      SPUtility.Setup({ 'decimalSeparator': separator });
+   };
+
+   // deprecated
+   SPUtility.GetThousandsSeparator = function () {
+      return _settings['thousandsSeparator'];
+   };
+
+   // deprecated
+   SPUtility.SetThousandsSeparator = function (separator) {
+      SPUtility.Setup({ 'thousandsSeparator': separator });
+   };
 
    return SPUtility;
 }(jQuery));
