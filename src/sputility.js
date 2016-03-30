@@ -17,14 +17,18 @@ var SPUtility = (function ($) {
    /*
     *   SPUtility Private Variables
    **/
-   var _fieldsHashtable = null,
-      _internalNamesHashtable = null,
-      _timeFormat = null, // 12HR or 24HR
-      _dateSeparator = null, // separates month/day/year with / or .
-      _decimalSeparator = null,
-      _thousandsSeparator = null,
-      _isDispForm = null,
-      _spVersion = 12;
+   var _fieldsHashtable = null, // stores all fields by display name
+      _internalNamesHashtable = null, // stores all fields by internal name
+      _isDispForm = null, // whether or not current form is the display form
+      _spVersion = 12,    // current sharepoint version
+      _settings = {                 // DEFAULT SETTINGS:
+         'timeFormat': '12HR',      // 12HR or 24HR
+         'dateSeparator': '/',      // separates month/day/year with / or .
+         'decimalSeparator': '.',   // separates decimal from number
+         'thousandsSeparator': ',', // separates thousands in number
+         'stringYes': 'Yes',        // Text for when boolean field is True
+         'stringNo': 'No'           // Text for when boolean field is False
+      };
 
    /*
     *   SPUtility Private Methods
@@ -69,9 +73,9 @@ var SPUtility = (function ($) {
       if (typeof val === "string") {
          // remove all thousands separators including spaces
          val = replaceAll(val, ' ', '');
-         val = replaceAll(val, _thousandsSeparator, '');
+         val = replaceAll(val, _settings['thousandsSeparator'], '');
          // replace the first instance of the decimal separator
-         val = val.replace(_decimalSeparator, '.');
+         val = val.replace(_settings['decimalSeparator'], '.');
          val = parseFloat(val);
       }
       return val;
@@ -99,8 +103,8 @@ var SPUtility = (function ($) {
    // t = thousands separator, default ","
    function formatMoney(n, c, d, t) {
       c = (isNaN(c = Math.abs(c)) ? 2 : c);
-      d = (d === undefined ? _decimalSeparator : d);
-      t = (t === undefined ? _thousandsSeparator : t);
+      d = (d === undefined ? _settings['decimalSeparator'] : d);
+      t = (t === undefined ? _settings['thousandsSeparator'] : t);
       var s = (n < 0 ? "-" : ""),
          i = parseInt(n = Math.abs(+n || 0).toFixed(c), 10) + "",
          j = (j = i.length) > 3 ? j % 3 : 0;
@@ -930,13 +934,13 @@ var SPUtility = (function ($) {
       var strDate;
       if (this.TimeFormat === '12HR') {
          // m/d/YYYY
-         strDate = this.Month + _dateSeparator +
-            this.Day + _dateSeparator +
+         strDate = this.Month + _settings['dateSeparator'] +
+            this.Day + _settings['dateSeparator'] +
             this.Year;
       } else {
          // DD/MM/YYYY
-         strDate = this.PadWithZero(this.Day) + _dateSeparator +
-            this.PadWithZero(this.Month) + _dateSeparator +
+         strDate = this.PadWithZero(this.Day) + _settings['dateSeparator'] +
+            this.PadWithZero(this.Month) + _settings['dateSeparator'] +
             this.Year;
       }
 
@@ -1013,15 +1017,15 @@ var SPUtility = (function ($) {
    SPDateTimeField.prototype = Object.create(SPField.prototype);
 
    SPDateTimeField.prototype.GetValue = function () {
-      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split(_dateSeparator);
+      var hour, strMinute, arrShortDate = $(this.DateTextbox).val().split(_settings['dateSeparator']);
 
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _timeFormat;
-      spDate.DateSeparator = _dateSeparator;
+      spDate.TimeFormat = _settings['timeFormat'];
+      spDate.DateSeparator = _settings['dateSeparator'];
 
       if (arrShortDate.length === 3) {
          var year, month, day;
-         if (_timeFormat === '12HR') {
+         if (_settings['timeFormat'] === '12HR') {
             month = arrShortDate[0];
             day = arrShortDate[1];
             year = arrShortDate[2];
@@ -1066,8 +1070,8 @@ var SPUtility = (function ($) {
          return this;
       }
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _timeFormat;
-      spDate.DateSeparator = _dateSeparator;
+      spDate.TimeFormat = _settings['timeFormat'];
+      spDate.DateSeparator = _settings['dateSeparator'];
       spDate.SetDate(year, month, day);
       $(this.DateTextbox).val(spDate.GetShortDateString());
       this._updateReadOnlyLabel(this.GetValue().toString());
@@ -1080,8 +1084,8 @@ var SPUtility = (function ($) {
       }
 
       var spDate = new SPDateTimeFieldValue();
-      spDate.TimeFormat = _timeFormat;
-      spDate.DateSeparator = _dateSeparator;
+      spDate.TimeFormat = _settings['timeFormat'];
+      spDate.DateSeparator = _settings['dateSeparator'];
 
       if (hour === null || hour === "") {
          spDate.SetTime(0, 0);
@@ -1136,8 +1140,12 @@ var SPUtility = (function ($) {
       return !!this.Checkbox.checked;
    };
 
-   SPBooleanField.prototype.GetValueString = function () {
-      return this.GetValue() ? "Yes" : "No";
+   //added localization. now i can get value in local language.
+   SPBooleanField.prototype.GetValueString = function (stringYes, stringNo) {
+      if (isString(stringYes) && isString(stringNo)) {
+         return this.GetValue() ? stringYes : stringNo;
+      }
+      return this.GetValue() ? _settings['stringYes'] : _settings['stringNo'];
    };
 
    SPBooleanField.prototype.SetValue = function (value) {
@@ -1161,8 +1169,8 @@ var SPUtility = (function ($) {
 
    // overriding the default MakeReadOnly function
    // translate true/false to Yes/No
-   SPBooleanField.prototype.MakeReadOnly = function () {
-      return this._makeReadOnly(this.GetValueString());
+   SPBooleanField.prototype.MakeReadOnly = function (stringYes, stringNo) {
+      return this._makeReadOnly(this.GetValueString(stringYes, stringNo));
    };
 
    /*
@@ -1623,8 +1631,60 @@ var SPUtility = (function ($) {
 
    // get the display text of each resolved item and display in comma
    // delimited list
+   // updated: it will show as hyperlinks but not a plain text
    SPUserField2013.prototype.MakeReadOnly = function () {
-      return this._makeReadOnly(this._getValue());
+      var tmpArray = [], self = this;
+
+      $.each(this.GetValue(), function (key, val) {
+         if (val.Key !== null) { tmpArray.push(val.Key); }
+      });
+
+      function successCallback(parms) {
+         var o = { 'users': parms.users, 'SPUserField': parms.SPUserField };
+         parms.d.resolve(o);
+      }
+
+      function failCallback(parms) {
+         parms.d.reject("Something went wrong...");
+      }
+
+      function getUserId(loginNames, field) {
+         var d = $.Deferred();
+         var context = new SP.ClientContext.get_current();
+         var arrayLength = loginNames.length;
+         var users = [];
+
+         for (var i = 0; i < arrayLength; i++) {
+            var user = context.get_web().ensureUser(loginNames[i]);
+            context.load(user);
+            users.push(user);
+         }
+
+         var parms = { d: d, loginNames: loginNames, users: users, SPUserField: field };
+         context.executeQueryAsync(
+            successCallback.bind(field, parms),
+            failCallback.bind(field, parms));
+         return d.promise();
+      }
+
+      var x = getUserId(tmpArray, self);
+
+      x.done(function (result) {
+         // result is an SP.List because that is what we passed to resolve()!
+         var htmlText = "";
+         for (var i = 0; i < result.users.length; i++) {
+            var user = result.users[i];
+            if (htmlText !== "") { htmlText += "; "; }
+               htmlText += '<a href="/_layouts/15/userdisp.aspx?ID=' + user.get_id().toString() + '&amp;RootFolder=*">' + user.get_title() + '</a>';
+         }
+         return result.SPUserField._makeReadOnly(htmlText);
+      });
+
+      x.fail(function (result) {
+         // result is a string because that is what we passed to reject()!
+         var error = result;
+         console.log(error);
+      });
    };
 
    /*
@@ -1882,53 +1942,75 @@ var SPUtility = (function ($) {
       toggleSPField(strFieldName, true);
    };
 
-   SPUtility.GetTimeFormat = function () {
-      return _timeFormat;
-   };
-
-   SPUtility.SetTimeFormat = function (format) {
-      if (format === '12HR' || format === '24HR') {
-         _timeFormat = format;
-      } else {
-         throw "Unable to set the time format, should be 12HR or 24HR.";
-      }
-   };
-
-   SPUtility.GetDateSeparator = function () {
-      return _dateSeparator;
-   };
-
-   SPUtility.SetDateSeparator = function (separator) {
-      _dateSeparator = separator;
-   };
-
-   SPUtility.SetDecimalSeparator = function (decimalSeparator) {
-      _decimalSeparator = decimalSeparator;
-   };
-
-   SPUtility.GetDecimalSeparator = function () {
-      return _decimalSeparator;
-   };
-
-   SPUtility.SetThousandsSeparator = function (thousandsSeparator) {
-      _thousandsSeparator = thousandsSeparator;
-   };
-
-   SPUtility.GetThousandsSeparator = function() {
-      return _thousandsSeparator;
-   };
-
+   /*
+    * True if the current page is the DispForm. Otherwise, will return
+    * False if it is EditForm or NewForm.
+   **/
    SPUtility.IsDispForm = function () {
       return isDispForm();
    };
 
    /*
-    * INITIALIZATION
-    */
-   SPUtility.SetTimeFormat('12HR');
-   SPUtility.SetDateSeparator('/');
-   SPUtility.SetDecimalSeparator('.');
-   SPUtility.SetThousandsSeparator(',');
+    * Configure SPUtility by passing an object containing settings.
+    _settings = {                 // DEFAULT SETTINGS:
+      'timeFormat': '12HR',      // 12HR or 24HR
+      'dateSeparator': '/',      // separates month/day/year with / or .
+      'decimalSeparator': '.',   // separates decimal from number
+      'thousandsSeparator': ',', // separates thousands in number
+      'stringYes': 'Yes',        // Text for when boolean field is True
+      'stringNo': 'No'           // Text for when boolean field is False
+    }
+   **/
+   SPUtility.Setup = function (settings) {
+      var s = $.extend( {}, _settings, settings );
+      // validate the passed settings
+      if (s['timeFormat'] !== '12HR' && s['timeFormat'] !== '24HR') {
+         throw "Unable to set timeFormat, should be 12HR or 24HR.";
+      }
+      // TODO: validate other settings?
+      _settings = s;
+      return s;
+   };
+
+   // deprecated
+   SPUtility.GetTimeFormat = function () {
+      return _settings['timeFormat'];
+   };
+
+   // deprecated
+   SPUtility.SetTimeFormat = function (format) {
+      SPUtility.Setup({ 'timeFormat': format });
+   };
+
+   // deprecated
+   SPUtility.GetDateSeparator = function () {
+      return _settings['dateSeparator'];
+   };
+
+   // deprecated
+   SPUtility.SetDateSeparator = function (separator) {
+      SPUtility.Setup({ 'dateSeparator': separator });
+   };
+
+   // deprecated
+   SPUtility.GetDecimalSeparator = function () {
+      return _settings['decimalSeparator'];
+   };
+
+   // deprecated
+   SPUtility.SetDecimalSeparator = function (separator) {
+      SPUtility.Setup({ 'decimalSeparator': separator });
+   };
+
+   // deprecated
+   SPUtility.GetThousandsSeparator = function () {
+      return _settings['thousandsSeparator'];
+   };
+
+   // deprecated
+   SPUtility.SetThousandsSeparator = function (separator) {
+      SPUtility.Setup({ 'thousandsSeparator': separator });
+   };
 
    return SPUtility;
 }(jQuery));
