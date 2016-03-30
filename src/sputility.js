@@ -1140,17 +1140,16 @@ var SPUtility = (function ($) {
       return !!this.Checkbox.checked;
    };
 
-   //added localization. now i can get value in local language.
-   SPBooleanField.prototype.GetValueString = function (stringYes, stringNo) {
-      if (isString(stringYes) && isString(stringNo)) {
-         return this.GetValue() ? stringYes : stringNo;
-      }
+   // Get the Yes/No field's value as a string
+   // By default this returns Yes when True and No when False
+   // Customize this behavior by altering the stringYes and stringNo settings
+   SPBooleanField.prototype.GetValueString = function () {
       return this.GetValue() ? _settings['stringYes'] : _settings['stringNo'];
    };
 
    SPBooleanField.prototype.SetValue = function (value) {
       if (isString(value)) {
-         if ("YES" === value.toUpperCase()) {
+         if (_settings['stringYes'].toUpperCase() === value.toUpperCase()) {
             value = true;
          } else {
             value = false;
@@ -1169,8 +1168,8 @@ var SPUtility = (function ($) {
 
    // overriding the default MakeReadOnly function
    // translate true/false to Yes/No
-   SPBooleanField.prototype.MakeReadOnly = function (stringYes, stringNo) {
-      return this._makeReadOnly(this.GetValueString(stringYes, stringNo));
+   SPBooleanField.prototype.MakeReadOnly = function () {
+      return this._makeReadOnly(this.GetValueString());
    };
 
    /*

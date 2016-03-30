@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
    Version: 0.13.0
-   Built: 2016-03-29
+   Built: 2016-03-30
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2016
@@ -1149,14 +1149,16 @@ var SPUtility = (function ($) {
       return !!this.Checkbox.checked;
    };
 
-   //added localization. now i can get value in local language.
+   // Get the Yes/No field's value as a string
+   // By default this returns Yes when True and No when False
+   // Customize this behavior by altering the stringYes and stringNo settings
    SPBooleanField.prototype.GetValueString = function () {
       return this.GetValue() ? _settings['stringYes'] : _settings['stringNo'];
    };
 
    SPBooleanField.prototype.SetValue = function (value) {
       if (isString(value)) {
-         if ("YES" === value.toUpperCase()) {
+         if (_settings['stringYes'].toUpperCase() === value.toUpperCase()) {
             value = true;
          } else {
             value = false;
@@ -1644,8 +1646,6 @@ var SPUtility = (function ($) {
       $.each(this.GetValue(), function (key, val) {
          if (val.Key !== null) { tmpArray.push(val.Key); }
       });
-
-
 
       function successCallback(parms) {
          var o = { 'users': parms.users, 'SPUserField': parms.SPUserField };
