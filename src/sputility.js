@@ -1593,11 +1593,7 @@ var SPUtility = (function ($) {
       this.ClientPeoplePicker = window.SPClientPeoplePicker.SPClientPeoplePickerDict[$(pickerDiv).attr('id')];
       this.EditorInput = $(this.Controls).find("[id$='_EditorInput']")[0];
 
-      var that = this;
-      this.ClientPeoplePicker.OnUserResolvedClientScript = function() {
-        that._updateReadOnlyLabel(that._getValue());
-      };
-
+      //this.ClientPeoplePicker.OnUserResolvedClientScript = function () {...}
       //this.HiddenInput = $(this.Controls).find("[id$='_HiddenInput']")[0];
       //this.AutoFillDiv = $(this.Controls).find("[id$='_AutoFillDiv']")[0];
       //this.ResolvedList = $(this.Controls).find("[id$='_ResolvedList']")[0];
@@ -1611,35 +1607,23 @@ var SPUtility = (function ($) {
       return this.ClientPeoplePicker.GetAllUserInfo();
    };
 
-   SPUserField2013.prototype._getValue = function() {
-      return $.map(this.GetValue(), function (val) {
-          return val.DisplayText;
-      }).join(", ");
-   };
+   // Iterates over all entities currently in the field, gets the user ID
+   // for each one, and builds an HTML link
+   // callback should be a function which takes one parameter for the returned HTML
+   SPUserField2013.prototype._getValueLinks = function (callback) {
+      // TODO: doesn't support sharepoint groups
 
-   SPUserField2013.prototype.SetValue = function (value) {
-      if (isUndefined(value) || value === null || value === '') {
-         // delete the user if passed null/empty
-         this.ClientPeoplePicker.DeleteProcessedUser();
-      } else {
-         $(this.EditorInput).val(value);
-         this.ClientPeoplePicker.AddUnresolvedUserFromEditor(true);
-      }
-      return this;
-   };
-
-   // get the display text of each resolved item and display in comma
-   // delimited list
-   // updated: it will show as hyperlinks but not a plain text
-   SPUserField2013.prototype.MakeReadOnly = function () {
       var tmpArray = [], self = this;
 
-      $.each(this.GetValue(), function (key, val) {
-         if (val.Key !== null) { tmpArray.push(val.Key); }
+      // build an array of all the entities currently resolved
+      $.each(self.GetValue(), function (key, val) {
+         if (val.Key !== null) {
+            tmpArray.push(val.Key);
+         }
       });
 
       function successCallback(parms) {
-         var o = { 'users': parms.users, 'SPUserField': parms.SPUserField };
+         var o = { 'users': parms.users };
          parms.d.resolve(o);
       }
 
@@ -1659,7 +1643,7 @@ var SPUtility = (function ($) {
             users.push(user);
          }
 
-         var parms = { d: d, loginNames: loginNames, users: users, SPUserField: field };
+         var parms = { d: d, loginNames: loginNames, users: users };
          context.executeQueryAsync(
             successCallback.bind(field, parms),
             failCallback.bind(field, parms));
@@ -1676,7 +1660,8 @@ var SPUtility = (function ($) {
             if (htmlText !== "") { htmlText += "; "; }
                htmlText += '<a href="/_layouts/15/userdisp.aspx?ID=' + user.get_id().toString() + '&amp;RootFolder=*">' + user.get_title() + '</a>';
          }
-         return result.SPUserField._makeReadOnly(htmlText);
+         // finally! send the result to our callback
+         return callback(htmlText);
       });
 
       x.fail(function (result) {
@@ -1684,6 +1669,48 @@ var SPUtility = (function ($) {
          var error = result;
          console.log(error);
       });
+   };
+
+   // should be called in SetValue to update the read-only label
+   // Customized for SPUserField2013 because updating the label is async
+   SPUserField2013.prototype._updateReadOnlyLabel = function () {
+      var self = this;
+      if (self.ReadOnlyLabel) {
+         // after getting links, update the label inside callback
+         this._getValueLinks(function (html) {
+            self.ReadOnlyLabel.html(html);
+         });
+      }
+   };
+
+   // Get the field's value as a comma delimited string
+   SPUserField2013.prototype.GetValueString = function() {
+      return $.map(this.GetValue(), function (val) {
+          return val.DisplayText;
+      }).join(", ");
+   };
+
+   SPUserField2013.prototype.SetValue = function (value) {
+      if (isUndefined(value) || value === null || value === '') {
+         // delete the user if passed null/empty
+         this.ClientPeoplePicker.DeleteProcessedUser();
+      } else {
+         $(this.EditorInput).val(value);
+         this.ClientPeoplePicker.AddUnresolvedUserFromEditor(true);
+      }
+      // schedule a callback to update the read-only label if necessary
+      this._updateReadOnlyLabel();
+      return this;
+   };
+
+   // Make the field read only and display a link to each person or group
+   SPUserField2013.prototype.MakeReadOnly = function () {
+      // make the field read-only
+      // field will display empty until callback resolves in _updateReadOnlyLabel
+      this._makeReadOnly('');
+      // schedule callback to update read only label
+      this._updateReadOnlyLabel();
+      return this;
    };
 
    /*
