@@ -1,5 +1,19 @@
 /* Tests specific to SharePoint lists */
 (function($) {
+   module("SPNumberField");
+
+   test('Empty numeric field displays as NaN #28', function() {
+      expect(3);
+      var field = SPUtility.GetSPField('NumberEmpty');
+      // field has no value set
+      field.MakeReadOnly();
+      strictEqual(field.ReadOnlyLabel.text(), "", "Read only label should be empty string.");
+      field.SetValue(42);
+      strictEqual(field.ReadOnlyLabel.text(), "42", "Read only label should be 42.");
+      field.SetValue();
+      strictEqual(field.ReadOnlyLabel.text(), "", "Read only label should be empty string.");
+   });
+
    module("ContentTypeChoice", {
       setup: function() {
          this.field = SPUtility.GetSPField('Content Type');

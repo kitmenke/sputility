@@ -465,6 +465,29 @@ var SPUtility = (function ($) {
       return convertStringToNumber($(this.Textbox).val());
    };
 
+   // override SetValue function to prevent NaN
+   SPNumberField.prototype.SetValue = function (value) {
+      $(this.Textbox).val(value);
+      this._updateReadOnlyLabel(this.GetValueString());
+      return this;
+   };
+
+   SPNumberField.prototype.GetValueString = function () {
+      var val = this.GetValue();
+      if (isNaN(val)) {
+         val = "";
+      } else {
+         val = val.toString();
+      }
+      return val;
+   };
+
+   // Override the default MakeReadOnly function to allow displaying
+   // empty number fields as empty string instead of NaN
+   SPNumberField.prototype.MakeReadOnly = function () {
+      return this._makeReadOnly(this.GetValueString());
+   };
+
 
    /*
     *   SPCurrencyField class
