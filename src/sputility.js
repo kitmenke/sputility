@@ -975,7 +975,7 @@ var SPUtility = (function ($) {
       if (date === '' && time === '') {
          return '';
       } else if (date === '') {
-         return time;
+         return '';
       } else if (time === '') {
          return date;
       } else {
@@ -1045,7 +1045,7 @@ var SPUtility = (function ($) {
    };
 
    SPDateTimeField.prototype.SetValue = function (year, month, day, hour, minute) {
-      if (year === null || year === "") {
+      if (isUndefined(year) || year === null || year === "") {
          this.SetDate(null);
          if (!this.IsDateOnly) {
             this.SetTime(null);

@@ -402,7 +402,7 @@
    test("SetValue() takes null or empty string to clear the field", function() {
       expect(1);
 
-      var expected = "12:00 AM";
+      var expected = ""; // should be empty string instead of just the time
       this.field.SetValue(null);
 
       var actual = this.field.GetValue().toString();

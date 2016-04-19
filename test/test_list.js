@@ -1,8 +1,22 @@
 /* Tests specific to SharePoint lists */
 (function($) {
+   module("SPFieldDateTime (date and time)");
+
+   test('Empty date field displays time in read only label #27', function() {
+      expect(3);
+      var field = SPUtility.GetSPField('Date and Time2');
+      // field has no value set
+      field.MakeReadOnly();
+      strictEqual(field.ReadOnlyLabel.text(), "", "Read only label should be empty string.");
+      field.SetValue(2013, 8, 15, '8 AM', '30');
+      strictEqual(field.ReadOnlyLabel.text(), "8/15/2013 8:30 AM", "Read only label should be 8/15/2013 8:30 AM.");
+      field.SetValue();
+      strictEqual(field.ReadOnlyLabel.text(), "", "Read only label should be empty string.");
+   });
+
    module("SPNumberField");
 
-   test('Empty numeric field displays as NaN #28', function() {
+   test('Empty numeric field displays as NaN in read only label #28', function() {
       expect(3);
       var field = SPUtility.GetSPField('NumberEmpty');
       // field has no value set
