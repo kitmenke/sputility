@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
    Version: 0.14.0
-   Built: 2016-03-30
+   Built: 2016-04-18
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2016
@@ -472,6 +472,29 @@ var SPUtility = (function ($) {
     */
    SPNumberField.prototype.GetValue = function () {
       return convertStringToNumber($(this.Textbox).val());
+   };
+
+   // override SetValue function to prevent NaN
+   SPNumberField.prototype.SetValue = function (value) {
+      $(this.Textbox).val(value);
+      this._updateReadOnlyLabel(this.GetValueString());
+      return this;
+   };
+
+   SPNumberField.prototype.GetValueString = function () {
+      var val = this.GetValue();
+      if (isNaN(val)) {
+         val = "";
+      } else {
+         val = val.toString();
+      }
+      return val;
+   };
+
+   // Override the default MakeReadOnly function to allow displaying
+   // empty number fields as empty string instead of NaN
+   SPNumberField.prototype.MakeReadOnly = function () {
+      return this._makeReadOnly(this.GetValueString());
    };
 
 
@@ -961,7 +984,7 @@ var SPUtility = (function ($) {
       if (date === '' && time === '') {
          return '';
       } else if (date === '') {
-         return time;
+         return '';
       } else if (time === '') {
          return date;
       } else {
@@ -1031,7 +1054,7 @@ var SPUtility = (function ($) {
    };
 
    SPDateTimeField.prototype.SetValue = function (year, month, day, hour, minute) {
-      if (year === null || year === "") {
+      if (isUndefined(year) || year === null || year === "") {
          this.SetDate(null);
          if (!this.IsDateOnly) {
             this.SetTime(null);
