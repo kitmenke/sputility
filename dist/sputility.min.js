@@ -1,7 +1,7 @@
 /*
    Name: SPUtility.js
-   Version: 0.14.0
-   Built: 2016-04-18
+   Version: 0.14.1
+   Built: 2016-04-19
    Author: Kit Menke
    https://sputility.codeplex.com/
    Copyright (c) 2016
