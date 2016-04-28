@@ -477,7 +477,7 @@ var SPUtility = (function ($) {
    // override SetValue function to prevent NaN
    SPNumberField.prototype.SetValue = function (value) {
       $(this.Textbox).val(value);
-      this._updateReadOnlyLabel(this.GetValueString());
+      this._updateReadOnlyLabel(this.GetValueString().replace(/\B(?=(\d{3})+(?!\d))/g, Z.thousandsSeparator));
       return this;
    };
 
