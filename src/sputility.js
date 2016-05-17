@@ -1,3 +1,5 @@
+/* globals define */
+
 // Object.create shim for class inheritance
 if (!Object.create) {
    Object.create = function (o) {
@@ -10,9 +12,34 @@ if (!Object.create) {
    };
 }
 
-// Export SPUtility global variable
-var SPUtility = (function ($) {
+(function(factory, global) {
+	if (typeof exports === "object") { // CommonJS e.g. Browserify
+		module.exports = function($) { // If no global jQuery, take jQuery passed as parameter: require("jsviews")(jQuery)
+			$ = $ || global.jQuery;
+		
+			return factory(global, $);
+		};
+	} else if (typeof define === "function" && define.amd) { // AMD script loader, e.g. RequireJS
+		define(["jquery"], function($) {
+			return factory(global, $);
+		}); // Require jQuery
+	} else { // Browser using plain <script> tag
+		factory(global, false);
+	}
+} (
+
+// factory 
+function (global, $) {
    "use strict";
+   
+   var setGlobals = $ === false; // Only set globals if script block in browser (not AMD and not CommonJS)
+   
+   $ = $ || global.jQuery; // $ is jQuery passed in by CommonJS loader (Browserify), or global jQuery.
+
+   if (!$ || !$.fn) {
+    // jQuery is not loaded.
+      throw "JsViews requires jQuery"; // We require jQuery
+   }
 
    /*
     *   SPUtility Private Variables
@@ -2032,6 +2059,10 @@ var SPUtility = (function ($) {
    SPUtility.SetThousandsSeparator = function (separator) {
       SPUtility.Setup({ 'thousandsSeparator': separator });
    };
+   
+   if (setGlobals) {
+     global.SPUtility = SPUtility;
+   }
 
    return SPUtility;
-}(jQuery));
+}, window));
