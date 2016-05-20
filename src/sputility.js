@@ -477,7 +477,7 @@ var SPUtility = (function ($) {
       if (isNaN(val)) {
          val = "";
       } else {
-         val = val.toString();
+         val = formatMoney(val, 0).toString();
       }
       return val;
    };
