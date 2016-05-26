@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SPUtility.js Test Suite</title>
+  <!-- Load local jQuery. This can be overridden with a ?jquery=___ param. -->
+  <script src="../libs/jquery-loader.js"></script>
+  <!-- Load local QUnit. -->
+  <link rel="stylesheet" href="../libs/qunit/qunit.css" media="screen">
+  <script src="../libs/qunit/qunit.js"></script>
+  <!-- Load local lib and tests. -->
+  <script src="../src/sputility.js"></script>
+  <script src="test_sputility.js"></script>
+  <script src="test_list.js"></script>
+  <script src="test_field_properties.js"></script>
+  <!-- Removing access to jQuery and $. But it'll still be available as _$, if
+       you REALLY want to mess around with jQuery in the console. REMEMBER WE
+       ARE TESTING A PLUGIN HERE, THIS HELPS ENSURE BEST PRACTICES. REALLY. -->
+  <script>window._$ = jQuery.noConflict(true);</script>
+</head>
+<body>
+
+<div id="qunit"></div>
+
+<!-- start of sharepoint markup -->
+<table class="ms-formtable" style="margin-top: 8px;" border="0" cellpadding="0" cellspacing="0" width="100%">
+
+    <tr>
+    <td valign="top" nowrap="true" class="ms-formlabel"><h3 class="ms-standardheader">Content Type</h3></td>
+    <td valign="top" class="ms-formbody"><select id="sputility-contenttype" name="ctl00$ctl33$g_000d3d05_c5e7_4381_9ae9_f6428907a711$ctl00$ctl03$ctl00$ContentTypeChoice">
+          <option value="0x0100DBD234B62463314F8DE3C4AA2635CD51">Item</option>
+          <option value="0x0102004F51EFDEA49C49668EF9C6744C8CF87D00107B364268BC6A4BB2FC37572DC79248" selected="selected">Reservations</option>
+          <option value="0x0102007DBDC1392EAF4EBBBF99E41D8922B26400CD8E26183EE126418AF01A99F24C0325">Schedule</option>
+          <option value="0x01020072BB2A38F0DB49C3A96CF4FA8552995600C75E64B08FECF44588B8BCA97362240C">Schedule and Reservations</option>
+        </select><br>
+    <span class="ms-metadata" id="ctl00_ctl33_g_000d3d05_c5e7_4381_9ae9_f6428907a711_ctl00_ctl03_ctl00_ContentTypeDescription">Reserve resource.</span></td>
+    </tr>
+
+
+      <tr>
+        <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+          <nobr>Title<span class="ms-formvalidation" title="This is a required field." > *</span></nobr>
+        </h3></td>
+        <td valign="top" class="ms-formbody">
+            <span dir="none">
+            <input name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl00$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" type="text" maxlength="255" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl00_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Title" class="ms-long ms-spellcheck-true" /><br />
+          </span>
+        </td>
+      </tr>
+
+        <tr>
+            <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+            <nobr>Number</nobr>
+          </h3></td>
+            <td valign="top" class="ms-formbody">
+              <span dir="none">
+            <input name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" type="text" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Number" class="ms-input" size="11" style="ime-mode:inactive;" /><br />
+          </span>
+
+
+            </td>
+          </tr>
+
+          <tr>
+              <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+              <nobr>NumberEmpty</nobr>
+            </h3></td>
+              <td valign="top" class="ms-formbody">
+                <span dir="none">
+              <input name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" type="text" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Number" class="ms-input" size="11" style="ime-mode:inactive;" /><br />
+            </span>
+
+
+              </td>
+            </tr>
+
+            <tr>
+            <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+            <nobr>Currency</nobr>
+          </h3></td>
+            <td valign="top" class="ms-formbody">
+
+              <span dir="none">
+            <input name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl09$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" type="text" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl09_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Currency" class="ms-input" size="11" style="ime-mode:inactive;" /><br />
+          </span>
+
+
+            </td>
+          </tr>
+          <tr>
+            <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+              <nobr>Dropdown Choice</nobr>
+            </h3></td>
+            <td valign="top" class="ms-formbody">
+             <span dir="none"><select name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl04$ctl00$ctl00$ctl04$ctl00$DropDownChoice" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl04_ctl00_ctl00_ctl04_ctl00_DropDownChoice" title="Dropdown Choice" class="ms-RadioText">
+              <option selected="selected" value="Alpha">Alpha</option>
+              <option value="Bravo">Bravo</option>
+              <option value="Charlie">Charlie</option>
+              <option value="Delta">Delta</option>
+              <option value="Echo">Echo</option>
+
+            </select><br/></span>
+
+
+          </td>
+        </tr>
+
+        <tr>
+          <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+            <nobr>Dropdown Choice with Fill-in</nobr>
+          </h3></td>
+          <td valign="top" class="ms-formbody">
+             <span dir="none"><table cellpadding="0" cellspacing="1">
+              <tr>
+                <td><span title="Dropdown Choice with Fill-in: Choose Option"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_DropDownButton" type="radio" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl05$ctl00$ctl00$ctl04$ctl00$FillInButton" value="DropDownButton" checked="checked" /></span><label class="ms-hidden" for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_DropDownButton">Dropdown Choice with Fill-in: Choose Option</label><select name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl05$ctl00$ctl00$ctl04$ctl00$DropDownChoice" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_DropDownChoice" title="Dropdown Choice with Fill-in: Choice Drop Down" class="ms-RadioText">
+                  <option selected="selected" value="Alpha">Alpha</option>
+                  <option value="Bravo">Bravo</option>
+                  <option value="Charlie">Charlie</option>
+                  <option value="Delta">Delta</option>
+                  <option value="Echo">Echo</option>
+
+                </select></td>
+              </tr><tr>
+              <td><span class="ms-RadioText" title="Dropdown Choice with Fill-in: Specify your own value:"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_FillInButton" type="radio" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl05$ctl00$ctl00$ctl04$ctl00$FillInButton" value="FillInButton" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_FillInButton">Specify your own value:</label></span></td>
+            </tr><tr>
+            <td>&#160;&#160;&#160;<input name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl05$ctl00$ctl00$ctl04$ctl00$ctl01" type="text" maxlength="255" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl05_ctl00_ctl00_ctl04_ctl00_ctl01" tabindex="-1" title="Dropdown Choice with Fill-in : Specify your own value:" /></td>
+          </tr>
+        </table></span>
+
+
+      </td>
+    </tr>
+
+    <tr>
+      <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+        <nobr>Radio Buttons</nobr>
+      </h3></td>
+      <td valign="top" class="ms-formbody">
+             <span dir="none"><table cellpadding="0" cellspacing="1">
+              <tr>
+                <td><span class="ms-RadioText" title="Alpha"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl00" type="radio" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl00" checked="checked" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl00">Alpha</label></span></td>
+              </tr><tr>
+              <td><span class="ms-RadioText" title="Bravo"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl01" type="radio" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl01" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl01">Bravo</label></span></td>
+            </tr><tr>
+            <td><span class="ms-RadioText" title="Charlie"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl02" type="radio" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl02" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl02">Charlie</label></span></td>
+          </tr><tr>
+          <td><span class="ms-RadioText" title="Delta"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl03" type="radio" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl03" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl03">Delta</label></span></td>
+        </tr><tr>
+        <td><span class="ms-RadioText" title="Echo"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl04" type="radio" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl06$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl04" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl06_ctl00_ctl00_ctl04_ctl00_ctl04">Echo</label></span></td>
+      </tr>
+    </table></span>
+
+
+  </td>
+</tr>
+
+<TR>
+   <TD nowrap="true" valign="top" width="190px" class="ms-formlabel">
+      <H3 class="ms-standardheader">
+         <nobr>Radio Buttons with Fill-in</nobr>
+      </H3>
+   </TD>
+   <TD valign="top" class="ms-formbody" width="400px">
+      <span dir="none">
+         <table cellpadding="0" cellspacing="1">
+            <tr>
+               <td><span class="ms-RadioText" title="Alpha"><input id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl00" type="radio" name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl19$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl00" checked="checked" /><label for="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl00" >Alpha</label></span></td>
+            </tr><tr>
+               <td><span class="ms-RadioText" title="Bravo"><input id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl01" type="radio" name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl19$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl01" /><label for="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl01">Bravo</label></span></td>
+            </tr><tr>
+               <td><span class="ms-RadioText" title="Charlie"><input id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl02" type="radio" name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl19$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl02" /><label for="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl02">Charlie</label></span></td>
+            </tr><tr>
+               <td><span class="ms-RadioText" title="Specify your own value:"><input id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl03" type="radio" name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl19$ctl00$ctl00$ctl04$ctl00$RadioButtons" value="ctl03" /><label for="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl03">Specify your own value:</label></span></td>
+            </tr><tr>
+               <td>&nbsp;&nbsp;&nbsp;<input name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl19$ctl00$ctl00$ctl04$ctl00$ctl04" type="text" maxlength="255" id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl19_ctl00_ctl00_ctl04_ctl00_ctl04" tabindex="-1" title="Fill-in Choice Field : Specify your own value:" /></td>
+            </tr>
+         </table>
+      </span>
+   </TD>
+</TR>
+
+<tr>
+  <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+    <nobr>Checkboxes</nobr>
+  </h3></td>
+  <td valign="top" class="ms-formbody">
+
+             <span dir="none"><table cellpadding="0" cellspacing="1">
+              <tr>
+                <td><span class="ms-RadioText" title="Alpha"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl00" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl07$ctl00$ctl00$ctl04$ctl00$ctl00" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl00">Alpha</label></span></td>
+              </tr><tr>
+              <td><span class="ms-RadioText" title="Bravo"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl01" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl07$ctl00$ctl00$ctl04$ctl00$ctl01" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl01">Bravo</label></span></td>
+            </tr><tr>
+            <td><span class="ms-RadioText" title="Charlie"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl02" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl07$ctl00$ctl00$ctl04$ctl00$ctl02" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl02">Charlie</label></span></td>
+          </tr><tr>
+          <td><span class="ms-RadioText" title="Delta"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl03" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl07$ctl00$ctl00$ctl04$ctl00$ctl03" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl03">Delta</label></span></td>
+        </tr><tr>
+        <td><span class="ms-RadioText" title="Echo"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl04" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl07$ctl00$ctl00$ctl04$ctl00$ctl04" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl07_ctl00_ctl00_ctl04_ctl00_ctl04">Echo</label></span></td>
+      </tr>
+    </table></span>
+
+
+  </td>
+</tr>
+
+<tr>
+    <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+    <nobr>Checkboxes with Fill-in</nobr>
+  </h3></td>
+    <td valign="top" class="ms-formbody">
+      <span dir="none"><table cellpadding="0" cellspacing="1">
+          <tr>
+            <td><span class="ms-RadioText" title="Alpha"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl00" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl00">Alpha</label></span></td>
+          </tr><tr>
+            <td><span class="ms-RadioText" title="Bravo"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl01" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl01" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl01">Bravo</label></span></td>
+          </tr><tr>
+            <td><span class="ms-RadioText" title="Charlie"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl02" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl02" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl02">Charlie</label></span></td>
+          </tr><tr>
+            <td><span class="ms-RadioText" title="Delta"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl03" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl03" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl03">Delta</label></span></td>
+          </tr><tr>
+            <td><span class="ms-RadioText" title="Echo"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl04" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl04" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl04">Echo</label></span></td>
+          </tr><tr>
+            <td><span onclick="ChangeFillinTextTabindex('ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl06','ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05')" class="ms-RadioText" title="Specify your own value:"><input id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05" type="checkbox" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl05" /><label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05">Specify your own value:</label></span></td>
+          </tr><tr>
+            <td>&#160;&#160;&#160;<input onclick="SetChoiceOption('ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05')" onfocus="SetChoiceOption('ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl05')" name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl08$ctl00$ctl00$ctl04$ctl00$ctl06" type="text" maxlength="255" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl08_ctl00_ctl00_ctl04_ctl00_ctl06" tabindex="-1" title="Checkboxes with Fill-in : Specify your own value:" /></td>
+          </tr>
+        </table></span>
+
+
+    </td>
+  </tr>
+
+  <tr>
+    <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+    <nobr>Date Only</nobr>
+  </h3></td>
+    <td valign="top" class="ms-formbody">
+      <span dir="none">
+    <table border="0" cellpadding="0" cellspacing="0"><tr>
+        <td class="ms-dtinput" >
+        <label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" style="display:none">Date Only Date</label>
+        <input name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl11$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDate" type="text" maxlength="45" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" title="Date Only" class="ms-input" AutoPostBack="0" /></td>
+        <td class="ms-dtinput" >
+        <a href="#" onclick='return false;' ><img id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerImage" src="img/calendar.gif" border="0" alt="Select a date from the calendar."></img></a></td>
+        <td>
+        <iframe id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerFrame" src="img/blank.gif" frameborder="0" scrolling="no" style="DISPLAY:none;POSITION:absolute; width:200px; Z-INDEX:101;" title="Select a date from the calendar."></iframe></td>
+        </tr></table>
+
+  </span>
+
+
+    </td>
+  </tr>
+
+    <tr>
+    <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+    <nobr>Date and Time</nobr>
+  </h3></td>
+    <td valign="top" class="ms-formbody">
+      <span dir="none">
+    <table border="0" cellpadding="0" cellspacing="0"><tr>
+        <td class="ms-dtinput" >
+        <label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" style="display:none">Date and Time Date</label>
+        <input name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDate" type="text" maxlength="45" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" title="Date and Time" class="ms-input" AutoPostBack="0" /></td>
+        <td class="ms-dtinput" >
+        <a href="#" onclick='return false;' ><img id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerImage" src="img/calendar.gif" border="0" alt="Select a date from the calendar."></img></a></td>
+        <td>
+        <iframe id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerFrame" src="img/blank.gif" frameborder="0" scrolling="no" style="DISPLAY:none;POSITION:absolute; width:200px; Z-INDEX:101;" title="Select a date from the calendar."></iframe></td>
+        <td class="ms-dttimeinput" nowrap="nowrap">
+        <label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateHours" style="display:none">Date and Time Hours</label>
+        <select name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDateHours" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateHours" dir="ltr">
+          <option selected="selected" value="12 AM">12 AM</option>
+          <option value="1 AM">1 AM</option>
+          <option value="2 AM">2 AM</option>
+          <option value="3 AM">3 AM</option>
+          <option value="4 AM">4 AM</option>
+          <option value="5 AM">5 AM</option>
+          <option value="6 AM">6 AM</option>
+          <option value="7 AM">7 AM</option>
+          <option value="8 AM">8 AM</option>
+          <option value="9 AM">9 AM</option>
+          <option value="10 AM">10 AM</option>
+          <option value="11 AM">11 AM</option>
+          <option value="12 PM">12 PM</option>
+          <option value="1 PM">1 PM</option>
+          <option value="2 PM">2 PM</option>
+          <option value="3 PM">3 PM</option>
+          <option value="4 PM">4 PM</option>
+          <option value="5 PM">5 PM</option>
+          <option value="6 PM">6 PM</option>
+          <option value="7 PM">7 PM</option>
+          <option value="8 PM">8 PM</option>
+          <option value="9 PM">9 PM</option>
+          <option value="10 PM">10 PM</option>
+          <option value="11 PM">11 PM</option>
+
+        </select>&nbsp;
+        <label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateMinutes" style="display:none">Date and Time Minutes</label>
+        <select name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDateMinutes" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateMinutes" dir="ltr">
+          <option selected="selected" value="00">00</option>
+          <option value="05">05</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+          <option value="25">25</option>
+          <option value="30">30</option>
+          <option value="35">35</option>
+          <option value="40">40</option>
+          <option value="45">45</option>
+          <option value="50">50</option>
+          <option value="55">55</option>
+
+        </select></td>
+        </tr></table>
+
+  </span>
+
+
+    </td>
+  </tr>
+
+  <tr>
+  <td nowrap="true" valign="top" width="190px" class="ms-formlabel"><h3 class="ms-standardheader">
+  <nobr>Date and Time</nobr>
+  </h3></td>
+  <td valign="top" class="ms-formbody">
+    <span dir="none">
+  <table border="0" cellpadding="0" cellspacing="0"><tr>
+      <td class="ms-dtinput" >
+      <label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" style="display:none">Date and Time Date</label>
+      <input name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDate" type="text" maxlength="45" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDate" title="Date and Time" class="ms-input" AutoPostBack="0" /></td>
+      <td class="ms-dtinput" >
+      <a href="#" onclick='return false;' ><img id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerImage" src="img/calendar.gif" border="0" alt="Select a date from the calendar."></img></a></td>
+      <td>
+      <iframe id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateDatePickerFrame" src="img/blank.gif" frameborder="0" scrolling="no" style="DISPLAY:none;POSITION:absolute; width:200px; Z-INDEX:101;" title="Select a date from the calendar."></iframe></td>
+      <td class="ms-dttimeinput" nowrap="nowrap">
+      <label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateHours" style="display:none">Date and Time Hours</label>
+      <select name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDateHours" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateHours" dir="ltr">
+        <option selected="selected" value="12 AM">12 AM</option>
+        <option value="1 AM">1 AM</option>
+        <option value="2 AM">2 AM</option>
+        <option value="3 AM">3 AM</option>
+        <option value="4 AM">4 AM</option>
+        <option value="5 AM">5 AM</option>
+        <option value="6 AM">6 AM</option>
+        <option value="7 AM">7 AM</option>
+        <option value="8 AM">8 AM</option>
+        <option value="9 AM">9 AM</option>
+        <option value="10 AM">10 AM</option>
+        <option value="11 AM">11 AM</option>
+        <option value="12 PM">12 PM</option>
+        <option value="1 PM">1 PM</option>
+        <option value="2 PM">2 PM</option>
+        <option value="3 PM">3 PM</option>
+        <option value="4 PM">4 PM</option>
+        <option value="5 PM">5 PM</option>
+        <option value="6 PM">6 PM</option>
+        <option value="7 PM">7 PM</option>
+        <option value="8 PM">8 PM</option>
+        <option value="9 PM">9 PM</option>
+        <option value="10 PM">10 PM</option>
+        <option value="11 PM">11 PM</option>
+
+      </select>&nbsp;
+      <label for="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateMinutes" style="display:none">Date and Time Minutes</label>
+      <select name="ctl00$m$g_b2a76005_5d3d_4591_9f83_b32d5af4e808$ctl00$ctl05$ctl12$ctl00$ctl00$ctl04$ctl00$ctl00$DateTimeField$DateTimeFieldDateMinutes" id="ctl00_m_g_b2a76005_5d3d_4591_9f83_b32d5af4e808_ctl00_ctl05_ctl12_ctl00_ctl00_ctl04_ctl00_ctl00_DateTimeField_DateTimeFieldDateMinutes" dir="ltr">
+        <option selected="selected" value="00">00</option>
+        <option value="05">05</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="25">25</option>
+        <option value="30">30</option>
+        <option value="35">35</option>
+        <option value="40">40</option>
+        <option value="45">45</option>
+        <option value="50">50</option>
+        <option value="55">55</option>
+
+      </select></td>
+      </tr></table>
+
+  </span>
+
+
+  </td>
+  </tr>
+
+
+  <tr>
+     <td nowrap="true" valign="top" width="113px" class="ms-formlabel">
+        <h3 class="ms-standardheader">
+           <nobr>Yes/No</nobr>
+        </h3>
+     </td>
+     <td valign="top" width="350px" class="ms-formbody">
+        <span dir="none">
+           <input type="checkbox" id="Yes_x002f_No_8a471483-da54-48ce-82a8-34227e32a8ad_$BooleanField" title="Yes/No" checked="checked">
+           <br>
+        </span>
+     </td>
+  </tr>
+
+  <tr>
+     <td nowrap="true" valign="top" width="113px" class="ms-formlabel">
+        <h3 class="ms-standardheader">
+           <nobr>Hyperlink</nobr>
+        </h3>
+     </td>
+     <td valign="top" width="350px" class="ms-formbody">
+
+        <span dir="none">
+           <span class="ms-formdescription">Type the Web address:&nbsp;(<a id="Hyperlink_2ef372e5-47ae-4d20-89dd-5a43e5428ae6_$UrlControlId" href="javascript: void(0);" target="_self">Click here to test</a>)<br></span>
+           <input dir="ltr" type="text" value="http://" id="Hyperlink_2ef372e5-47ae-4d20-89dd-5a43e5428ae6_UrlFieldUrl" title="Hyperlink" class="ms-long" style="ime-mode : ">
+           <br>
+           <span class="ms-formdescription">Type the description:&nbsp;<br></span>
+           <input type="text" maxlength="255" id="Hyperlink_2ef372e5-47ae-4d20-89dd-5a43e5428ae6_UrlFieldDescription" title="Description" value="" class="ms-long"><br>
+        </span>
+     </td>
+  </tr>
+
+  <tr>
+     <td nowrap="true" valign="top" width="113px" class="ms-formlabel">
+        <h3 class="ms-standardheader">
+           <nobr>Small Lookup</nobr>
+        </h3>
+     </td>
+     <td valign="top" width="350px" class="ms-formbody">
+        <!-- FieldName="Small Lookup"
+            FieldInternalName="Small_x0020_Lookup"
+            FieldType="SPFieldLookup"
+        -->
+        <span dir="none">
+           <select id="Small_x0020_Lookup_fc0ce102-b10d-48f1-bdce-760fd008eead_LookupField" title="Small Lookup">
+              <option selected="selected" value="0">(None)</option>
+              <option value="1">Alpha</option>
+              <option value="2">Bravo</option>
+              <option value="3">Charlie</option>
+              <option value="4">Delta</option>
+              <option value="5">Echo</option>
+              <option value="6">Foxtrot</option>
+              <option value="7">Golf</option>
+              <option value="8">Hotel</option>
+              <option value="9">India</option>
+              <option value="10">Juliet</option>
+              <option value="11">Kilo</option>
+              <option value="12">Lima</option>
+              <option value="13">Mike</option>
+              <option value="14">November</option>
+              <option value="15">Oscar</option>
+              <option value="16">Papa</option>
+              <option value="17">Quebec</option>
+              <option value="18">Romeo</option>
+              <option value="19">Sierra</option>
+           </select>
+           <br>
+        </span>
+     </td>
+  </tr>
+
+  <TR>
+     <TD nowrap="true" valign="top" width="190px" class="ms-formlabel">
+        <H3 class="ms-standardheader">
+           <nobr>Large Lookup Field</nobr>
+        </H3>
+
+        <!-- TODO: normally this hidden input is at the top of the page near the opening body tag
+        I'm putting it here for testing only.
+        -->
+        <input type="hidden" name="SPLarge_x0020_Lookup_x0020_Field_Hiddenctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl12$ctl00$ctl00$ctl04$ctl00" id="SPLarge_x0020_Lookup_x0020_Field_Hiddenctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl12$ctl00$ctl00$ctl04$ctl00" value="0" />
+
+     </TD>
+     <TD valign="top" class="ms-formbody" width="400px">
+        <!-- FieldName="Large Lookup Field"
+            FieldInternalName="Large_x0020_Lookup_x0020_Field"
+            FieldType="SPFieldLookup"
+        -->
+        <span dir="none">
+           <span style="vertical-align:middle">
+              <input name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl12$ctl00$ctl00$ctl04$ctl00$ctl01" type="text" id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl12_ctl00_ctl00_ctl04_ctl00_ctl01" class="ms-lookuptypeintextbox" opt="_Select" title="Large Lookup Field" optHid="SPLarge_x0020_Lookup_x0020_Field_Hiddenctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl12$ctl00$ctl00$ctl04$ctl00" match="" choices="(None)|0|AAA BBB CCC|30|Alpha|1|Bravo|2|Charlie|3|Delta|4|Echo|5|Foxtrot|6|Golf|7|Hotel|8|India|9|Juliet|10|Kilo|11|Lima|12|Mike|13|November|14|Oscar|15|Papa|16|Quebec|17|Romeo|18|Sierra|19|Tango|29" />
+              <img alt="Display lookup values" src="img/blank.gif" style="border-width:0px;vertical-align:middle;" />
+           </span>
+           <br/>
+        </span>
+
+
+     </TD>
+  </TR>
+
+
+  <TR>
+     <TD nowrap="true" valign="top" width="190px" class="ms-formlabel">
+        <H3 class="ms-standardheader">
+           <nobr>Multi-line Plain Text</nobr>
+        </H3>
+     </TD>
+     <TD valign="top" class="ms-formbody" width="400px">
+        <!-- FieldName="Multi-line Plain Text"
+            FieldInternalName="Description"
+            FieldType="SPFieldNote"
+        -->
+        <span dir="none">
+           <textarea name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl01$ctl00$ctl00$ctl04$ctl00$ctl00$TextField" rows="6" cols="20" id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl01_ctl00_ctl00_ctl04_ctl00_ctl00_TextField" title="Test" class="ms-long" dir="none"></textarea>
+           <br>
+        </span>
+     </TD>
+  </TR>
+
+  <TR>
+     <TD nowrap="true" valign="top" width="190px" class="ms-formlabel">
+        <H3 class="ms-standardheader">
+           <nobr>Multi-Priority Lookup Field</nobr>
+        </H3>
+     </TD>
+     <TD valign="top" class="ms-formbody" width="400px">
+        <!-- FieldName="Multi-Priority Lookup Field"
+            FieldInternalName="Multi_x002d_Priority_x0020_Looku"
+            FieldType="SPFieldLookupMulti"
+        -->
+        <span dir="none">
+           <input id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker" name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl11$ctl00$ctl00$ctl04$ctl00$ctl00$MultiLookupPicker" type="hidden" value></input><input id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker_data" name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl11$ctl00$ctl00$ctl04$ctl00$ctl00$MultiLookupPicker$data" type="hidden" value="8|tAccount Updates|t |t |t1|tAlert|t |t |t7|tBack Office Space|t |t |t11|tBusiness Management|t |t |t5|tRental Procedures (Counter)|t |t |t10|tReporting|t |t |t6|tSelf-Service|t |t |t3|tSystem Changes (System)|t |t |t2|tSystem Outages|t |t |t4|tSystem Tips|t |t |t9|tVehicle (Fleet)|t |t "></input><input id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker_initial" name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl11$ctl00$ctl00$ctl04$ctl00$ctl00$MultiLookupPicker$initial" type="hidden" value=""></input>
+           <table class="ms-long" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                 <td class="ms-input">
+                    <div style='width:143px;height:125px;overflow:scroll'>
+                       <select name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl11$ctl00$ctl00$ctl04$ctl00$ctl00$SelectCandidate" id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_SelectCandidate" multiple="multiple" title="Multi-Priority Lookup Field possible values" onchange="GipSelectCandidateItems(ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker_m);" ondblclick="GipAddSelectedItems(ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker_m); return false" onKeyDown="GipHandleHScroll(event)">
+                       </select>
+                    </div>
+                 </td>
+                 <td style="padding-left:10px">
+                 <td align="center" valign="middle" class="ms-input">
+                    <button id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_AddButton" class="ms-buttonheightwidth" onclick="GipAddSelectedItems(ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker_m); return false"> Add &gt; </button>
+                    <br><br>
+                    <button id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_RemoveButton" class="ms-buttonheightwidth" onclick="GipRemoveSelectedItems(ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker_m); return false"> &lt; Remove </button>
+                 </td>
+                 <td style="padding-left:10px">
+                 <td class="ms-input">
+                    <div style='width:143px;height:125px;overflow:scroll'>
+                       <select name="ctl00$m$g_a94984b1_b613_4db4_8e53_e809e1fc4a0b$ctl00$ctl04$ctl11$ctl00$ctl00$ctl04$ctl00$ctl00$SelectResult" id="ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_SelectResult" multiple="multiple" title="Multi-Priority Lookup Field selected values" onchange="GipSelectResultItems(ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker_m);" ondblclick="GipRemoveSelectedItems(ctl00_m_g_a94984b1_b613_4db4_8e53_e809e1fc4a0b_ctl00_ctl04_ctl11_ctl00_ctl00_ctl04_ctl00_ctl00_MultiLookupPicker_m); return false" onKeyDown="GipHandleHScroll(event)">
+                       </select></div>
+                 </td>
+              </tr>
+           </table>
+        </span>
+        This is Multi-Priority Lookup Field&#39;s description.
+
+     </TD>
+  </TR>
+
+
+   <!-- SharePoint 2013 People Field -->
+   <tr>
+      <td nowrap="true" valign="top" width="113px" class="ms-formlabel">
+         <h3 class="ms-standardheader">
+            <nobr>Person or Group</nobr>
+         </h3>
+      </td>
+      <td valign="top" width="350px" class="ms-formbody">
+         <!-- FieldName="Person or Group"
+             FieldInternalName="Person_x0020_or_x0020_Group"
+             FieldType="SPFieldUser"
+         -->
+         <div dir="none">
+            <div class="sp-peoplepicker-topLevel" id="Person_x0020_or_x0020_Group_5d36de97-dd3f-4476-b9cd-251339f70047_$ClientPeoplePicker" title="Person or Group" spclientpeoplepicker="true">
+               <input id="Person_x0020_or_x0020_Group_5d36de97-dd3f-4476-b9cd-251339f70047_$ClientPeoplePicker_HiddenInput" name="Person_x0020_or_x0020_Group_5d36de97-dd3f-4476-b9cd-251339f70047_$ClientPeoplePicker_HiddenInput" type="hidden">
+               <div id="Person_x0020_or_x0020_Group_5d36de97-dd3f-4476-b9cd-251339f70047_$ClientPeoplePicker_AutoFillDiv" class="sp-peoplepicker-autoFillContainer"></div>
+               <span id="Person_x0020_or_x0020_Group_5d36de97-dd3f-4476-b9cd-251339f70047_$ClientPeoplePicker_InitialHelpText" class="sp-peoplepicker-initialHelpText ms-helperText">Enter a name or email address...</span>
+               <img class="sp-peoplepicker-waitImg" id="Person_x0020_or_x0020_Group_5d36de97-dd3f-4476-b9cd-251339f70047_$ClientPeoplePicker_WaitImage" alt="This animation indicates the operation is in progress. Click to remove this animated image." src="img/blank.gif">
+               <span id="Person_x0020_or_x0020_Group_5d36de97-dd3f-4476-b9cd-251339f70047_$ClientPeoplePicker_ResolvedList" class="sp-peoplepicker-resolveList"></span>
+               <input type="text" class="sp-peoplepicker-editorInput" size="1" autocomplete="off" value="" id="Person_x0020_or_x0020_Group_5d36de97-dd3f-4476-b9cd-251339f70047_$ClientPeoplePicker_EditorInput" title="Person or Group" autocorrect="off" autocapitalize="off" data-sp-peoplepickereditor="true">
+            </div>
+         </div>
+      </td>
+   </tr>
+
+</table>
+<!-- end of sharepoint markup -->
+</body>
+</html>
