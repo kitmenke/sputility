@@ -179,17 +179,25 @@ var SPUtility = (function ($) {
          }
       }
 
-      if (fieldParams.type === null && $(element).find('select[name$=ContentTypeChoice]').length > 0) {
-         // small hack to support content type fields
-         fieldParams.type = 'ContentTypeChoice';
-         fieldParams.internalName = 'ContentType';
-         fieldParams.name = 'Content Type';
+      if (fieldParams.type === null) {
+        // SharePoint 2013 April CU removed the HTML comment from list forms
+        // so parsing the HTML comment above will not work and type will be null
+        var e = $(element).children('span').children().first();
+        if (e.prop('tagName') === 'INPUT' && e.attr('id').match(/TextField$/) && !isUndefined(e.attr('maxlength'))) {
+          // SPFieldText
+          fieldParams.type = 'SPFieldText';
+          fieldParams.internalName = fieldParams.name;
+        } else if ($(element).find('select[name$=ContentTypeChoice]').length > 0) {
+           // small hack to support content type fields
+           fieldParams.type = 'ContentTypeChoice';
+           fieldParams.internalName = 'ContentType';
+           fieldParams.name = 'Content Type';
+        }
       }
    }
 
    function getFieldParams(formBody) {
-      var elemLabel = null;
-      var isRequired = null;
+      var elemLabel = null, isRequired = null, fieldName = null;
 
       var formLabel = $(formBody).siblings(".ms-formlabel");
       if (formLabel !== null) {
@@ -203,15 +211,16 @@ var SPUtility = (function ($) {
 
          // If label row not null and not attachment row
          if (elemLabel !== null && elemLabel.nodeName !== 'NOBR') {
-            var fieldName = $.trim($(elemLabel).text());
+            fieldName = $.trim($(elemLabel).text());
             if (fieldName.length > 2 && fieldName.substring(fieldName.length-2) === ' *') {
                isRequired = true;
+               fieldName = fieldName.substring(0, fieldName.length-2);
             }
          }
       }
 
       var fieldParams = {
-         name: null,
+         name: fieldName,
          internalName: null,
          label: elemLabel !== null ? $(elemLabel) : null,
          labelRow: elemLabel !== null ? elemLabel.parentNode : null,
