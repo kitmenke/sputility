@@ -183,10 +183,17 @@ var SPUtility = (function ($) {
         // SharePoint 2013 April CU removed the HTML comment from list forms
         // so parsing the HTML comment above will not work and type will be null
         var e = $(element).children('span').children().first();
-        if (e.prop('tagName') === 'INPUT' && e.attr('id').match(/TextField$/) && !isUndefined(e.attr('maxlength'))) {
-          // SPFieldText
-          fieldParams.type = 'SPFieldText';
-          fieldParams.internalName = fieldParams.name;
+        if (e.prop('tagName') === 'INPUT' && e.attr('id').match(/TextField$/)) {
+          if (!isUndefined(e.attr('maxlength'))) {
+            // SPFieldText
+            fieldParams.type = 'SPFieldText';
+            fieldParams.internalName = fieldParams.name;
+          } else if (!isUndefined(e.attr('size'))) {
+            // SPFieldNumber
+            // TODO: how do we distinguish from currency?
+            fieldParams.type = 'SPFieldNumber';
+            fieldParams.internalName = fieldParams.name;
+          }
         } else if ($(element).find('select[name$=ContentTypeChoice]').length > 0) {
            // small hack to support content type fields
            fieldParams.type = 'ContentTypeChoice';
