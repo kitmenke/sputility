@@ -315,7 +315,8 @@ var SPUtility = (function ($) {
       this.IsRequired = fieldParams.isRequired;
       this.Type = fieldParams.type;
 
-      var children = $(fieldParams.controlsCell).children().not("script"); // support for binding framework e.g. jsviews
+      var children = $(fieldParams.controlsCell).children("span[dir]");
+      //.not("script"); // support for binding framework e.g. jsviews
       if (children.length > 0) {
          this.Controls = children[0];
       } else {
@@ -566,13 +567,16 @@ var SPUtility = (function ($) {
    function ContentTypeChoiceField(fieldParams) {
       SPField.call(this, fieldParams);
 
-      if (this.Controls === null) {
-         return;
+      // in the content type field, there are no controls other than the
+      // dropdown select
+      var children = $(fieldParams.controlsCell).children('select[name$=ContentTypeChoice]');
+      if (children.length === 0) {
+        // something went wrong
+        return;
       }
 
-      // in the content type field, there is no controls span
-      // so this.Controls is already set to the select element
-      this.Dropdown = this.Controls;
+      // therefore, the controls and the dropdown are the same
+      this.Controls = this.Dropdown = children[0];
    }
 
    // Inherit from SPFIeld
