@@ -315,7 +315,7 @@ var SPUtility = (function ($) {
       this.IsRequired = fieldParams.isRequired;
       this.Type = fieldParams.type;
 
-      var children = $(fieldParams.controlsCell).children("span[dir]");
+      var children = $(fieldParams.controlsCell).children("span").last();
       //.not("script"); // support for binding framework e.g. jsviews
       if (children.length > 0) {
          this.Controls = children[0];
