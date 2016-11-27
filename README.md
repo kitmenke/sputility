@@ -1,3 +1,5 @@
+# This project is no longer being maintained. The final release of SPUtility.js is 0.14.2.
+
 # SPUtility.js
 
 A JavaScript library used to make modifications to SharePoint's list forms
