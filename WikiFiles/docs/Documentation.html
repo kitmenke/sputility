@@ -1,0 +1,199 @@
+<div class="wikidoc">
+<p>For instructions on how to install SPUtility.js, see&nbsp;<a href="/wikipage?title=Installation&referringTitle=Documentation">Installation</a>.</p>
+<h1>Hello world!</h1>
+<p>Here is a complete hello world example:</p>
+<pre><code></code>&lt;script src=&quot;//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/[change to your subsite]/SiteAssets/sputility.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+// wait for the window to load
+$(document).ready(function () {
+   // EXAMPLE: Set the value of the Title field to Hello world!
+   SPUtility.GetSPField('Title').SetValue('Hello world!');
+});
+&lt;/script&gt;</pre>
+<p>You could upload this as a HTML file into your SiteAssets library alongside sputility.min.js (adjust src paths as necessary).</p>
+<h1>SPUtility.js API</h1>
+<p>For general usage information, see <a href="http://sputility.codeplex.com/wikipage?title=Common%20SPField%20functions">
+functions and properties common to all fields</a> (regardless of type)</p>
+<p>Here is a list of all the supported field tables and the various way they are displayed in SharePoint. SPUtility.js does all the hard work of figuring out to show/hide, get/set values, and make them read only!</p>
+<table border="1" width="899" cellspacing="0" cellpadding="2">
+<tbody>
+<tr>
+<td><strong>Type</strong></td>
+<td><span lang="en-us"><strong>SP Type</strong></span></td>
+<td><strong>Field Configuration</strong></td>
+<td><span lang="en-us"><strong>Supported?</strong></span></td>
+</tr>
+<tr>
+<td><a href="http://sputility.codeplex.com/wikipage?title=Common%20SPField%20functions">All Field Types Documentation</a></td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td><a href="http://sputility.codeplex.com/wikipage?title=Text fields">Single line of text</a></td>
+<td>SPFieldText</td>
+<td><span lang="en-us">&nbsp;</span></td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td rowspan="3">
+<p>Multiple lines of text</p>
+</td>
+<td rowspan="3">SPFieldNote</td>
+<td>
+<p>Plain text</p>
+</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>
+<p>Rich text (Bold, italics, text alignment)</p>
+</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>
+<p>Enhanced rich text (Rich text with pictures, tables, and hyperlinks)</p>
+</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td rowspan="6"><a href="http://sputility.codeplex.com/wikipage?title=Choice fields">Choice (menu to choose from)</a></td>
+<td rowspan="4">SPFieldChoice</td>
+<td>Drop-Down Menu</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>Drop-Down Menu with fill in value</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>Radio Buttons</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>Radio Buttons with fill in value</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td rowspan="2">SPFieldMultiChoice</td>
+<td>Checkboxes (allow multiple selections)</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>Checkboxes (allow multiple selections) with fill in value</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td><a href="http://sputility.codeplex.com/wikipage?title=Text fields">Number (1, 1.0, 100)</a></td>
+<td>SPFieldNumber</td>
+<td>&nbsp;</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td><a href="https://sputility.codeplex.com/wikipage?title=Content Type fields">Content Type</a> (as of v0.9.1)</td>
+<td>ContentTypeChoice</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td><a href="http://sputility.codeplex.com/wikipage?title=Text fields">Currency ($, &yen;, &euro;)</a></td>
+<td>SPFieldCurrency</td>
+<td>&nbsp;</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td rowspan="2"><a href="http://sputility.codeplex.com/wikipage?title=Date fields">Date and Time</a></td>
+<td rowspan="2">SPFieldDateTime</td>
+<td>Date Only</td>
+<td rowspan="2"><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>Date &amp; Time</td>
+</tr>
+<tr>
+<td rowspan="3"><a href="http://sputility.codeplex.com/wikipage?title=Lookup%20fields">Lookup (information already on this site)</a></td>
+<td rowspan="2">SPFieldLookup</td>
+<td>Allow multiple values<span lang="en-us"> = No<br>
+Less than 20 values in the lookup list, displays as a dropdown using a SELECT.</span></td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>Allow multiple values<span lang="en-us"> = No<br>
+If 20 or more values, displays as an autocomplete using a text INPUT.</span></td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>SPFieldLookupMulti</td>
+<td>Allow multiple values<span lang="en-us"> = Yes (displays as two list boxes)</span></td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td><a href="http://sputility.codeplex.com/wikipage?title=Yes%2fNo fields">Yes/No (check box)</a></td>
+<td>SPFieldBoolean</td>
+<td><span lang="en-us">N/A</span></td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td rowspan="2"><a href="http://sputility.codeplex.com/wikipage?title=People%20fields">Person or Group</a></td>
+<td>SPFieldUser</td>
+<td>Allow multiple selections:<span lang="en-us"> No</span></td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>SPFieldUserMulti</td>
+<td>Allow multiple selections:<span lang="en-us"> Yes</span></td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td><a href="http://sputility.codeplex.com/wikipage?title=URL Fields">Hyperlink or Picture</a></td>
+<td>SPFieldURL</td>
+<td>&nbsp;</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td><a href="http://sputility.codeplex.com/wikipage?title=Text fields"><span lang="en-us">Name column in a Document Library</span></a></td>
+<td>SPFieldFile</td>
+<td>&nbsp;</td>
+<td><span lang="en-us">Yes</span></td>
+</tr>
+<tr>
+<td>Rating Scale (a matrix of choices or a Likert scale)</td>
+<td>SPFieldGridChoice</td>
+<td><span lang="en-us">&nbsp;</span></td>
+<td><span lang="en-us">No</span></td>
+</tr>
+<tr>
+<td>All Day Event</td>
+<td>SPFieldAllDayEvent</td>
+<td><span lang="en-us">Calendar field. Checking the box causes a page postback and changes the Start and End Time fields to have a date portion only.</span></td>
+<td><span lang="en-us">No</span></td>
+</tr>
+<tr>
+<td>Recurrence</td>
+<td>SPFieldRecurrence</td>
+<td><span lang="en-us">Calendar field. Checking the box causes a page postback in order to display controls to setup Daily/Weekly/Monthly/Yearly recurrence.</span></td>
+<td><span lang="en-us">No</span></td>
+</tr>
+<tr>
+<td>Workspace</td>
+<td>SPFieldCrossProjectLink</td>
+<td><span lang="en-us">Similar to a yes/no field. Checking yes and then clicking Save will take you to a New Meeting Workspace page.</span></td>
+<td><span lang="en-us">No</span></td>
+</tr>
+<tr>
+<td>Notice a field that isn't listed? Let me know!</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>Tested with SharePoint 2007 and the field types above. Untested with other field types.</p>
+<p>&nbsp;</p>
+<p><strong>Useful links:</strong></p>
+<ul>
+<li><a href="http://kitmenke.com/blog/2010/11/10/autopopulate-a-sharepoint-form-from-url-with-sputility-js/">Autopopulate a form from the page's URL</a>
+</li></ul>
+</div><div class="ClearBoth"></div>

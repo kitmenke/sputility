@@ -1,0 +1,69 @@
+<div class="wikidoc">
+<h3>Final release of SPUtility.js&nbsp;(v0.14.2)</h3>
+<p>As of June 2016, version 0.14.2 is the final release of SPUtility.js and I will no longer be actively maintaining this project.&nbsp;Thank you to everyone who helped make this project a success!</p>
+<p>As&nbsp;always, the code is available on <a href="https://github.com/kitmenke/sputility">
+GitHub</a>&nbsp;so please feel free to fork&nbsp;/ modify it yourself.</p>
+<h3>Description:</h3>
+<p>SPUtility.js is a JavaScript library used to make modifications to SharePoint's list forms (NewForm.aspx and EditForm.aspx in a survey, custom list or library). It works with SharePoint 2007, 2010, and 2013 (including SharePoint Online / Office 365).</p>
+<p><span class="codeInline">SPUtility.GetSPField('Title').SetValue('Hello world!');</span><br>
+<br>
+<img title="144458" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=sputility&DownloadId=144458" alt="144458"></p>
+<p><br>
+Download the latest from GitHub!!</p>
+<ul>
+<li>Minified, compressed for production (~17kb): <a href="https://raw.github.com/kitmenke/sputility/master/dist/sputility.min.js">
+sputility.min.js</a>. </li><li>Uncompressed, for development: <a href="https://raw.github.com/kitmenke/sputility/master/dist/sputility.js">
+sputility.js</a> </li></ul>
+<p>Features:</p>
+<ul>
+<li>Set or get field values in Document Libraries, all sorts of List forms (custom lists, issues, etc), and survey
+</li><li>Make a field read only </li><li>Hide a field from view </li><li>No server side code to deploy! </li></ul>
+<p>This can be used for:</p>
+<ol>
+<li>Preventing a user from selecting a value when an item is initially created (ex: Status must be PENDING when the item is created)
+</li><li>Hiding fields from a submitter but allowing the field to be edited (or vice versa).
+</li><li><a href="http://kitmenke.com/blog/2010/11/10/autopopulate-a-sharepoint-form-from-url-with-sputility-js/">Auto-populating the form using a URL with query parameters</a>
+</li><li><a href="http://sharepoint.stackexchange.com/q/88340/2070">Auto-populate a list column with a sequential number</a>
+</li><li><a href="http://sharepoint.stackexchange.com/q/88064/2070">Hide/Show field on list form based on value from another field</a>
+</li></ol>
+<p>Keep in mind that SPUtility.js and documentation are still a work in progress... and that it won't work in every situation. It currently will NOT work with:</p>
+<ol>
+<li>External list forms </li><li>Forms that have been customized using Infopath </li><li>Certain (weird) fields, see the <a href="/documentation?referringTitle=Home">
+matrix of supported fields</a> </li><li>Sites with Minimal Download Strategy enabled </li></ol>
+<h3>Getting Started</h3>
+<p>To use the library, you can just upload SPUtility.js and dependent files into a document library and put a Content Editor Web Part with some JavaScript code on whichever page you want to modify! Detailed instructions are on the
+<a href="/wikipage?title=Installation&referringTitle=Home">Installation</a> page.</p>
+<p>See the <a href="/documentation?referringTitle=Home">Documentation</a> for the matrix of supported fields and API documentation. Browse the
+<a href="/wikipage?title=Changelog&referringTitle=Home">Changelog</a> to see the list of updates.</p>
+<p>If you do find something that you would like supported or isn't quite working, please don't hesitate to post a
+<a href="http://sputility.codeplex.com/discussions">Discussion</a>.</p>
+<p>Finally, if you use SPUtility.js and like it, tweet at me! <a href="https://twitter.com/kitmenke">
+@kitmenke</a></p>
+<h3>Usage Examples:</h3>
+<h4>Set a Text field's value</h4>
+<p><span class="codeInline">SPUtility.GetSPField('Title').SetValue('Hello world!');</span><br>
+<br>
+<img title="144458" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=sputility&DownloadId=144458" alt="144458"></p>
+<p><strong>Set a Text field's value and make it read only</strong></p>
+<p><span class="codeInline">SPUtility.GetSPField('Title').SetValue('Hello world!').MakeReadOnly();</span><br>
+<br>
+<img title="144459" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=sputility&DownloadId=144459" alt="144459"></p>
+<h4>Make a Choice field read only</h4>
+<p><strong>Before</strong><br>
+<img title="144471" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=sputility&DownloadId=144471" alt="144471"><br>
+<br>
+<span class="codeInline">SPUtility.GetSPField('Status').MakeReadOnly();</span><br>
+<br>
+<strong>After</strong><br>
+<img title="144468" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=sputility&DownloadId=144468" alt="144468"></p>
+<h4>Hide a field from view</h4>
+<p><strong>Before</strong><br>
+<img title="144469" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=sputility&DownloadId=144469" alt="144469"><br>
+<br>
+<span class="codeInline">SPUtility.GetSPField('% Complete').Hide();</span><br>
+<br>
+<strong>After</strong><br>
+<img title="144470" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=sputility&DownloadId=144470" alt="144470"><br>
+<br>
+See the <a href="http://sputility.codeplex.com/documentation">Documentation</a> for more information.</p>
+</div><div class="ClearBoth"></div>
