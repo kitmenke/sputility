@@ -3,7 +3,7 @@
   "description": "A JavaScript library used to make modifications to SharePoint's list forms (NewForm.aspx and EditForm.aspx in a survey, custom list or library).",
   "main": "src/sputility.js",
   "authors": [
-    "Kit Menke <cwmenke@gmail.com>"
+    "Kit Menke"
   ],
   "license": "MIT",
   "keywords": [
