@@ -9,7 +9,7 @@ SPUtility.js works with SharePoint 2007, 2010, and 2013.
 This library depends on jQuery (tested with v1.9.0+). I recommend using
 version 1.x of jQuery in order to support older versions of IE.
 
-## Getting Started
+## Usage
 
 Upload jQuery and SPUtility into a Document Library in your SharePoint site.
 
@@ -29,11 +29,11 @@ $(window).load(function () {
 </script>
 ```
 
-Step by step install instructions are located here: https://sputility.codeplex.com/wikipage?title=Installation
+Step by step install instructions are located here: https://github.com/kitmenke/sputility/blob/master/WikiFiles/docs/Installation.md
 
 ## Documentation
 
-https://sputility.codeplex.com/documentation
+Documentation was migrated from Codeplex to Markdown files in this repo: https://github.com/kitmenke/sputility/blob/master/WikiFiles/docs/
 
 ## Examples
 ```javascript
@@ -54,11 +54,36 @@ var fTitle = SPUtility.GetSPField('Title');
 fTitle.SetValue('Using my variable!');
 ```
 
+## For Developers Getting Started
+
+SPUtility.js uses [Grunt](http://gruntjs.com/) to run tests, check code syntax, and compress/minify/uglify files for use in production.
+
+[Install node.js and npm](https://docs.npmjs.com/getting-started/installing-node).
+
+Install grunt:
+```
+npm install -g grunt-cli
+npm install grunt
+```
+Install git and clone SPUtility.js:
+```
+git clone https://github.com/kitmenke/sputility.git
+```
+Install SPUtility.js dependencies:
+```
+cd sputility
+npm install
+```
+
+If everything went ok, you should be able to run `grunt` in the sputility directory.
+
+Executing grunt will run all of the tasks (jshint, qunit, uglify). Or, you can run them individually, for example: `grunt jshint` will run just the unit tests.
+
 ## Contributing
-Contributions are welcome! To contribute to SPUtility.js see the wiki: https://github.com/kitmenke/sputility/wiki
+This project is no longer maintained so contributions are no longer accepted.
 
 ## Release History
-https://sputility.codeplex.com/wikipage?title=Changelog&referringTitle=Home
+https://github.com/kitmenke/sputility/blob/master/WikiFiles/docs/Changelog.md
 
 ## License
 MIT
